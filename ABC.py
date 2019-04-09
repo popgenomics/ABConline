@@ -2,7 +2,11 @@
 import sys
 import os
 
+# number of CPU used for a given model:
+nCPU = 20
+
 args = {}
+# for fasta2ABC.py
 args['infile'] = '' # name of inputfile containing the sequences in a fasta format
 args['nspecies'] = '' # specifies the number of species to consider, equal to 1, 2 or 4
 args['nameA'] = '' # name of species A. example: flo
@@ -17,8 +21,11 @@ args['Nref'] = '' # size of the reference population, arbitrary fixed. i.e: Nref
 args['mu'] = '' # mutation rate by bp and by generation. example: 0.00000002
 args['rho_over_theta'] = '' # ratio of the recombination rate over mutation. example: 1
 
-help = '\n\tGeneral command line:\n\t\tABC.py infile=data.fasta nspecies=4 nameA=arabidopsis_A nameB=arabidopsis_B nameC=arabidopsis_C nameD=arabidopsis_D region=coding Lmin=30 max_N_tolerated=0.1 nMin=10 Nref=100000 mu=0.0000002 rho_over_theta=1\n\n'
-help += '\tExample for 2 populations:\n\t\tABC.py infile=all_loci.fasta nspecies=2 nameA=flo nameB=mal region=coding Lmin=30 max_N_tolerated=0.5 nMin=15 Nref=100000 mu=0.00000002 rho_over_theta=1\n'
+# for submit_simulations.py
+args['nSimulations'] = ''
+
+help = '\n\tGeneral command line:\n\t\tABC.py infile=data.fasta nspecies=4 nameA=arabidopsis_A nameB=arabidopsis_B nameC=arabidopsis_C nameD=arabidopsis_D region=coding Lmin=30 max_N_tolerated=0.1 nMin=10 Nref=100000 mu=0.0000002 rho_over_theta=1 nSimulations=3000\n\n'
+help += '\tExample for 2 populations:\n\t\tABC.py infile=all_loci.fasta nspecies=2 nameA=flo nameB=mal region=coding Lmin=30 max_N_tolerated=0.5 nMin=15 Nref=100000 mu=0.00000002 rho_over_theta=1 nSimulations=3000\n'
 
 nArgs = 0
 for i in sys.argv[1::]:
@@ -30,7 +37,7 @@ for i in sys.argv[1::]:
 		print('\n\tERROR: {0} is not a valid argument\n'.format(i[0]))
 		sys.exit(help)
 
-if len(sys.argv) <11 or len(sys.argv)>14:
+if len(sys.argv) <12 or len(sys.argv)>15:
 	sys.exit(help)
 
 if args['nspecies'] not in ['1', '2', '4']:
@@ -38,24 +45,37 @@ if args['nspecies'] not in ['1', '2', '4']:
 	sys.exit(help)
 
 if args['nspecies'] == '1':
-	if nArgs != 10:
-		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 10))
-		sys.exit(help)
-
-if args['nspecies'] == '2':
 	if nArgs != 11:
 		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 11))
 		sys.exit(help)
 
-if args['nspecies'] == '4':
-	if nArgs != 13:
-		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 13))
+if args['nspecies'] == '2':
+	if nArgs != 12:
+		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 12))
 		sys.exit(help)
+	models = ['SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N', 'AM_1M_1N', 'AM_1M_2N', 'AM_2M_1N', 'AM_2M_2N', 'IM_1M_1N', 'IM_1M_2N', 'IM_2M_1N', 'IM_2M_2N', 'SI_1N', 'SI_2N']
+
+if args['nspecies'] == '4':
+	if nArgs != 14:
+		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 14))
+		sys.exit(help)
+
+### END OF DATA CURATION ###
+
 
 if args['nspecies'] == '2':
 	# producing input files for the ABC pipeline from the provided sequences data
 	commande = 'fasta2ABC_2pops.py {0} {1} {2} {3} {4} {5} {6} {7} {8} {9}'.format(args['infile'], args['nameA'], args['nameB'], args['region'], args['Lmin'], args['max_N_tolerated'], args['nMin'], args['Nref'], args['mu'], args['rho_over_theta'])
 	os.system(commande)
+	
+	# submit simulations
+	nSimulations = int(args['nSimulations'])
+	nMultilocus = nSimulations / nCPU
+	for model in models:
+		commande = 'submit_simulations_2pop.py {0} {1} {2} {3} {4}'.format(nMultilocus, nCPU, model, args['nameA'], args['nameB'])
+		os.system(commande)
+#	print("\n\tsubmit.py [nmultilocus] [niterations] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB]")
+#	print("\n\tex: submit_simulations.py 10000 150 SI_1N flo mal\n")
 
 print('\n\tEND OF THE ABC ANALYSIS\n')
 
