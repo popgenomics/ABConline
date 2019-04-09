@@ -18,9 +18,9 @@ if len(sys.argv) != 11:
 	print("\t\targ9 =\tmutation rate by bp and by generation. example: 0.00000002")
 	print("\t\targ10 =\tratio of the recombination rate over mutation. example: 1")
 	if(len(sys.argv)<11):
-		sys.exit("\n\033[1;31m ERROR: 10 arguments are required: {0} missing\033[0m\n".format(11-len(sys.argv)))
+		sys.exit("\n\033[1;31m ERROR in fasta2ABC_2pops.py: 10 arguments are required: {0} missing\033[0m\n".format(11-len(sys.argv)))
 	if(len(sys.argv)>11):
-		sys.exit("\n\033[1;31m ERROR: 10 arguments are required: {0} too much\033[0m\n".format(len(sys.argv)-11))
+		sys.exit("\n\033[1;31m ERROR in fasta2ABC_2pops.py: 10 arguments are required: {0} too much\033[0m\n".format(len(sys.argv)-11))
 
 fileName = sys.argv[1] # example: all_loci.fasta
 nameA = sys.argv[2] # name of species A. example: flo
@@ -35,13 +35,16 @@ rho_over_theta = float(sys.argv[10]) # ratio of the recombination rate over muta
 
 test = os.path.isfile(fileName)
 if test == False:
-	sys.exit("\n\033[1;31m ERROR: alignement '{0}' is not found\033[0m\n".format(fileName))
+	sys.exit("\n\t\033[1;31m ERROR in fasta2ABC_2pops.py: alignement '{0}' is not found\033[0m\n".format(fileName))
 
+if nameA == nameB:
+	sys.exit("\n\t\033[1;31m ERROR in fasta2ABC_2pops.py: argument #2 ({0} provided here) and arugment #3 ({1}) have to be different\033[0m\n".format(nameA, nameB))
+	
 if region not in ['coding', 'noncoding']:
-	sys.exit("\n\033[1;31m ERROR: '{0}' is not an expected argument. 'coding' or 'noncoding' are expected here\033[0m\n".format(region))
+	sys.exit("\n\t\033[1;31m ERROR in fasta2ABC_2pops.py: '{0}' is not an expected argument. 'coding' or 'noncoding' are expected here\033[0m\n".format(region))
 
 if os.path.isdir('ABC_{0}_{1}'.format(nameA, nameB)) == True:
-	commande = 'rm ABC_{0}_{1}'.format(nameA, nameB)
+	commande = 'rm -rf ABC_{0}_{1}'.format(nameA, nameB)
 	os.system(commande)
 commande = 'mkdir ABC_{0}_{1}'.format(nameA, nameB)
 os.system(commande)
@@ -106,41 +109,40 @@ def fasta2list(fastaFile, nameA, nameB, nMin, max_N_tolerated):
 				res[species][locus] = {}
 				res[species][locus]['seq'] = []
 				res[species][locus]['id'] = []
+
 		if species == nameB:
 			if locus not in res[species]:
 				res[species][locus] = {}
 				res[species][locus]['seq'] = []
 				res[species][locus]['id'] = []
-	
-		# remove sequences with too many N
-		propN = seq[i].count("N")/(1.0 * len(seq[i]))
-		if propN <= max_N_tolerated:
-			res[species][locus]['seq'].append(seq[i])
-			res[species][locus]['id'].append(seqName[i])
-			nsam[locus][species] += 1
+
+		if species in [nameA, nameB]:	
+			# remove sequences with too many N
+			propN = seq[i].count("N")/(1.0 * len(seq[i]))
+			if propN <= max_N_tolerated:
+				res[species][locus]['seq'].append(seq[i])
+				res[species][locus]['id'].append(seqName[i])
+				nsam[locus][species] += 1
 	
 	# remove loci not found in sufficient individuals in both species
 	for i in nsam: # loop along loci
-		test = 0
-		if len(res[nameA][i]['seq'])==0 or len(res[nameB][i]['seq'])==0:
-			test = 1
-			del res[nameA][i] # delete locus i
-			del res[nameB][i]
+		if nsam[i][nameA] < nMin or nsam[i][nameB] < nMin:
+			for j in res.keys(): # loop over species
+				if i in res[j]:
+					del res[j][i] # delete locus i
 		else:
-			if nsam[i][nameA] < nMin or nsam[i][nameB] < nMin:
-				test = 1
-				del res[nameA][i] # delete locus i
-				del res[nameB][i]
-		if test == 0:
 			L[i] = len(res[nameA][i]['seq'][0]) - 3 # remove the last 3 bases to excluse final stop codon
 			L[i] = trunc2triplets(L[i]) # convert the remaining length into a multiple of 3
 	return ({'align': res, 'L': L})
 
 # read the input file
-align = fasta2list(fileName, nameA, nameB, nMin,max_N_tolerated)  # align[species][locus]['id', 'seq']
+align = fasta2list(fileName, nameA, nameB, nMin, max_N_tolerated)  # align[species][locus]['id', 'seq']
+
+if len(align['align'][nameA]) == 0 or len(align['align'][nameB]) == 0:
+	sys.exit('\n\tERROR in fasta2ABC_2pops.py: no locus found in file {0} corresponding to a correct alignement between {1} and {2}\n'.format(fileName, nameA, nameB))
 
 # treat the input file
-bpfile_L1 = '# {0} {1} {2}'.format(nameA, nameB, mu)
+bpfile_L1 = '# spA={0} spB={1} Nref={2} mu={3}'.format(nameA, nameB, Nref, mu)
 bpfile_L2 = [] # L
 bpfile_L3 = [] # nA
 bpfile_L4 = [] # nB
