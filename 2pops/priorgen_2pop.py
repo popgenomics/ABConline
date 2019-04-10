@@ -24,8 +24,8 @@ if len(sys.argv) != 3:
 
 # Configuration of the prior distribution
 nMultilocus = int(sys.argv[2])
-N_bound = [0, 50]
-T_bound = [0, 50]
+N_bound = [0, 100]
+T_bound = [0, 25]
 M_bound = [0, 40]
 shape_bound = [0.01, 50]
 
@@ -256,9 +256,6 @@ if sys.argv[1] == "AM_1M_2N":
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
 	Tam = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
-
-	## bf = factor of local reduction in Ne. Model of "background selection"
-	bf = uniform(low=bf_bound[0], high=bf_bound[1], size = nMultilocus)
 
 	## number of neutral loci
         shape_N_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)

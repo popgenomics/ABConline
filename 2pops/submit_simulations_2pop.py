@@ -50,15 +50,18 @@ if mscommand == "":
 	print("You specified a wrong model: SI_x, AM_x, AM_x or SC_x\n")
 	sys.exit()
 
+outfile = open('{0}/bsub.txt'.format(path), 'w')
 for i in range(niterations):
-#for i in [66,68,69,70,76,77,83,84,90,91,96,97]:
 	tmp = "mkdir {0}/{1}_{2}_beta; ".format(path, model, i)
 	tmp += "cp {0}/bpfile {0}/{1}_{2}_beta; ".format(path, model, i)
 	tmp += "cd {0}/{1}_{2}_beta; ".format(path, model, i)
-	tmp += "module load python/2.7.12; "
-	tmp += "module load java; "
+#	tmp += "module load python/2.7.12; "
+#	tmp += "module load java; "
 	tmp += "priorgen_2pop.py {0} {1} | msnsam tbs {2} {3} | mscalc_2pop.py".format(model, nmultilocus, nmultilocus*nlocus, mscommand)
-	tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=24:00:00 -J {0}_{1} --wrap="{2}"'.format(model, i, tmp)
-#	os.system(tmp2)
-	print(tmp2)
+	tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=24:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, i, tmp)
+#	os.system(tmp2) # to submit the job using slurm
+	outfile.write(tmp + '\n')
+outfile.close()
+
+os.system('bsub {0}/bsub.txt'.format(path))
 
