@@ -74,8 +74,13 @@ if args['nspecies'] == '2':
 	# fasta2ABC_2pops.py
 	print('\tPreparation of input files\n')
 	commande = 'fasta2ABC_2pops.py {0} {1} {2} {3} {4} {5} {6} {7} {8} {9}'.format(args['infile'], args['nameA'], args['nameB'], args['region'], args['Lmin'], args['max_N_tolerated'], args['nMin'], args['Nref'], args['mu'], args['rho_over_theta'])
-	os.system(commande)
+#	os.system(commande)
 	
+	# recombination rates	
+	print('\tRecombination rates\n')
+	commande = 'RNAseqFGT {0} ABC_{1}_{2}/results_recombination.txt'.format(args['infile'], args['nameA'], args['nameB'])
+	os.system(commande)
+		
 	# submit simulations
 	# submit_simulations_2pop.py
 	# print("\n\tsubmit.py [nmultilocus] [niterations] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB]")
@@ -85,14 +90,23 @@ if args['nspecies'] == '2':
 	print('\tSimulations\n')
 	for model in models:
 		commande = 'submit_simulations_2pop.py {0} {1} {2} {3} {4}'.format(nMultilocus, nCPU, model, args['nameA'], args['nameB'])
-		os.system(commande)
+#		os.system(commande)
 
 	# multilocus demographic inferences
 	# model_comp_2pop.R
 	print('\tDemographic inferences\n')
-	commande = 'model_comp_2pop.R nameA={0} nameB={1} nreps={2} Nref={3} ntree={4} ncores={5}'.format(nameA, nameB, nCPU, args['Nref'], ntree, ncores)
+	commande = 'model_comp_2pop.R nameA={0} nameB={1} nreps={2} Nref={3} ntree={4} ncores={5}'.format(args['nameA'], args['nameB'], nCPU, args['Nref'], ntree, ncores)
 	os.system(commande)
-	
+
+        # gather the results
+	print('\tArchive the results\n')
+        commande = 'tar -czvf results_{0}_{1}.tar.gz ABC_{0}_{1}/ABC* ABC_{0}_{1}/*{0}_{1}* ABC_{0}_{1}/results*'.format(args['nameA'], args['nameB'])
+        os.system(commande)
+
+        # clean the space
+	print('\tClean the space\n')
+        commande = 'rm -rf ABC_{0}_{1}'.format(args['nameA'], args['nameB'])
+        os.system(commande)
 print('\n\tEND OF THE ABC ANALYSIS\n')
 
 
