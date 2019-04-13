@@ -17,8 +17,9 @@ args['infile'] = '' # name of inputfile containing the sequences in a fasta form
 args['nspecies'] = '' # specifies the number of species to consider, equal to 1, 2 or 4
 args['nameA'] = '' # name of species A. example: flo
 args['nameB'] = '' # name of species B. example: mal
-args['nameC'] = '' # name of species B. example: txn
-args['nameD'] = '' # name of species B. example: ama
+args['nameC'] = '' # name of species C. example: txn
+args['nameD'] = '' # name of species D. example: ama
+args['outgroup'] = 'NA' # name of the outgroup (optional)
 args['region'] = '' # coding (will only consider synonymous mutations); noncoding (will consider all SNPs)
 args['Lmin'] = '' # minimum number of individuals within a species. example: 10
 args['max_N_tolerated'] = '' # if an allele has %N > threshold_N --> sequence is rejected
@@ -26,6 +27,7 @@ args['nMin'] = '' # minimum number of individuals within a species. example: 10
 args['Nref'] = '' # size of the reference population, arbitrary fixed. i.e: Nref=100000
 args['mu'] = '' # mutation rate by bp and by generation. example: 0.00000002
 args['rho_over_theta'] = '' # ratio of the recombination rate over mutation. example: 1
+args['outgroup'] = '' # name of the outgroup (optional)
 
 # for submit_simulations.py
 args['nSimulations'] = ''
@@ -43,7 +45,7 @@ for i in sys.argv[1::]:
 		print('\n\tERROR: {0} is not a valid argument\n'.format(i[0]))
 		sys.exit(help)
 
-if len(sys.argv) <12 or len(sys.argv)>15:
+if len(sys.argv) <13 or len(sys.argv)>16:
 	sys.exit(help)
 
 if args['nspecies'] not in ['1', '2', '4']:
@@ -51,19 +53,19 @@ if args['nspecies'] not in ['1', '2', '4']:
 	sys.exit(help)
 
 if args['nspecies'] == '1':
-	if nArgs != 11:
-		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 11))
+	if nArgs != 12:
+		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 12))
 		sys.exit(help)
 
 if args['nspecies'] == '2':
-	if nArgs != 12:
-		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 12))
+	if nArgs != 13:
+		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 13))
 		sys.exit(help)
 	models = ['SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N', 'AM_1M_1N', 'AM_1M_2N', 'AM_2M_1N', 'AM_2M_2N', 'IM_1M_1N', 'IM_1M_2N', 'IM_2M_1N', 'IM_2M_2N', 'SI_1N', 'SI_2N']
 
 if args['nspecies'] == '4':
-	if nArgs != 14:
-		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 14))
+	if nArgs != 15:
+		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 15))
 		sys.exit(help)
 
 ### END OF DATA CURATION ###
@@ -73,13 +75,14 @@ if args['nspecies'] == '2':
 	# producing input files for the ABC pipeline from the provided sequences data
 	# fasta2ABC_2pops.py
 	print('\tPreparation of input files\n')
-	commande = 'fasta2ABC_2pops.py {0} {1} {2} {3} {4} {5} {6} {7} {8} {9}'.format(args['infile'], args['nameA'], args['nameB'], args['region'], args['Lmin'], args['max_N_tolerated'], args['nMin'], args['Nref'], args['mu'], args['rho_over_theta'])
+	commande = 'fasta2ABC_2pops.py {0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10}'.format(args['infile'], args['nameA'], args['nameB'], args['outgroup'], args['region'], args['Lmin'], args['max_N_tolerated'], args['nMin'], args['Nref'], args['mu'], args['rho_over_theta'])
+	print(commande)
 #	os.system(commande)
 	
 	# recombination rates	
 	print('\tRecombination rates\n')
 	commande = 'RNAseqFGT {0} ABC_{1}_{2}/results_recombination.txt'.format(args['infile'], args['nameA'], args['nameB'])
-	os.system(commande)
+#	os.system(commande)
 		
 	# submit simulations
 	# submit_simulations_2pop.py
@@ -96,17 +99,17 @@ if args['nspecies'] == '2':
 	# model_comp_2pop.R
 	print('\tDemographic inferences\n')
 	commande = 'model_comp_2pop.R nameA={0} nameB={1} nreps={2} Nref={3} ntree={4} ncores={5}'.format(args['nameA'], args['nameB'], nCPU, args['Nref'], ntree, ncores)
-	os.system(commande)
+#	os.system(commande)
 
         # gather the results
 	print('\tArchive the results\n')
         commande = 'tar -czvf results_{0}_{1}.tar.gz ABC_{0}_{1}/ABC* ABC_{0}_{1}/*{0}_{1}* ABC_{0}_{1}/results*'.format(args['nameA'], args['nameB'])
-        os.system(commande)
+#        os.system(commande)
 
         # clean the space
 	print('\tClean the space\n')
         commande = 'rm -rf ABC_{0}_{1}'.format(args['nameA'], args['nameB'])
-        os.system(commande)
+#        os.system(commande)
 print('\n\tEND OF THE ABC ANALYSIS\n')
 
 

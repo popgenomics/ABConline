@@ -2,36 +2,39 @@
 import sys
 import os
 from math import ceil
+import random
 
 # check the arguments
-if len(sys.argv) != 11:
+if len(sys.argv) != 12:
 	print("\n\tfasta2ABC_2pops.py produces: bpfile (for simulations) and summary statistics (for inferences)")
 	print("\n\033[1;33m\tExample: ./fasta2ABC_2pops.py all_loci.fasta flo mal coding 30 0.1 10 100000 0.00000002 1\033[0m\n")
 	print("\t\targ1 =\tname of the fasta file containing all of the sequences")
 	print("\t\targ2 =\tID of species A (example: flo)")
 	print("\t\targ3 =\tID of species B (example: mal)")
-	print("\t\targ4 =\t'coding' or 'noncoding', to study only synonymous polymorphisms (if coding) or all SNPs (if noncoding)")
-	print("\t\targ5 =\tminimum length of a locus to be considered, i.e, number of total positions minus the positions containing a N")
-	print("\t\targ6 =\tvalue in [0-1]. Corresponds to a threshold of %N above which a sequence is rejected")
-	print("\t\targ7 =\tinteger, corresponding to the minimum number of retained sequences (after rejection).\n\t\t\tif not enough sequences are retained, the loci is excluded from the analysis")
-	print("\t\targ8 =\tsize of the reference population, arbitrary fixed. i.e: Nref=100000")
-	print("\t\targ9 =\tmutation rate by bp and by generation. example: 0.00000002")
-	print("\t\targ10 =\tratio of the recombination rate over mutation. example: 1")
-	if(len(sys.argv)<11):
-		sys.exit("\n\033[1;31m ERROR in fasta2ABC_2pops.py: 10 arguments are required: {0} missing\033[0m\n".format(11-len(sys.argv)))
-	if(len(sys.argv)>11):
-		sys.exit("\n\033[1;31m ERROR in fasta2ABC_2pops.py: 10 arguments are required: {0} too much\033[0m\n".format(len(sys.argv)-11))
+	print("\t\targ4 =\tID of the outgroupe (exmaple: num)")
+	print("\t\targ5 =\t'coding' or 'noncoding', to study only synonymous polymorphisms (if coding) or all SNPs (if noncoding)")
+	print("\t\targ6 =\tminimum length of a locus to be considered, i.e, number of total positions minus the positions containing a N")
+	print("\t\targ7 =\tvalue in [0-1]. Corresponds to a threshold of %N above which a sequence is rejected")
+	print("\t\targ8 =\tinteger, corresponding to the minimum number of retained sequences (after rejection).\n\t\t\tif not enough sequences are retained, the loci is excluded from the analysis")
+	print("\t\targ9 =\tsize of the reference population, arbitrary fixed. i.e: Nref=100000")
+	print("\t\targ10 =\tmutation rate by bp and by generation. example: 0.00000002")
+	print("\t\targ11 =\tratio of the recombination rate over mutation. example: 1")
+	if(len(sys.argv)<12):
+		sys.exit("\n\033[1;31m ERROR in fasta2ABC_2pops.py: 10 arguments are required: {0} missing\033[0m\n".format(12-len(sys.argv)))
+	if(len(sys.argv)>12):
+		sys.exit("\n\033[1;31m ERROR in fasta2ABC_2pops.py: 10 arguments are required: {0} too much\033[0m\n".format(len(sys.argv)-12))
 
 fileName = sys.argv[1] # example: all_loci.fasta
 nameA = sys.argv[2] # name of species A. example: flo
 nameB = sys.argv[3] # name of species B. example: mal
-region = sys.argv[4] # if == coding: will only deal with synonymous codons; if == noncoding: will deal with all positions
-Lmin = int(sys.argv[5]) # minimum length for a locus to be retained. example: 30
-max_N_tolerated = float(sys.argv[6]) # if an allele has %N > threshold_N --> sequence is rejected
-nMin = int(sys.argv[7]) # minimum number of individuals within a species. example: 10
-Nref = int(sys.argv[8]) # size of the reference population, arbitrary fixed. i.e: Nref=100000
-mu = float(sys.argv[9]) # mutation rate by bp and by generation. example: 0.00000002
-rho_over_theta = float(sys.argv[10]) # ratio of the recombination rate over mutation. example: 1
+nameOut = sys.argv[4] # name of the outgroup. example: num
+region = sys.argv[5] # if == coding: will only deal with synonymous codons; if == noncoding: will deal with all positions
+Lmin = int(sys.argv[6]) # minimum length for a locus to be retained. example: 30
+max_N_tolerated = float(sys.argv[7]) # if an allele has %N > threshold_N --> sequence is rejected
+nMin = int(sys.argv[8]) # minimum number of individuals within a species. example: 10
+Nref = int(sys.argv[9]) # size of the reference population, arbitrary fixed. i.e: Nref=100000
+mu = float(sys.argv[10]) # mutation rate by bp and by generation. example: 0.00000002
+rho_over_theta = float(sys.argv[11]) # ratio of the recombination rate over mutation. example: 1
 
 test = os.path.isfile(fileName)
 if test == False:
@@ -85,61 +88,160 @@ codonTable = {'AAA': {'aa': 'K', 'nN': 2.6666666666666665, 'nS': 0.3333333333333
 #alignB = fasta2dic(seqB)
 
 
-def fasta2list(fastaFile, nameA, nameB, nMin, max_N_tolerated):
+def fasta2list(fastaFile, nameA, nameB, nameOut, nMin, max_N_tolerated):
 	L = {}
-	res = {}
+	res = {} # res[species][locus]['seq', 'id']
 	res[nameA] = {}
 	res[nameB] = {}
+	if nameOut != 'NA':
+		res[nameOut] = {}
 	fasta = open(fastaFile).readlines()
 	seqName = [x.split(" ")[0].rstrip().replace('>','') for x in fasta if x[0] == '>']
 	seq = ''.join([x.rstrip() if x[0]!='>' else '@' for x in fasta])[1:].split('@')
 	
 	nsam = {} # number of individuals in both species
-	for i in range(len(seqName)):
+	
+	if nameOut == 'NA':	
+		list_species = [nameA, nameB]
+	else:
+		list_species = [nameA, nameB, nameOut]
+	for i in range(len(seqName)): # loop over loci
 		tmp = seqName[i].split('|') # split a string similar to : Hmel219002_6|flo|flo.CS12|allele1
 		locus = tmp[0]
 		species = tmp[1]
 		if locus not in nsam:
 			nsam[locus] = {}
-			nsam[locus][nameA] = 0
-			nsam[locus][nameB] = 0
-
-		if species == nameA:
+			for j in list_species:
+				nsam[locus][j] = 0
+		
+		if species in list_species:
 			if locus not in res[species]:
 				res[species][locus] = {}
 				res[species][locus]['seq'] = []
 				res[species][locus]['id'] = []
 
-		if species == nameB:
-			if locus not in res[species]:
-				res[species][locus] = {}
-				res[species][locus]['seq'] = []
-				res[species][locus]['id'] = []
-
-		if species in [nameA, nameB]:	
 			# remove sequences with too many N
 			propN = seq[i].count("N")/(1.0 * len(seq[i]))
 			if propN <= max_N_tolerated:
 				res[species][locus]['seq'].append(seq[i])
 				res[species][locus]['id'].append(seqName[i])
 				nsam[locus][species] += 1
-	
+		
 	# remove loci not found in sufficient individuals in both species
 	for i in nsam: # loop along loci
-		if nsam[i][nameA] < nMin or nsam[i][nameB] < nMin:
-			for j in res.keys(): # loop over species
-				if i in res[j]:
-					del res[j][i] # delete locus i
+		if nameOut == 'NA':
+			if nsam[i][nameA] < nMin or nsam[i][nameB] < nMin:
+				for j in res.keys(): # loop over species
+					if i in res[j]:
+						del res[j][i] # delete locus i
+			else:
+				L[i] = len(res[nameA][i]['seq'][0]) - 3 # remove the last 3 bases to excluse final stop codon
+				L[i] = trunc2triplets(L[i]) # convert the remaining length into a multiple of 3
 		else:
-			L[i] = len(res[nameA][i]['seq'][0]) - 3 # remove the last 3 bases to excluse final stop codon
-			L[i] = trunc2triplets(L[i]) # convert the remaining length into a multiple of 3
+			if nsam[i][nameA] < nMin or nsam[i][nameB] < nMin or nsam[i][nameOut]==0:
+				for j in res.keys(): # loop over species
+					if i in res[j]:
+						del res[j][i] # delete locus i
+			else:
+				L[i] = len(res[nameA][i]['seq'][0]) - 3 # remove the last 3 bases to excluse final stop codon
+				L[i] = trunc2triplets(L[i]) # convert the remaining length into a multiple of 3
 	return ({'align': res, 'L': L})
 
+
+def getConsensus(align, L):
+	# align[locus]['seq', 'id']
+	# L[locus] = n nucleotides
+	consensus = {}
+	for locus in align: # loop over loci
+		L_locus = L[locus]
+		consensus[locus]='' # consensus[locus] = sequence
+		for pos in range(L_locus):
+			position = []
+			for sequence in align[locus]['seq']:
+				base = sequence[pos]
+				if base != 'N':
+					position.append(base)
+			if len(position) == 0:
+				consensus[locus] += 'N'
+			else:
+				consensus[locus] += random.sample(position, 1)[0]
+	return(consensus)
+
+
+def getScalar(align, L, consensus, region, nameA, nameB):
+	# align[species][locus]['seq', 'id']
+	# L[locus]
+	# consensus[locus]
+	scalar = {} # scalar[locus] = divergence_of_the_locus / mean(divergence)
+	divergence = [] # array containing all of the divergence_i of all loci. Used to compute de the mean(divergence)
+	nLocus = 0
+	for locus in L: # loop over loci
+		if locus in align[nameA] and locus in align[nameB]:
+			nLocus += 1
+			divergence_locus = 0.0
+			if region == 'coding':
+				# use k3, the divergence at third coding position
+				list_positions = range(2, L[locus], 3)
+			else:
+				# use all positions
+				list_positions = range(L[locus])
+			nComb = 0
+			for pos in list_positions: # loop over third coding positions
+				out = consensus[locus][pos]
+				for seqA in align[nameA][locus]['seq']: # loop over indA
+					A = seqA[pos]
+					if A!='N' and out!='N':
+						nComb += 1
+						if A!=out:
+							divergence_locus += 1.0
+				for seqB in align[nameB][locus]['seq']: # loop over indA
+					B = seqB[pos]
+					if B!='N' and out!='N':
+						nComb += 1
+						if B!=out:
+							divergence_locus += 1.0
+			# end of loop over locus
+			if nComb > 0:
+				divergence_locus /= nComb # hypothesis : if no possible comparison between the ingroup and the outgroup, then divergence = 0
+			else:
+				divergence_locus = 0.0
+			divergence.append(divergence_locus)
+			scalar[locus] = divergence_locus
+			
+	# compute the average divergence
+	mean = 0.0
+	if nLocus > 0:
+		for i in range(nLocus):
+			mean += divergence[i]
+		mean /= nLocus
+	else:
+		mean = 1
+	
+	# attribute a scalar of mutation rate for each locus
+	for locus in scalar:
+			scalar[locus] /= mean 
+			# to constrain the range of mutation rates in [0.1 - 10] x mean(divergence)
+			if scalar[locus]<0.1:
+				scalar[locus] = 0.1
+			if scalar[locus]>10:
+				scalar[locus] = 10
+
+	return(scalar)
+
+
 # read the input file
-align = fasta2list(fileName, nameA, nameB, nMin, max_N_tolerated)  # align[species][locus]['id', 'seq']
+align = fasta2list(fileName, nameA, nameB, nameOut, nMin, max_N_tolerated)  # align[species][locus]['id', 'seq']
+
+
+# if there is an outgroup -> make a concensus
+if nameOut != 'NA':
+	consensus = getConsensus(align['align'][nameOut], align['L']) # consensus[locus] = sequence
+	scalar = getScalar(align['align'], align['L'], consensus, region, nameA, nameB)
+
 
 if len(align['align'][nameA]) == 0 or len(align['align'][nameB]) == 0:
 	sys.exit('\n\tERROR in fasta2ABC_2pops.py: no locus found in file {0} corresponding to a correct alignement between {1} and {2}\n'.format(fileName, nameA, nameB))
+
 
 # treat the input file
 bpfile_L1 = '# spA={0} spB={1} Nref={2} mu={3}'.format(nameA, nameB, Nref, mu)
