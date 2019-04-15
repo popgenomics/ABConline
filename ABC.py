@@ -19,7 +19,7 @@ args['nameA'] = '' # name of species A. example: flo
 args['nameB'] = '' # name of species B. example: mal
 args['nameC'] = '' # name of species C. example: txn
 args['nameD'] = '' # name of species D. example: ama
-args['outgroup'] = 'NA' # name of the outgroup (optional)
+args['outgroup'] = 'NA' # name of the outgroup. If no outgroup, then set the value to 'NA'. Obviously, an outgroup exactly named 'NA' will be discarded.
 args['region'] = '' # coding (will only consider synonymous mutations); noncoding (will consider all SNPs)
 args['Lmin'] = '' # minimum number of individuals within a species. example: 10
 args['max_N_tolerated'] = '' # if an allele has %N > threshold_N --> sequence is rejected
@@ -33,7 +33,8 @@ args['outgroup'] = '' # name of the outgroup (optional)
 args['nSimulations'] = ''
 
 help = '\n\tGeneral command line:\n\t\tABC.py infile=data.fasta nspecies=4 nameA=arabidopsis_A nameB=arabidopsis_B nameC=arabidopsis_C nameD=arabidopsis_D region=coding Lmin=30 max_N_tolerated=0.1 nMin=10 Nref=100000 mu=0.0000002 rho_over_theta=1 nSimulations=3000\n\n'
-help += '\tExample for 2 populations:\n\t\tABC.py infile=all_loci.fasta nspecies=2 nameA=flo nameB=mal region=coding Lmin=30 max_N_tolerated=0.5 nMin=15 Nref=100000 mu=0.00000002 rho_over_theta=1 nSimulations=3000\n'
+help += '\tExample for 2 populations without outgroup:\n\t\tABC.py infile=all_loci.fasta nspecies=2 nameA=flo nameB=mal region=coding Lmin=30 max_N_tolerated=0.5 nMin=15 Nref=100000 mu=0.00000002 rho_over_theta=1 nSimulations=3000\n'
+help += '\tExample for 2 populations with outgroup:\n\t\tABC.py infile=all_loci.fasta nspecies=2 nameA=flo nameB=mal outgroup=num region=coding Lmin=30 max_N_tolerated=0.5 nMin=15 Nref=100000 mu=0.00000002 rho_over_theta=1 nSimulations=3000\n'
 
 nArgs = 0
 for i in sys.argv[1::]:
@@ -74,15 +75,16 @@ if args['nspecies'] == '4':
 if args['nspecies'] == '2':
 	# producing input files for the ABC pipeline from the provided sequences data
 	# fasta2ABC_2pops.py
-	print('\tPreparation of input files\n')
+	print('\tPreparation of input files')
 	commande = 'fasta2ABC_2pops.py {0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10}'.format(args['infile'], args['nameA'], args['nameB'], args['outgroup'], args['region'], args['Lmin'], args['max_N_tolerated'], args['nMin'], args['Nref'], args['mu'], args['rho_over_theta'])
 	print(commande)
-#	os.system(commande)
+	os.system(commande)
 	
 	# recombination rates	
-	print('\tRecombination rates\n')
+	print('\n\tRecombination rates')
 	commande = 'RNAseqFGT {0} ABC_{1}_{2}/results_recombination.txt'.format(args['infile'], args['nameA'], args['nameB'])
-#	os.system(commande)
+	print(commande)
+	os.system(commande)
 		
 	# submit simulations
 	# submit_simulations_2pop.py
@@ -90,26 +92,30 @@ if args['nspecies'] == '2':
 	# print("\n\tex: submit_simulations.py 10000 150 SI_1N flo mal\n")
 	nSimulations = int(args['nSimulations'])
 	nMultilocus = nSimulations / nCPU
-	print('\tSimulations\n')
+	print('\n\tSimulations')
 	for model in models:
 		commande = 'submit_simulations_2pop.py {0} {1} {2} {3} {4}'.format(nMultilocus, nCPU, model, args['nameA'], args['nameB'])
-#		os.system(commande)
+		print(commande)
+		os.system(commande)
 
 	# multilocus demographic inferences
 	# model_comp_2pop.R
-	print('\tDemographic inferences\n')
+	print('\n\tDemographic inferences')
 	commande = 'model_comp_2pop.R nameA={0} nameB={1} nreps={2} Nref={3} ntree={4} ncores={5}'.format(args['nameA'], args['nameB'], nCPU, args['Nref'], ntree, ncores)
-#	os.system(commande)
+	print(commande)
+	os.system(commande)
 
         # gather the results
-	print('\tArchive the results\n')
+	print('\n\tArchive the results')
         commande = 'tar -czvf results_{0}_{1}.tar.gz ABC_{0}_{1}/ABC* ABC_{0}_{1}/*{0}_{1}* ABC_{0}_{1}/results*'.format(args['nameA'], args['nameB'])
-#        os.system(commande)
+	print(commande)
+        os.system(commande)
 
         # clean the space
-	print('\tClean the space\n')
+	print('\n\tClean the space')
         commande = 'rm -rf ABC_{0}_{1}'.format(args['nameA'], args['nameB'])
-#        os.system(commande)
+	print(commande)
+        os.system(commande)
 print('\n\tEND OF THE ABC ANALYSIS\n')
 
 

@@ -11,7 +11,7 @@ if len(sys.argv) != 12:
 	print("\t\targ1 =\tname of the fasta file containing all of the sequences")
 	print("\t\targ2 =\tID of species A (example: flo)")
 	print("\t\targ3 =\tID of species B (example: mal)")
-	print("\t\targ4 =\tID of the outgroupe (exmaple: num)")
+	print("\t\targ4 =\tID of the outgroup (exmaple: num)")
 	print("\t\targ5 =\t'coding' or 'noncoding', to study only synonymous polymorphisms (if coding) or all SNPs (if noncoding)")
 	print("\t\targ6 =\tminimum length of a locus to be considered, i.e, number of total positions minus the positions containing a N")
 	print("\t\targ7 =\tvalue in [0-1]. Corresponds to a threshold of %N above which a sequence is rejected")
@@ -233,14 +233,21 @@ def getScalar(align, L, consensus, region, nameA, nameB):
 align = fasta2list(fileName, nameA, nameB, nameOut, nMin, max_N_tolerated)  # align[species][locus]['id', 'seq']
 
 
+if len(align['align'][nameA]) == 0 or len(align['align'][nameB]) == 0:
+	sys.exit('\n\tERROR in fasta2ABC_2pops.py: no locus found in file {0} corresponding to a correct alignement between {1} and {2}\n'.format(fileName, nameA, nameB))
+	if nameOut != 'NA':
+		if len(align['align'][nameOut]) == 0:
+			sys.exit('\n\tERROR in fasta2ABC_2pops.py: no locus found in file {0} corresponding {1}\n'.format(fileName, nameOut))
+
+
 # if there is an outgroup -> make a concensus
 if nameOut != 'NA':
 	consensus = getConsensus(align['align'][nameOut], align['L']) # consensus[locus] = sequence
-	scalar = getScalar(align['align'], align['L'], consensus, region, nameA, nameB)
-
-
-if len(align['align'][nameA]) == 0 or len(align['align'][nameB]) == 0:
-	sys.exit('\n\tERROR in fasta2ABC_2pops.py: no locus found in file {0} corresponding to a correct alignement between {1} and {2}\n'.format(fileName, nameA, nameB))
+	scalar = getScalar(align['align'], align['L'], consensus, region, nameA, nameB) # with outgroup: locus specific mutation rate mu_i = mean(mu) * div_i / mean(div)
+else:
+	scalar = {}
+	for i in align['align'][nameA]:
+		scalar[i] = 1 # without outgroup: all loci share the same per nucleotide mutation rate
 
 
 # treat the input file
@@ -255,237 +262,492 @@ output_ms = "./msnsam tbs 20 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 
 outfile_ms = open('ABC_{0}_{1}/{0}_{1}.ms'.format(nameA, nameB), 'w')
 outfile_ms.write(output_ms)
 
-
-# For coding loci
-if region == 'coding':
-	output_info = "locusName\tL_including_N\tLsyno\tnSynSegSite\tnsamA\tnsamB\n"
-	outfile_info = open('ABC_{0}_{1}/{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
-	outfile_info.write(output_info)
-	for locus_i in align['L'].keys():
-		geneName = locus_i
-		
-		nA = len(align['align'][nameA][locus_i]['id'])
-		nB = len(align['align'][nameB][locus_i]['id'])
-		
-		L = align['L'][locus_i] 
-		interspe = [] # contains the interspecific alignment
-		interspeName = [] # contains the id of sequences in the interspecific alignment
-		for i in range(nA):
-			interspe.append(align['align'][nameA][locus_i]['seq'][i])
-			interspeName.append(align['align'][nameA][locus_i]['id'][i])
-		for i in range(nB):
-			interspe.append(align['align'][nameB][locus_i]['seq'][i])
-			interspeName.append(align['align'][nameB][locus_i]['id'][i])
-
-		nSites = 0 # total number of synonymous sites within the sequence, computed using codonTable
-		nSynSegSite = 0 # number of synonymous segregating sites among the nSites
-		positions = [] # list of synonymous polymorphic positions: doesn't correspond to the SNP position, but to the first codon position
-		msStyle = [] # contains the msStyle format
-		for ind in range(nA):
-			msStyle.append([])
-		for ind in range(nB):
-			msStyle.append([])
-
-		# loop over codons:
-		for pos in range(L)[::3]:
-			alignmentOfCodons = [] # set of codons in the alignment, starting at the position 'pos1'
-			# loop over individuals:
-			# get all codons in the alignment
-			for ind in range(nA + nB):
-				pos1 = interspe[ind][pos]
-				pos2 = interspe[ind][pos + 1]
-				pos3 = interspe[ind][pos + 2]
-				base = pos1 + pos2 + pos3 
-				alignmentOfCodons.append(base)
+if nameOut == 'NA':
+	# For coding loci
+	if region == 'coding':
+		output_info = "locusName\tL_including_N\tLsyno\tnSynSegSite\tnsamA\tnsamB\n"
+		outfile_info = open('ABC_{0}_{1}/{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
+		outfile_info.write(output_info)
+		for locus_i in align['L'].keys():
+			geneName = locus_i
 			
-			polyMcodons = list(set(alignmentOfCodons)) # list of codons found in the alignment
-			nCodons = 0
-			nCodons = len(polyMcodons)
-			testN = False # False if no codon with 'N'; True if a 'N' is found in at least one codon for one individual
-			testStopCodon = False # False if no stop codon was found; True if a stop codon was found
-			for i in polyMcodons: # loop to test for some 'N'
-				if 'N' in i:
-					testN = True
-				if i not in codonTable:
-					testStopCodon = True
+			nA = len(align['align'][nameA][locus_i]['id'])
+			nB = len(align['align'][nameB][locus_i]['id'])
 			
-			# if: 1) a maximum of 2 polymorphic codons, and, 2) no codon with 'N', and, 3) all codons effectively code for an amino acid
-			if nCodons <= 2 and testN==False and testStopCodon==False: 
-				nSites_pos = 0.0
-				for i in alignmentOfCodons:
-					nSites_pos += codonTable[i]['nS']
-				nSites += nSites_pos/len(alignmentOfCodons)
+			L = align['L'][locus_i] 
+			interspe = [] # contains the interspecific alignment
+			interspeName = [] # contains the id of sequences in the interspecific alignment
+			for i in range(nA):
+				interspe.append(align['align'][nameA][locus_i]['seq'][i])
+				interspeName.append(align['align'][nameA][locus_i]['id'][i])
+			for i in range(nB):
+				interspe.append(align['align'][nameB][locus_i]['seq'][i])
+				interspeName.append(align['align'][nameB][locus_i]['id'][i])
+
+			nSites = 0 # total number of synonymous sites within the sequence, computed using codonTable
+			nSynSegSite = 0 # number of synonymous segregating sites among the nSites
+			positions = [] # list of synonymous polymorphic positions: doesn't correspond to the SNP position, but to the first codon position
+			msStyle = [] # contains the msStyle format
+			for ind in range(nA):
+				msStyle.append([])
+			for ind in range(nB):
+				msStyle.append([])
+
+			# loop over codons:
+			for pos in range(L)[::3]:
+				alignmentOfCodons = [] # set of codons in the alignment, starting at the position 'pos1'
+				# loop over individuals:
+				# get all codons in the alignment
+				for ind in range(nA + nB):
+					pos1 = interspe[ind][pos]
+					pos2 = interspe[ind][pos + 1]
+					pos3 = interspe[ind][pos + 2]
+					base = pos1 + pos2 + pos3 
+					alignmentOfCodons.append(base)
 				
-				# if two codons --> there is a polymorphism
-				if nCodons == 2:
-					alignmentOfAminoAcids = []
+				polyMcodons = list(set(alignmentOfCodons)) # list of codons found in the alignment
+				nCodons = 0
+				nCodons = len(polyMcodons)
+				testN = False # False if no codon with 'N'; True if a 'N' is found in at least one codon for one individual
+				testStopCodon = False # False if no stop codon was found; True if a stop codon was found
+				for i in polyMcodons: # loop to test for some 'N'
+					if 'N' in i:
+						testN = True
+					if i not in codonTable:
+						testStopCodon = True
+				
+				# if: 1) a maximum of 2 polymorphic codons, and, 2) no codon with 'N', and, 3) all codons effectively code for an amino acid
+				if nCodons <= 2 and testN==False and testStopCodon==False: 
+					nSites_pos = 0.0
 					for i in alignmentOfCodons:
-						alignmentOfAminoAcids.append(codonTable[i]['aa'])
-					setOfAminoAcids = list(set(alignmentOfAminoAcids))
+						nSites_pos += codonTable[i]['nS']
+					nSites += nSites_pos/len(alignmentOfCodons)
 					
-					# if two codons but one amino acids --> synonymous polymorphism
-					if len(setOfAminoAcids) == 1:
-						nSynSegSite += 1
-						positions.append(pos) # positions: list of first codon position of polymorphic synonymous codons
-						ancestralAllele = polyMcodons[0] # in absence of outgroup --> the ancestral allele is the first in the alignement
-						derivedAllele = polyMcodons[1] # without outgroup --> the derived allele is the one who is not the first...
+					# if two codons --> there is a polymorphism
+					if nCodons == 2:
+						alignmentOfAminoAcids = []
+						for i in alignmentOfCodons:
+							alignmentOfAminoAcids.append(codonTable[i]['aa'])
+						setOfAminoAcids = list(set(alignmentOfAminoAcids))
+						
+						# if two codons but one amino acids --> synonymous polymorphism
+						if len(setOfAminoAcids) == 1:
+							nSynSegSite += 1
+							positions.append(pos) # positions: list of first codon position of polymorphic synonymous codons
+							ancestralAllele = polyMcodons[0] # in absence of outgroup --> the ancestral allele is the first in the alignement
+							derivedAllele = polyMcodons[1] # without outgroup --> the derived allele is the one who is not the first...
+							for i in range(nA + nB):
+								if alignmentOfCodons[i] == ancestralAllele:
+									msStyle[i].append('0')
+								if alignmentOfCodons[i] == derivedAllele:
+									msStyle[i].append('1')
+
+			if nSites >= Lmin: # if the locus is big enough to be considered
+				# ms_like output files
+				locus_ms = ''
+				locus_ms = locus_ms + "//{0}\n".format(geneName)
+				locus_ms = locus_ms + "segsites: {0}\n".format(int(nSynSegSite))
+				if nSynSegSite != 0:
+					locus_ms += "positions: {0}\n".format( " ".join([ str(round((1.0*i)/L, 4)) for i in positions ]))
+					for i in msStyle:
+						locus_ms = locus_ms + "".join( [ str(j) for j in i ] ) + "\n"
+				
+				outfile_ms.write(locus_ms + '\n')
+				
+				bpfile_L2.append(int(ceil(nSites)))
+				bpfile_L3.append(nA)
+				bpfile_L4.append(nB)
+				bpfile_L5.append(4*Nref*mu*nSites)
+				bpfile_L6.append(4*Nref*mu*nSites*rho_over_theta)
+					
+				# informations about locus
+				res = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(geneName, L, nSites, nSynSegSite, nA, nB)
+				outfile_info.write(res)
+				
+			#	res = ""
+			#	for i in range(len(interspe)):
+			#		res += ">{0}\n{1}\n".format(interspeName[i], interspe[i])
+			#	outfile = open('{0}.fas'.format(geneName), "w")
+			#	outfile.write(res)
+			#	outfile.close()
+		outfile_ms.close()
+		outfile_info.close()
+
+		bpfile = bpfile_L1 + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L2 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L3 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L4 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
+
+		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
+		outfile.write(bpfile)
+		outfile.close()
+
+	# For non coding loci
+	if region == 'noncoding':
+		output_info = "locusName\tL_including_N\tL\tnSegSite\tnsamA\tnsamB\n"
+		outfile_info = open('ABC_{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
+		outfile_info.write(output_info)
+		for locus_i in align['L'].keys():
+			geneName = locus_i
+			
+			nA = len(align['align'][nameA][locus_i]['id'])
+			nB = len(align['align'][nameB][locus_i]['id'])
+			
+			L = align['L'][locus_i] 
+			interspe = [] # contains the interspecific alignment
+			interspeName = [] # contains the id of sequences in the interspecific alignment
+			for i in range(nA):
+				interspe.append(align['align'][nameA][locus_i]['seq'][i])
+				interspeName.append(align['align'][nameA][locus_i]['id'][i])
+			for i in range(nB):
+				interspe.append(align['align'][nameB][locus_i]['seq'][i])
+				interspeName.append(align['align'][nameB][locus_i]['id'][i])
+
+			nSites = 0 # total number of sites within the sequence
+			nSegSite = 0 # number of segregating sites among the nSites
+			positions = [] # list of polymorphic positions: correspond to the SNP position
+			msStyle = [] # contains the msStyle format
+			for ind in range(nA):
+				msStyle.append([])
+			for ind in range(nB):
+				msStyle.append([])
+
+			# loop over pos:
+			for pos in range(L):
+				alignmentOfPos = [] # set of pos in the alignment, starting at the position 'pos1'
+				# loop over individuals:
+				# get all pos in the alignment
+				for ind in range(nA + nB):
+					pos1 = interspe[ind][pos]
+					base = pos1 
+					alignmentOfPos.append(base)
+				
+				polyMpos = list(set(alignmentOfPos)) # list of pos found in the alignment
+				nPos = 0
+				nPos = len(polyMpos)
+				testN = False # False if no codon with 'N'; True if a 'N' is found in at least one codon for one individual
+				for i in polyMpos: # loop to test for some 'N'
+					if 'N' in i:
+						testN = True
+				
+				# if: 1) a maximum of 2 polymorphic pos, and, 2) no codon with 'N'
+				if nPos <= 2 and testN==False: 
+					nSites += 1
+					
+					# if two pos --> there is a polymorphism
+					if nPos == 2:
+						nSegSite += 1
+						positions.append(pos) # positions: list of first codon position of polymorphic synonymous pos
+						ancestralAllele = polyMpos[0] # in absence of outgroup --> the ancestral allele is the first in the alignement
+						derivedAllele = polyMpos[1] # without outgroup --> the derived allele is the one who is not the first...
 						for i in range(nA + nB):
-							if alignmentOfCodons[i] == ancestralAllele:
+							if alignmentOfPos[i] == ancestralAllele:
 								msStyle[i].append('0')
-							if alignmentOfCodons[i] == derivedAllele:
+							if alignmentOfPos[i] == derivedAllele:
 								msStyle[i].append('1')
 
-		if nSites >= Lmin: # if the locus is big enough to be considered
-			# ms_like output files
-			locus_ms = ''
-			locus_ms = locus_ms + "//{0}\n".format(geneName)
-			locus_ms = locus_ms + "segsites: {0}\n".format(int(nSynSegSite))
-			if nSynSegSite != 0:
-				locus_ms += "positions: {0}\n".format( " ".join([ str(round((1.0*i)/L, 4)) for i in positions ]))
-				for i in msStyle:
-					locus_ms = locus_ms + "".join( [ str(j) for j in i ] ) + "\n"
-			
-			outfile_ms.write(locus_ms + '\n')
-			
-			bpfile_L2.append(int(ceil(nSites)))
-			bpfile_L3.append(nA)
-			bpfile_L4.append(nB)
-			bpfile_L5.append(4*Nref*mu*nSites)
-			bpfile_L6.append(4*Nref*mu*nSites*rho_over_theta)
+			if nSites >= Lmin: # if the locus is big enough to be considered
+				# ms_like output files
+				locus_ms = ''
+				locus_ms = locus_ms + "//{0}\n".format(geneName)
+				locus_ms = locus_ms + "segsites: {0}\n".format(int(nSegSite))
+				if nSegSite != 0:
+					locus_ms += "positions: {0}\n".format( " ".join([ str(round((1.0*i)/L, 4)) for i in positions ]))
+					for i in msStyle:
+						locus_ms = locus_ms + "".join( [ str(j) for j in i ] ) + "\n"
 				
-			# informations about locus
-			res = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(geneName, L, nSites, nSynSegSite, nA, nB)
-			outfile_info.write(res)
-			
-		#	res = ""
-		#	for i in range(len(interspe)):
-		#		res += ">{0}\n{1}\n".format(interspeName[i], interspe[i])
-		#	outfile = open('{0}.fas'.format(geneName), "w")
-		#	outfile.write(res)
-		#	outfile.close()
-	outfile_ms.close()
-	outfile_info.close()
-
-	bpfile = bpfile_L1 + '\n'
-	bpfile += '\t'.join([ str(i) for i in bpfile_L2 ]) + '\n'
-	bpfile += '\t'.join([ str(i) for i in bpfile_L3 ]) + '\n'
-	bpfile += '\t'.join([ str(i) for i in bpfile_L4 ]) + '\n'
-	bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
-	bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
-
-	outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
-	outfile.write(bpfile)
-	outfile.close()
-
-# For non coding loci
-if region == 'noncoding':
-	output_info = "locusName\tL_including_N\tL\tnSegSite\tnsamA\tnsamB\n"
-	outfile_info = open('ABC_{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
-	outfile_info.write(output_info)
-	for locus_i in align['L'].keys():
-		geneName = locus_i
-		
-		nA = len(align['align'][nameA][locus_i]['id'])
-		nB = len(align['align'][nameB][locus_i]['id'])
-		
-		L = align['L'][locus_i] 
-		interspe = [] # contains the interspecific alignment
-		interspeName = [] # contains the id of sequences in the interspecific alignment
-		for i in range(nA):
-			interspe.append(align['align'][nameA][locus_i]['seq'][i])
-			interspeName.append(align['align'][nameA][locus_i]['id'][i])
-		for i in range(nB):
-			interspe.append(align['align'][nameB][locus_i]['seq'][i])
-			interspeName.append(align['align'][nameB][locus_i]['id'][i])
-
-		nSites = 0 # total number of sites within the sequence
-		nSegSite = 0 # number of segregating sites among the nSites
-		positions = [] # list of polymorphic positions: correspond to the SNP position
-		msStyle = [] # contains the msStyle format
-		for ind in range(nA):
-			msStyle.append([])
-		for ind in range(nB):
-			msStyle.append([])
-
-		# loop over pos:
-		for pos in range(L):
-			alignmentOfPos = [] # set of pos in the alignment, starting at the position 'pos1'
-			# loop over individuals:
-			# get all pos in the alignment
-			for ind in range(nA + nB):
-				pos1 = interspe[ind][pos]
-				base = pos1 
-				alignmentOfPos.append(base)
-			
-			polyMpos = list(set(alignmentOfPos)) # list of pos found in the alignment
-			nPos = 0
-			nPos = len(polyMpos)
-			testN = False # False if no codon with 'N'; True if a 'N' is found in at least one codon for one individual
-			for i in polyMpos: # loop to test for some 'N'
-				if 'N' in i:
-					testN = True
-			
-			# if: 1) a maximum of 2 polymorphic pos, and, 2) no codon with 'N'
-			if nPos <= 2 and testN==False: 
-				nSites += 1
+				outfile_ms.write(locus_ms + '\n')
 				
-				# if two pos --> there is a polymorphism
-				if nPos == 2:
-					nSegSite += 1
-					positions.append(pos) # positions: list of first codon position of polymorphic synonymous pos
-					ancestralAllele = polyMpos[0] # in absence of outgroup --> the ancestral allele is the first in the alignement
-					derivedAllele = polyMpos[1] # without outgroup --> the derived allele is the one who is not the first...
-					for i in range(nA + nB):
-						if alignmentOfPos[i] == ancestralAllele:
-							msStyle[i].append('0')
-						if alignmentOfPos[i] == derivedAllele:
-							msStyle[i].append('1')
-
-		if nSites >= Lmin: # if the locus is big enough to be considered
-			# ms_like output files
-			locus_ms = ''
-			locus_ms = locus_ms + "//{0}\n".format(geneName)
-			locus_ms = locus_ms + "segsites: {0}\n".format(int(nSegSite))
-			if nSegSite != 0:
-				locus_ms += "positions: {0}\n".format( " ".join([ str(round((1.0*i)/L, 4)) for i in positions ]))
-				for i in msStyle:
-					locus_ms = locus_ms + "".join( [ str(j) for j in i ] ) + "\n"
-			
-			outfile_ms.write(locus_ms + '\n')
-			
-			bpfile_L2.append(int(ceil(nSites)))
-			bpfile_L3.append(nA)
-			bpfile_L4.append(nB)
-			bpfile_L5.append(4*Nref*mu*nSites)
-			bpfile_L6.append(4*Nref*mu*nSites*rho_over_theta)
+				bpfile_L2.append(int(ceil(nSites)))
+				bpfile_L3.append(nA)
+				bpfile_L4.append(nB)
+				bpfile_L5.append(4*Nref*mu*nSites)
+				bpfile_L6.append(4*Nref*mu*nSites*rho_over_theta)
+					
+				# informations about locus
+				res = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(geneName, L, nSites, nSegSite, nA, nB)
+				outfile_info.write(res)
 				
-			# informations about locus
-			res = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(geneName, L, nSites, nSegSite, nA, nB)
-			outfile_info.write(res)
-			
-		#	res = ""
-		#	for i in range(len(interspe)):
-		#		res += ">{0}\n{1}\n".format(interspeName[i], interspe[i])
-		#	outfile = open('{0}.fas'.format(geneName), "w")
-		#	outfile.write(res)
-		#	outfile.close()
-	outfile_ms.close()
-	outfile_info.close()
+			#	res = ""
+			#	for i in range(len(interspe)):
+			#		res += ">{0}\n{1}\n".format(interspeName[i], interspe[i])
+			#	outfile = open('{0}.fas'.format(geneName), "w")
+			#	outfile.write(res)
+			#	outfile.close()
+		outfile_ms.close()
+		outfile_info.close()
 
-	bpfile = bpfile_L1 + '\n'
-	bpfile += '\t'.join([ str(i) for i in bpfile_L2 ]) + '\n'
-	bpfile += '\t'.join([ str(i) for i in bpfile_L3 ]) + '\n'
-	bpfile += '\t'.join([ str(i) for i in bpfile_L4 ]) + '\n'
-	bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
-	bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
+		bpfile = bpfile_L1 + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L2 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L3 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L4 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
 
-	outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
-	outfile.write(bpfile)
-	outfile.close()
+		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
+		outfile.write(bpfile)
+		outfile.close()
+else: # if there is an outgroup
+	# For coding loci
+	if region == 'coding':
+		output_info = "locusName\tL_including_N\tLsyno\tnSynSegSite\tnsamA\tnsamB\tmutation_scalar\n"
+		outfile_info = open('ABC_{0}_{1}/{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
+		outfile_info.write(output_info)
+		for locus_i in align['L'].keys():
+			if locus_i in consensus:
+				geneName = locus_i
+				
+				nA = len(align['align'][nameA][locus_i]['id'])
+				nB = len(align['align'][nameB][locus_i]['id'])
+				
+				L = align['L'][locus_i] 
+				interspe = [] # contains the interspecific alignment
+				interspeName = [] # contains the id of sequences in the interspecific alignment
+				for i in range(nA):
+					interspe.append(align['align'][nameA][locus_i]['seq'][i])
+					interspeName.append(align['align'][nameA][locus_i]['id'][i])
+				for i in range(nB):
+					interspe.append(align['align'][nameB][locus_i]['seq'][i])
+					interspeName.append(align['align'][nameB][locus_i]['id'][i])
+
+				nSites = 0 # total number of synonymous sites within the sequence, computed using codonTable
+				nSynSegSite = 0 # number of synonymous segregating sites among the nSites
+				positions = [] # list of synonymous polymorphic positions: doesn't correspond to the SNP position, but to the first codon position
+				msStyle = [] # contains the msStyle format
+				for ind in range(nA):
+					msStyle.append([])
+				for ind in range(nB):
+					msStyle.append([])
+
+				# loop over codons:
+				for pos in range(L)[::3]:
+					alignmentOfCodons = [] # set of codons in the alignment, starting at the position 'pos1'
+					codon_outgroup = consensus[locus_i][pos:(pos+3)]
+					# loop over individuals:
+					# get all codons in the alignment
+					for ind in range(nA + nB):
+						pos1 = interspe[ind][pos]
+						pos2 = interspe[ind][pos + 1]
+						pos3 = interspe[ind][pos + 2]
+						base = pos1 + pos2 + pos3 
+						alignmentOfCodons.append(base)
+					
+					polyMcodons = list(set(alignmentOfCodons)) # list of codons found in the alignment
+					
+					nCodons = 0
+					nCodons = len(polyMcodons)
+					testN = False # False if no codon with 'N'; True if a 'N' is found in at least one codon for one individual
+					testStopCodon = False # False if no stop codon was found; True if a stop codon was found
+					for i in polyMcodons: # loop to test for some 'N'
+						if 'N' in i:
+							testN = True
+						if i not in codonTable:
+							testStopCodon = True
+					
+					# if: 1) a maximum of 2 polymorphic codons, and, 2) no codon with 'N', and, 3) all codons effectively code for an amino acid
+					if nCodons <= 2 and codon_outgroup in polyMcodons and testN==False and testStopCodon==False: 
+						nSites_pos = 0.0
+						for i in alignmentOfCodons:
+							nSites_pos += codonTable[i]['nS']
+						nSites += nSites_pos/len(alignmentOfCodons)
+						
+						# if two codons --> there is a polymorphism
+						if nCodons == 2:
+							alignmentOfAminoAcids = []
+							for i in alignmentOfCodons:
+								alignmentOfAminoAcids.append(codonTable[i]['aa'])
+							setOfAminoAcids = list(set(alignmentOfAminoAcids))
+							
+							# if two codons but one amino acids --> synonymous polymorphism
+							if len(setOfAminoAcids) == 1:
+								nSynSegSite += 1
+								positions.append(pos) # positions: list of first codon position of polymorphic synonymous codons
+								#ancestralAllele = polyMcodons[0] # in absence of outgroup --> the ancestral allele is the first in the alignement
+								#derivedAllele = polyMcodons[1] # without outgroup --> the derived allele is the one who is not the first...
+								ancestralAllele = codon_outgroup # in absence of outgroup --> the ancestral allele is the first in the alignement
+								derivedAllele = polyMcodons[abs(1-polyMcodons.index(codon_outgroup))] # without outgroup --> the derived allele is the one who is not the first...
+								for i in range(nA + nB):
+									if alignmentOfCodons[i] == ancestralAllele:
+										msStyle[i].append('0')
+									if alignmentOfCodons[i] == derivedAllele:
+										msStyle[i].append('1')
+
+				if nSites >= Lmin: # if the locus is big enough to be considered
+					# ms_like output files
+					locus_ms = ''
+					locus_ms = locus_ms + "//{0}\n".format(geneName)
+					locus_ms = locus_ms + "segsites: {0}\n".format(int(nSynSegSite))
+					if nSynSegSite != 0:
+						locus_ms += "positions: {0}\n".format( " ".join([ str(round((1.0*i)/L, 4)) for i in positions ]))
+						for i in msStyle:
+							locus_ms = locus_ms + "".join( [ str(j) for j in i ] ) + "\n"
+					
+					outfile_ms.write(locus_ms + '\n')
+					
+					bpfile_L2.append(int(ceil(nSites)))
+					bpfile_L3.append(nA)
+					bpfile_L4.append(nB)
+					bpfile_L5.append(4*Nref*mu*nSites*scalar[locus_i])
+					bpfile_L6.append(4*Nref*mu*nSites*rho_over_theta*scalar[locus_i])
+						
+					# informations about locus
+					res = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(geneName, L, nSites, nSynSegSite, nA, nB, scalar[locus_i])
+					outfile_info.write(res)
+					
+				#	res = ""
+				#	for i in range(len(interspe)):
+				#		res += ">{0}\n{1}\n".format(interspeName[i], interspe[i])
+				#	outfile = open('{0}.fas'.format(geneName), "w")
+				#	outfile.write(res)
+				#	outfile.close()
+		outfile_ms.close()
+		outfile_info.close()
+
+		bpfile = bpfile_L1 + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L2 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L3 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L4 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
+
+		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
+		outfile.write(bpfile)
+		outfile.close()
+	# For coding loci
+	if region == 'noncoding':
+		output_info = "locusName\tL_including_N\tL\tnSegSite\tnsamA\tnsamB\tmutation_scalar\n"
+		outfile_info = open('ABC_{0}_{1}/{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
+		outfile_info.write(output_info)
+		for locus_i in align['L'].keys():
+			if locus_i in consensus:
+				geneName = locus_i
+				
+				nA = len(align['align'][nameA][locus_i]['id'])
+				nB = len(align['align'][nameB][locus_i]['id'])
+				
+				L = align['L'][locus_i] 
+				interspe = [] # contains the interspecific alignment
+				interspeName = [] # contains the id of sequences in the interspecific alignment
+				for i in range(nA):
+					interspe.append(align['align'][nameA][locus_i]['seq'][i])
+					interspeName.append(align['align'][nameA][locus_i]['id'][i])
+				for i in range(nB):
+					interspe.append(align['align'][nameB][locus_i]['seq'][i])
+					interspeName.append(align['align'][nameB][locus_i]['id'][i])
+
+				nSites = 0 # total number of synonymous sites within the sequence, computed using codonTable
+				nSynSegSite = 0 # number of synonymous segregating sites among the nSites
+				positions = [] # list of synonymous polymorphic positions: doesn't correspond to the SNP position, but to the first codon position
+				msStyle = [] # contains the msStyle format
+				for ind in range(nA):
+					msStyle.append([])
+				for ind in range(nB):
+					msStyle.append([])
+
+				# loop over codons:
+				for pos in range(L):
+					alignmentOfCodons = [] # set of codons in the alignment, starting at the position 'pos1'
+					codon_outgroup = consensus[locus_i][pos:(pos+3)]
+					# loop over individuals:
+					# get all codons in the alignment
+					for ind in range(nA + nB):
+						pos1 = interspe[ind][pos]
+						pos2 = interspe[ind][pos + 1]
+						pos3 = interspe[ind][pos + 2]
+						base = pos1 + pos2 + pos3 
+						alignmentOfCodons.append(base)
+					
+					polyMcodons = list(set(alignmentOfCodons)) # list of codons found in the alignment
+					
+					nCodons = 0
+					nCodons = len(polyMcodons)
+					testN = False # False if no codon with 'N'; True if a 'N' is found in at least one codon for one individual
+					testStopCodon = False # False if no stop codon was found; True if a stop codon was found
+					for i in polyMcodons: # loop to test for some 'N'
+						if 'N' in i:
+							testN = True
+						if i not in codonTable:
+							testStopCodon = True
+					
+					# if: 1) a maximum of 2 polymorphic codons, and, 2) no codon with 'N', and, 3) all codons effectively code for an amino acid
+					if nCodons <= 2 and codon_outgroup in polyMcodons and testN==False and testStopCodon==False: 
+						nSites_pos = 0.0
+						for i in alignmentOfCodons:
+							nSites_pos += codonTable[i]['nS']
+						nSites += nSites_pos/len(alignmentOfCodons)
+						
+						# if two codons --> there is a polymorphism
+						if nCodons == 2:
+							alignmentOfAminoAcids = []
+							for i in alignmentOfCodons:
+								alignmentOfAminoAcids.append(codonTable[i]['aa'])
+							setOfAminoAcids = list(set(alignmentOfAminoAcids))
+							
+							# if two codons but one amino acids --> synonymous polymorphism
+							if len(setOfAminoAcids) == 1:
+								nSynSegSite += 1
+								positions.append(pos) # positions: list of first codon position of polymorphic synonymous codons
+								#ancestralAllele = polyMcodons[0] # in absence of outgroup --> the ancestral allele is the first in the alignement
+								#derivedAllele = polyMcodons[1] # without outgroup --> the derived allele is the one who is not the first...
+								ancestralAllele = codon_outgroup # in absence of outgroup --> the ancestral allele is the first in the alignement
+								derivedAllele = polyMcodons[abs(1-polyMcodons.index(codon_outgroup))] # without outgroup --> the derived allele is the one who is not the first...
+								for i in range(nA + nB):
+									if alignmentOfCodons[i] == ancestralAllele:
+										msStyle[i].append('0')
+									if alignmentOfCodons[i] == derivedAllele:
+										msStyle[i].append('1')
+
+				if nSites >= Lmin: # if the locus is big enough to be considered
+					# ms_like output files
+					locus_ms = ''
+					locus_ms = locus_ms + "//{0}\n".format(geneName)
+					locus_ms = locus_ms + "segsites: {0}\n".format(int(nSynSegSite))
+					if nSynSegSite != 0:
+						locus_ms += "positions: {0}\n".format( " ".join([ str(round((1.0*i)/L, 4)) for i in positions ]))
+						for i in msStyle:
+							locus_ms = locus_ms + "".join( [ str(j) for j in i ] ) + "\n"
+					
+					outfile_ms.write(locus_ms + '\n')
+					
+					bpfile_L2.append(int(ceil(nSites)))
+					bpfile_L3.append(nA)
+					bpfile_L4.append(nB)
+					bpfile_L5.append(4*Nref*mu*nSites*scalar[locus_i])
+					bpfile_L6.append(4*Nref*mu*nSites*rho_over_theta*scalar[locus_i])
+						
+					# informations about locus
+					res = "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(geneName, L, nSites, nSegSite, nA, nB, scalar[locus_i])
+					outfile_info.write(res)
+					
+				#	res = ""
+				#	for i in range(len(interspe)):
+				#		res += ">{0}\n{1}\n".format(interspeName[i], interspe[i])
+				#	outfile = open('{0}.fas'.format(geneName), "w")
+				#	outfile.write(res)
+				#	outfile.close()
+		outfile_ms.close()
+		outfile_info.close()
+
+		bpfile = bpfile_L1 + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L2 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L3 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L4 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
+		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
+
+		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
+		outfile.write(bpfile)
+		outfile.close()
 
 
 # compute the summary statistics for ABC
-commande = 'cat ABC_{0}_{1}/{0}_{1}.ms | mscalc_2pop_observedDataset.py ABC_{0}_{1}'.format(nameA, nameB)
+if nameOut == 'NA':
+	use_sfs = 0
+else:
+	use_sfs = 1
+commande = 'cat ABC_{0}_{1}/{0}_{1}.ms | mscalc_2pop_observedDataset.py ABC_{0}_{1} {2}'.format(nameA, nameB, use_sfs)
 os.system(commande)
 
 # remove the useless ms file

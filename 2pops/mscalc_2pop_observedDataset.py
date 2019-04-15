@@ -2,7 +2,8 @@
 import os
 import sys
 project_name = sys.argv[1] # the name of the directory containing the project 
-
+outgroup = int(sys.argv[2]) # if 0: no outgroup, and so, no SFS. If 1: outgroup, and so, SFS
+print("outgroup is {0}".format(outgroup))
 def cr_sqrt(x):
 	# returns the square root of a variable x
 	if x == 0.0:
@@ -254,13 +255,15 @@ for i in range(nBins_spA):
 
 
 # ms' output file
-outfile_jsfs = open("{0}/ABCjsfs.txt".format(project_name), "w")
+if outgroup == 1:
+	outfile_jsfs = open("{0}/ABCjsfs.txt".format(project_name), "w")
 header = ''
 for i in range(nBins_spA):
 	for j in range(nBins_spB):
 		header += 'fA{0}_fB{1}\t'.format(i, j)
 header = header.strip() + '\n'
-outfile_jsfs.write(header)
+if outgroup == 1:
+	outfile_jsfs.write(header)
 
 outfile = open("{0}/ABCstat_global.txt".format(project_name), "w")
 outfile_loci = open("{0}/ABCstat_loci.txt".format(project_name), "w")
@@ -596,9 +599,11 @@ for line in sys.stdin: # read the ms's output from the stdin
 			for i_spB in range(nBins_spB):
 				vector_sfs.append(sfs[i_spA][i_spB])
 		vector_sfs = '\t'.join( [ str(fifj) for fifj in vector_sfs ]) + '\n'
-		outfile_jsfs.write(vector_sfs)
+		if outgroup == 1:
+			outfile_jsfs.write(vector_sfs)
 		
 infile.close()
-outfile_jsfs.close()
+if outgroup == 1:
+	outfile_jsfs.close()
 outfile.close()
 
