@@ -9,6 +9,7 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'Nref'){ Nref = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'ntree'){ ntree = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'ncores'){ ncores = as.integer(tmp[[1]][2]) }
+	if(tmp[[1]][1] == 'outgroup'){ outgroup = as.integer(tmp[[1]][2]) } # 0: no outgroup, no SFS used. 1: outgroup, SFS used
 }
 #nameA = 'txn'
 #nameB = 'ama'
@@ -24,9 +25,13 @@ outfile = paste('ABC_', nameA, '_', nameB, '/report_', nameA, '_', nameB, '.txt'
 obs_ss = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_global.txt', sep=''), h=T)
 obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
 obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
-obs_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/ABCjsfs.txt', sep=''), h=T)
+if( outgroup == 1 ){
+	obs_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/ABCjsfs.txt', sep=''), h=T)
+	ss_obs = cbind(obs_ss, obs_sfs)
+}else{
+	ss_obs = obs_ss
+}
 
-ss_obs = cbind(obs_ss, obs_sfs)
 
 # simulated data
 models = c('SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N', 'AM_1M_1N', 'AM_1M_2N', 'AM_2M_1N', 'AM_2M_2N', 'IM_1M_1N', 'IM_1M_2N', 'IM_2M_1N', 'IM_2M_2N', 'SI_1N', 'SI_2N')
@@ -43,9 +48,13 @@ for(m in models){
 		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCstat.txt', sep=''), h=T)
 		tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
 		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
-		tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCjsfs.txt', sep=''), h=T)
-		tmp = cbind(tmp_ss, tmp_sfs)
-		ss_sim_tmp = rbind(ss_sim_tmp, tmp)
+		if( outgroup == 1 ){
+			tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCjsfs.txt', sep=''), h=T)
+			tmp = cbind(tmp_ss, tmp_sfs)
+			ss_sim_tmp = rbind(ss_sim_tmp, tmp)
+		}else{
+			ss_sim_tmp = rbind(ss_sim_tmp, tmp_ss)
+		}
 		
 		# params
 		tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/priorfile.txt', sep=''), h=T)

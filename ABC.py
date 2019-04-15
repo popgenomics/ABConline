@@ -27,7 +27,6 @@ args['nMin'] = '' # minimum number of individuals within a species. example: 10
 args['Nref'] = '' # size of the reference population, arbitrary fixed. i.e: Nref=100000
 args['mu'] = '' # mutation rate by bp and by generation. example: 0.00000002
 args['rho_over_theta'] = '' # ratio of the recombination rate over mutation. example: 1
-args['outgroup'] = '' # name of the outgroup (optional)
 
 # for submit_simulations.py
 args['nSimulations'] = ''
@@ -69,6 +68,10 @@ if args['nspecies'] == '4':
 		print('\n\tERROR: The number of arguments is {0} while {1} are expected\n'.format(nArgs, 15))
 		sys.exit(help)
 
+if args['outgroup'] != 'NA':
+	use_sfs = 1
+else:
+	use_sfs = 0
 ### END OF DATA CURATION ###
 
 
@@ -101,7 +104,7 @@ if args['nspecies'] == '2':
 	# multilocus demographic inferences
 	# model_comp_2pop.R
 	print('\n\tDemographic inferences')
-	commande = 'model_comp_2pop.R nameA={0} nameB={1} nreps={2} Nref={3} ntree={4} ncores={5}'.format(args['nameA'], args['nameB'], nCPU, args['Nref'], ntree, ncores)
+	commande = 'model_comp_2pop.R nameA={0} nameB={1} nreps={2} Nref={3} ntree={4} ncores={5} outgroup={6}'.format(args['nameA'], args['nameB'], nCPU, args['Nref'], ntree, ncores, use_sfs)
 	print(commande)
 	os.system(commande)
 
