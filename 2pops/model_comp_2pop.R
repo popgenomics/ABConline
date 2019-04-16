@@ -35,10 +35,14 @@ if( outgroup == 1 ){
 	ss_obs = cbind(obs_ss, obs_sfs)
 	
 	sfs=matrix(as.numeric(obs_sfs), byrow=T, ncol=nMin+1)
-	colnames(sfs) = paste('f', spB, 0:nMin, sep='_')
-	rownames(sfs) = paste('f', spA, 0:nMin, sep='_')
+	colnames(sfs) = paste('f', nameB, 0:nMin, sep='_')
+	rownames(sfs) = paste('f', nameA, 0:nMin, sep='_')
+	write.table(sfs, paste('ABC_', nameA, '_', nameB, '/sfs_table.txt', sep=''), col.names=T, row.names=T, sep='\t', quote=F)
+	
 	sfs[1,2]=0; sfs[2,1]=0 # remove the singletons, ONLY FOR THE REPRESENTATION
-	image(log10(sfs), col=coul(100), xlab = paste('frequency in ', spA, sep=''), ylab = paste('frequency in ', spB, sep=''), cex=1.5, cex.axis=1.5, cex.lab=1.5)
+	pdf(paste('ABC_', nameA, '_', nameB, '/sfs_plot.pdf', sep=''), bg="white")
+	image(log10(sfs), col=coul(100), xlab = paste('frequency in ', nameA, sep=''), ylab = paste('frequency in ', nameB, sep=''), cex=1.5, cex.axis=1.5, cex.lab=1.5)
+	dev.off()
 }else{
 	ss_obs = obs_ss
 }
@@ -58,9 +62,7 @@ for(m in models){
 		# statistics
 		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCstat.txt', sep=''), h=T)
 		tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
-		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
-		if( outgroup == 1 ){
-			tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCjsfs.txt', sep=''), h=T)
+		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))] if( outgroup == 1 ){ tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCjsfs.txt', sep=''), h=T)
 			tmp = cbind(tmp_ss, tmp_sfs)
 			ss_sim_tmp = rbind(ss_sim_tmp, tmp)
 		}else{
