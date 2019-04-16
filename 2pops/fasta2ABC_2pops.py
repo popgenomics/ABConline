@@ -137,6 +137,20 @@ def fasta2list(fastaFile, nameA, nameB, nameOut, nMin, max_N_tolerated):
 			else:
 				L[i] = len(res[nameA][i]['seq'][0]) - 3 # remove the last 3 bases to excluse final stop codon
 				L[i] = trunc2triplets(L[i]) # convert the remaining length into a multiple of 3
+				# sub sample nMin sequences from species A
+				sub_sample_A = random.sample(range(nsam[i][nameA]), nMin)
+				sub_seq_A = [ res[nameA][i]['seq'][seq] for seq in sub_sample_A ]
+				sub_id_A = [ res[nameA][i]['id'][seq] for seq in sub_sample_A ]
+				res[nameA][i]['seq'] = sub_seq_A
+				res[nameA][i]['id'] = sub_id_A
+				nsam[i][nameA] = nMin
+				# sub sample nMin sequences from species B
+				sub_sample_B = random.sample(range(nsam[i][nameB]), nMin)
+				sub_seq_B = [ res[nameB][i]['seq'][seq] for seq in sub_sample_B ]
+				sub_id_B = [ res[nameB][i]['id'][seq] for seq in sub_sample_B ]
+				res[nameB][i]['seq'] = sub_seq_B
+				res[nameB][i]['id'] = sub_id_B
+				nsam[i][nameB] = nMin
 		else:
 			if nsam[i][nameA] < nMin or nsam[i][nameB] < nMin or nsam[i][nameOut]==0:
 				for j in res.keys(): # loop over species
@@ -145,6 +159,20 @@ def fasta2list(fastaFile, nameA, nameB, nameOut, nMin, max_N_tolerated):
 			else:
 				L[i] = len(res[nameA][i]['seq'][0]) - 3 # remove the last 3 bases to excluse final stop codon
 				L[i] = trunc2triplets(L[i]) # convert the remaining length into a multiple of 3
+				# sub sample nMin sequences from species A
+				sub_sample_A = random.sample(range(nsam[i][nameA]), nMin)
+				sub_seq_A = [ res[nameA][i]['seq'][seq] for seq in sub_sample_A ]
+				sub_id_A = [ res[nameA][i]['id'][seq] for seq in sub_sample_A ]
+				res[nameA][i]['seq'] = sub_seq_A
+				res[nameA][i]['id'] = sub_id_A
+				nsam[i][nameA] = nMin
+				# sub sample nMin sequences from species B
+				sub_sample_B = random.sample(range(nsam[i][nameB]), nMin)
+				sub_seq_B = [ res[nameB][i]['seq'][seq] for seq in sub_sample_B ]
+				sub_id_B = [ res[nameB][i]['id'][seq] for seq in sub_sample_B ]
+				res[nameB][i]['seq'] = sub_seq_B
+				res[nameB][i]['id'] = sub_id_B
+				nsam[i][nameB] = nMin
 	return ({'align': res, 'L': L})
 
 

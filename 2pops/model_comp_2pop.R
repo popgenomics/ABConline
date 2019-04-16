@@ -5,6 +5,7 @@ for(i in commandArgs()){
 	tmp = strsplit(i, '=')
 	if(tmp[[1]][1] == 'nameA'){ nameA = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nameB'){ nameB = tmp[[1]][2] }
+	if(tmp[[1]][1] == 'nMin'){ nMin = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'nreps'){ nreps = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'Nref'){ Nref = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'ntree'){ ntree = as.integer(tmp[[1]][2]) }
@@ -21,6 +22,10 @@ nsims_monolocus = 10000 # number of monolocus simulations
 
 outfile = paste('ABC_', nameA, '_', nameB, '/report_', nameA, '_', nameB, '.txt', sep='')
 
+# colors
+coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
+coul = colorRampPalette(coul)
+
 # observed data
 obs_ss = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_global.txt', sep=''), h=T)
 obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
@@ -28,6 +33,12 @@ obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 if( outgroup == 1 ){
 	obs_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/ABCjsfs.txt', sep=''), h=T)
 	ss_obs = cbind(obs_ss, obs_sfs)
+	
+	sfs=matrix(as.numeric(obs_sfs), byrow=T, ncol=nMin+1)
+	colnames(sfs) = paste('f', spB, 0:nMin, sep='_')
+	rownames(sfs) = paste('f', spA, 0:nMin, sep='_')
+	sfs[1,2]=0; sfs[2,1]=0 # remove the singletons, ONLY FOR THE REPRESENTATION
+	image(log10(sfs), col=coul(100), xlab = paste('frequency in ', spA, sep=''), ylab = paste('frequency in ', spB, sep=''), cex=1.5, cex.axis=1.5, cex.lab=1.5)
 }else{
 	ss_obs = obs_ss
 }
