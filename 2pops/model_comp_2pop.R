@@ -62,7 +62,8 @@ for(m in models){
 		# statistics
 		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCstat.txt', sep=''), h=T)
 		tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
-		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))] if( outgroup == 1 ){ tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCjsfs.txt', sep=''), h=T)
+		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
+		if( outgroup == 1 ){ tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCjsfs.txt', sep=''), h=T)
 			tmp = cbind(tmp_ss, tmp_sfs)
 			ss_sim_tmp = rbind(ss_sim_tmp, tmp)
 		}else{
