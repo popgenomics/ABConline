@@ -5,9 +5,8 @@ import os
 # Hard-coded parameters
 # number of CPU used to simulate a given model:
 nCPU = 20
-# number of CPU used to run the random forest:
-ncores = 6
-# number of tress for the random forest
+
+# number of trees for the random forest
 ntree = 1000
 
 # Parameters provided by users
@@ -104,7 +103,7 @@ if args['nspecies'] == '2':
 	# multilocus demographic inferences
 	# model_comp_2pop.R
 	print('\n\tDemographic inferences')
-	commande = 'model_comp_2pop.R nameA={0} nameB={1} nMin={2} nreps={3} Nref={4} ntree={5} ncores={6} outgroup={7}'.format(args['nameA'], args['nameB'], args['nMin'], nCPU, args['Nref'], ntree, ncores, use_sfs)
+	commande = 'model_comp_2pop.R nameA={0} nameB={1} nMin={2} nCPU={3} Nref={4} ntree={5} outgroup={6}'.format(args['nameA'], args['nameB'], args['nMin'], nCPU, args['Nref'], ntree, use_sfs)
 	#print(commande)
 	os.system(commande)
 
@@ -117,8 +116,8 @@ if args['nspecies'] == '2':
         # clean the space
 	print('\n\tClean the space')
         commande = 'rm -rf ABC_{0}_{1}'.format(args['nameA'], args['nameB'])
-	#print(commande)
-        os.system(commande)
+	print(commande)
+        #os.system(commande)
 print('\n\tEND OF THE ABC ANALYSIS\n')
 
 

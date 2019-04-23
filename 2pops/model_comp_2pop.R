@@ -188,4 +188,8 @@ write.table(t(as.matrix(predicted_model_Mhomo_Mhetero$vote, ncol=1)), outfile, a
 source('/home/croux/Documents/ABConline/2pops/model_comp_2pop.R')
 best_model = predicted_model$allocation
 posterior = get_posterior(nameA, nameB, nCPU, best_model, nSimulations=1e6)
+write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
+for(i in 1:ncol(posterior)){
+	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
+}
 

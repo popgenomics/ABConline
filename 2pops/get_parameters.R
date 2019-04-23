@@ -301,7 +301,7 @@ get_posterior<-function(nameA, nameB, nCPU, model, nSimulations=1e6){
 	transf_obs = rep("logit", ncol(params_sim[[model]]))
 	bb = rbind(apply(x, MARGIN=2, FUN="min"), apply(x, MARGIN=2, FUN="max"))
 	#res2 = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=1000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=10*ncol(x), trace=T)
-	res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=20000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
+	res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=2000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
 
 	posterior = res$x
 	colnames(posterior) = colnames(params_sim[[model]])
