@@ -233,7 +233,7 @@ babar<-function(a,b,space=2,breaks="auto",AL=0.5,nameA="A",nameB="B",xl="",yl=""
 #}
 
 
-get_posterior<-function(nameA, nameB, nCPU, model, nSimulations=1e6){
+get_posterior<-function(nameA, nameB, nCPU, model, nSimulations=980000){
 	###################
 	# get observed data
 	# observed data
@@ -254,7 +254,7 @@ get_posterior<-function(nameA, nameB, nCPU, model, nSimulations=1e6){
 	#################
 	# run simulations
 	nMultilocus = nSimulations / nCPU
-	commande = paste('submit_simulations_2pop.py', Multilocus, nCPU, model, nameA, nameB, sep=' ')
+	commande = paste('module load conda; module load pypy/2.7-5.10.0; module load python/2.7; source activate R_env; submit_simulations_2pop.py', nMultilocus, nCPU, model, nameA, nameB, sep=' ')
 	system(commande)
 
 
@@ -272,7 +272,7 @@ get_posterior<-function(nameA, nameB, nCPU, model, nSimulations=1e6){
 	ss_sim_tmp = NULL
 	params_sim_tmp = NULL
 
-	for(rep in seq(0, nMultilocus-1, 1)){
+	for(rep in seq(0, nCPU-1, 1)){
 		# statistics
 		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', model, '_', rep, '_beta/ABCstat.txt', sep=''), h=T)
 		tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]

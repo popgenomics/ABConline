@@ -4,7 +4,7 @@ import os
 
 # Hard-coded parameters
 # number of CPU used to simulate a given model:
-nCPU = 20
+nCPU = 28
 
 # number of trees for the random forest
 ntree = 1000
@@ -79,13 +79,13 @@ if args['nspecies'] == '2':
 	# fasta2ABC_2pops.py
 	print('\tPreparation of input files')
 	commande = 'fasta2ABC_2pops.py {0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10}'.format(args['infile'], args['nameA'], args['nameB'], args['outgroup'], args['region'], args['Lmin'], args['max_N_tolerated'], args['nMin'], args['Nref'], args['mu'], args['rho_over_theta'])
-	#print(commande)
+	print(commande)
 	os.system(commande)
 	
 	# recombination rates	
 	print('\n\tRecombination rates')
 	commande = 'RNAseqFGT {0} ABC_{1}_{2}/results_recombination.txt'.format(args['infile'], args['nameA'], args['nameB'])
-	#print(commande)
+	print(commande)
 	os.system(commande)
 		
 	# submit simulations
@@ -97,25 +97,25 @@ if args['nspecies'] == '2':
 	print('\n\tSimulations')
 	for model in models:
 		commande = 'submit_simulations_2pop.py {0} {1} {2} {3} {4}'.format(nMultilocus, nCPU, model, args['nameA'], args['nameB'])
-		#print(commande)
+		print(commande)
 		os.system(commande)
 
 	# multilocus demographic inferences
 	# model_comp_2pop.R
 	print('\n\tDemographic inferences')
 	commande = 'model_comp_2pop.R nameA={0} nameB={1} nMin={2} nCPU={3} Nref={4} ntree={5} outgroup={6}'.format(args['nameA'], args['nameB'], args['nMin'], nCPU, args['Nref'], ntree, use_sfs)
-	#print(commande)
+	print(commande)
 	os.system(commande)
 
         # gather the results
 	print('\n\tArchive the results')
         commande = 'tar -czvf results_{0}_{1}.tar.gz ABC_{0}_{1}/ABC* ABC_{0}_{1}/*{0}_{1}* ABC_{0}_{1}/results*'.format(args['nameA'], args['nameB'])
-	#print(commande)
+	print(commande)
         os.system(commande)
 
         # clean the space
 	print('\n\tClean the space')
-        commande = 'rm -rf ABC_{0}_{1}'.format(args['nameA'], args['nameB'])
+#        commande = 'rm -rf ABC_{0}_{1}'.format(args['nameA'], args['nameB'])
 	print(commande)
         #os.system(commande)
 print('\n\tEND OF THE ABC ANALYSIS\n')

@@ -1,4 +1,5 @@
-#!/usr/local/bin/pypy
+#!/shared/mfs/data/software/miniconda/envs/pypy-2.7-5.10.0/bin/pypy
+# #!/usr/local/bin/pypy
 import os
 import sys
 project_name = sys.argv[1] # the name of the directory containing the project 

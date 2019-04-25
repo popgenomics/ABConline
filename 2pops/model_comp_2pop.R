@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/shared/home/croux/.conda/envs/R_env/bin/Rscript
 library('abcrf')
 # model_comp_2pop.R nameA=txn nameB=ama nCPU=20 Nref=100000 ntree=1000 
 for(i in commandArgs()){
@@ -146,8 +146,8 @@ for( i in c('SC_1M_2N', 'SC_2M_2N', 'AM_1M_2N', 'AM_2M_2N', 'IM_1M_2N', 'IM_2M_2
 }
 
 modIndexes = c(rep('Nhomo', nrow(Nhomo)), rep('Nhetero', nrow(Nhetero)))
-mod_Nhomo_Nhetero = abcrf(modIndexes~., data = data.frame(modIndexes, all_models_sim[, -ss_2_remove]), ntree = ntree, paral = T, ncores = nCPU)
-predicted_model_Nhomo_Nhetero = predict(mod_Nhomo_Nhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, mod_Nhomo_Nhetero[, -ss_2_remove]), ntree = ntree, paral = T, ncores = nCPU)
+mod_Nhomo_Nhetero = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(Nhomo, Nhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = nCPU)
+predicted_model_Nhomo_Nhetero = predict(mod_Nhomo_Nhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Nhomo, Nhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = nCPU)
 
 write('\n#####\n\nMODEL COMPARISON #3: 2 models (Nhomo versus Nhetero)', outfile, append=T)
 write('#confusion matrix:', outfile, append=T)
@@ -160,19 +160,19 @@ write.table(t(as.matrix(predicted_model_Nhomo_Nhetero$vote, ncol=1)), outfile, a
 
 
 # model comparison #4 --> two models: mig homo versus mig hetero
-Mhomo = MULL
+Mhomo = NULL
 for( i in c('SC_1M_1N', 'SC_1M_2N', 'IM_1M_1N', 'IM_1M_2N')){
 	Mhomo = rbind(Mhomo, ss_sim[[i]])
 }
 
-Mhetero = MULL
+Mhetero = NULL
 for( i in c('SC_2M_1N', 'SC_2M_2N', 'IM_2M_1N', 'IM_2M_2N')){
 	Mhetero = rbind(Mhetero, ss_sim[[i]])
 }
 
 modIndexes = c(rep('Mhomo', nrow(Mhomo)), rep('Mhetero', nrow(Mhetero)))
-mod_Mhomo_Mhetero = abcrf(modIndexes~., data = data.frame(modIndexes, all_models_sim[, -ss_2_remove]), ntree = ntree, paral = T, ncores = nCPU)
-predicted_model_Mhomo_Mhetero = predict(mod_Mhomo_Mhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, mod_Mhomo_Mhetero[, -ss_2_remove]), ntree = ntree, paral = T, ncores = nCPU)
+mod_Mhomo_Mhetero = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = nCPU)
+predicted_model_Mhomo_Mhetero = predict(mod_Mhomo_Mhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = nCPU)
 
 write('\n#####\n\nMODEL COMPARISON #4: 2 models (Mhomo versus Mhetero)', outfile, append=T)
 write('#confusion matrix:', outfile, append=T)
@@ -185,11 +185,35 @@ write.table(t(as.matrix(predicted_model_Mhomo_Mhetero$vote, ncol=1)), outfile, a
 
 ######################################################
 # parameters of the best model, IM_2M_2N and SI_2N
-source('/home/croux/Documents/ABConline/2pops/model_comp_2pop.R')
+nSimulations = 980000
+source('/shared/home/croux/softwares/ABConline/2pops/get_parameters.R')
 best_model = predicted_model$allocation
-posterior = get_posterior(nameA, nameB, nCPU, best_model, nSimulations=1e6)
+write(paste('\n#####\n\nparameters of the best model: ', best_model, sep=''), outfile, append=T)
+posterior = get_posterior(nameA, nameB, nCPU, best_model, nSimulations=nSimulations)
 write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
 for(i in 1:ncol(posterior)){
 	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
+}
+
+# IM_2M_2N
+model_tmp = 'IM_2M_2N'
+if(best_model!=model_tmp){
+	write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
+	posterior = get_posterior(nameA, nameB, nCPU, model_tmp, nSimulations=nSimulations)
+	write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
+	for(i in 1:ncol(posterior)){
+		write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
+	}
+}
+
+# SI_2N
+model_tmp = 'SI_2N'
+if(best_model!=model_tmp){
+	write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
+	posterior = get_posterior(nameA, nameB, nCPU, model_tmp, nSimulations=nSimulations)
+	write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
+	for(i in 1:ncol(posterior)){
+		write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
+	}
 }
 
