@@ -60,10 +60,10 @@ for(m in models){
 	params_sim_tmp = NULL
 	for(rep in seq(0, nCPU-1, 1)){
 		# statistics
-		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCstat.txt', sep=''), h=T)
+		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '/ABCstat.txt', sep=''), h=T)
 		tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
 		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
-		if( outgroup == 1 ){ tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/ABCjsfs.txt', sep=''), h=T)
+		if( outgroup == 1 ){ tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '/ABCjsfs.txt', sep=''), h=T)
 			tmp = cbind(tmp_ss, tmp_sfs)
 			ss_sim_tmp = rbind(ss_sim_tmp, tmp)
 		}else{
@@ -71,7 +71,7 @@ for(m in models){
 		}
 		
 		# params
-		tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '_beta/priorfile.txt', sep=''), h=T)
+		tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', m, '_', rep, '/priorfile.txt', sep=''), h=T)
 		params_sim_tmp = rbind(params_sim_tmp, tmp_params)
 	}
 	# statistics

@@ -52,9 +52,9 @@ if mscommand == "":
 
 outfile = open('{0}/bsub.txt'.format(path), 'w')
 for i in range(niterations):
-	tmp = "mkdir {0}/{1}_{2}_beta; ".format(path, model, i)
-	tmp += "cp {0}/bpfile {0}/{1}_{2}_beta; ".format(path, model, i)
-	tmp += "cd {0}/{1}_{2}_beta; ".format(path, model, i)
+	tmp = "mkdir {0}/{1}_{2}; ".format(path, model, i)
+	tmp += "cp {0}/bpfile {0}/{1}_{2}; ".format(path, model, i)
+	tmp += "cd {0}/{1}_{2}; ".format(path, model, i)
 #	tmp += "module load python/2.7.12; "
 #	tmp += "module load java; "
 	tmp += "priorgen_2pop.py {0} {1} | msnsam tbs {2} {3} | mscalc_2pop.py".format(model, nmultilocus, nmultilocus*nlocus, mscommand)

@@ -274,13 +274,13 @@ get_posterior<-function(nameA, nameB, nCPU, model, nSimulations=980000){
 
 	for(rep in seq(0, nCPU-1, 1)){
 		# statistics
-		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', model, '_', rep, '_beta/ABCstat.txt', sep=''), h=T)
+		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', model, '_', rep, '/ABCstat.txt', sep=''), h=T)
 		tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
 		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
 		ss_sim_tmp = rbind(ss_sim_tmp, tmp_ss)
 		
 		# params
-		tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', model, '_', rep, '_beta/priorfile.txt', sep=''), h=T)
+		tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', model, '_', rep, '/priorfile.txt', sep=''), h=T)
 		params_sim_tmp = rbind(params_sim_tmp, tmp_params)
 	}
 	# statistics
