@@ -1,5 +1,5 @@
-#!/shared/mfs/data/software/miniconda/envs/pypy-2.7-5.10.0/bin/pypy
-# #!/usr/bin/pypy
+#!/usr/bin/pypy
+# #!/shared/mfs/data/software/miniconda/envs/pypy-2.7-5.10.0/bin/pypy
 import sys
 import os
 from math import ceil
@@ -409,10 +409,14 @@ if nameOut == 'NA':
 		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
 		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
 
+		outfile = open('ABC_{0}_{1}/nLoci.txt'.format(nameA, nameB), 'w')
+		outfile.write('{0}'.format(len(bpfile_L2)))
+		outfile.close()
+
 		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
 		outfile.write(bpfile)
 		outfile.close()
-
+		
 	# For non coding loci
 	if region == 'noncoding':
 		output_info = "locusName\tL_including_N\tL\tnSegSite\tnsamA\tnsamB\n"
@@ -515,9 +519,14 @@ if nameOut == 'NA':
 		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
 		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
 
+		outfile = open('ABC_{0}_{1}/nLoci.txt'.format(nameA, nameB), 'w')
+		outfile.write('{0}'.format(len(bpfile_L2)))
+		outfile.close()
+		
 		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
 		outfile.write(bpfile)
 		outfile.close()
+		
 else: # if there is an outgroup
 	# For coding loci
 	if region == 'coding':
@@ -641,9 +650,14 @@ else: # if there is an outgroup
 		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
 		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
 
+		outfile = open('ABC_{0}_{1}/nLoci.txt'.format(nameA, nameB), 'w')
+		outfile.write('{0}'.format(len(bpfile_L2)))
+		outfile.close()
+		
 		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
 		outfile.write(bpfile)
 		outfile.close()
+	
 	# For coding loci
 	if region == 'noncoding':
 		output_info = "locusName\tL_including_N\tL\tnSegSite\tnsamA\tnsamB\tmutation_scalar\n"
@@ -766,6 +780,10 @@ else: # if there is an outgroup
 		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
 		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
 
+		outfile = open('ABC_{0}_{1}/nLoci.txt'.format(nameA, nameB), 'w')
+		outfile.write('{0}'.format(len(bpfile_L2)))
+		outfile.close()
+		
 		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
 		outfile.write(bpfile)
 		outfile.close()
@@ -781,5 +799,6 @@ os.system(commande)
 
 # remove the useless ms file
 commande = 'rm ABC_{0}_{1}/{0}_{1}.ms'.format(nameA, nameB)
-os.system(commande)
+#os.system(commande)
+
 

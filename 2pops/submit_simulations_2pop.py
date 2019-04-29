@@ -10,12 +10,12 @@ import time
 
 
 if len(sys.argv) != 6:
-	print("\n\tsubmit.py [nmultilocus] [niterations] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB]")
-	print("\n\tex: submit_simulations.py 10000 150 SI_1N flo mal\n")
+	print("\n\tsubmit_simulations_2pop.py [nmultilocus] [iteration] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB]")
+	print("\n\tex: submit_simulations_2pop.py 1000 2 SI_1N flo mal\n\tto simulate 1000 multilocus simulations at the second iteration") 
 	sys.exit(0)
 
 nmultilocus = int(sys.argv[1]) # 10000
-niterations = int(sys.argv[2]) # 150
+iteration = int(sys.argv[2]) # 2
 model = sys.argv[3]
 nameA = sys.argv[4] # name of the species A
 nameB = sys.argv[5] # name of the species B
@@ -50,18 +50,12 @@ if mscommand == "":
 	print("You specified a wrong model: SI_x, AM_x, AM_x or SC_x\n")
 	sys.exit()
 
-outfile = open('{0}/bsub.txt'.format(path), 'w')
-for i in range(niterations):
-	tmp = "mkdir {0}/{1}_{2}; ".format(path, model, i)
-	tmp += "cp {0}/bpfile {0}/{1}_{2}; ".format(path, model, i)
-	tmp += "cd {0}/{1}_{2}; ".format(path, model, i)
-#	tmp += "module load python/2.7.12; "
-#	tmp += "module load java; "
-	tmp += "priorgen_2pop.py {0} {1} | msnsam tbs {2} {3} | mscalc_2pop.py".format(model, nmultilocus, nmultilocus*nlocus, mscommand)
-	tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=24:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, i, tmp)
-#	os.system(tmp2) # to submit the job using slurm
-	outfile.write(tmp + '\n')
-outfile.close()
-
-os.system('bsub {0}/bsub.txt'.format(path))
+tmp = "mkdir {0}/{1}_{2}; ".format(path, model, iteration)
+tmp += "cp {0}/bpfile {0}/{1}_{2}; ".format(path, model, iteration)
+tmp += "cd {0}/{1}_{2}; ".format(path, model, iteration)
+#tmp += "module load python/2.7.12; "
+#tmp += "module load java; "
+tmp += "priorgen_2pop.py {0} {1} | msnsam tbs {2} {3} | mscalc_2pop.py".format(model, nmultilocus, nmultilocus*nlocus, mscommand)
+tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=02:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, iteration, tmp)
+os.system(tmp) # to submit the job using slurm
 

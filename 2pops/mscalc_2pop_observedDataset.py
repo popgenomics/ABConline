@@ -1,10 +1,10 @@
-#!/shared/mfs/data/software/miniconda/envs/pypy-2.7-5.10.0/bin/pypy
-# #!/usr/local/bin/pypy
+#!/usr/local/bin/pypy
+# #!/shared/mfs/data/software/miniconda/envs/pypy-2.7-5.10.0/bin/pypy
 import os
 import sys
 project_name = sys.argv[1] # the name of the directory containing the project 
 outgroup = int(sys.argv[2]) # if 0: no outgroup, and so, no SFS. If 1: outgroup, and so, SFS
-print("outgroup is {0}".format(outgroup))
+#print("outgroup is {0}".format(outgroup))
 def cr_sqrt(x):
 	# returns the square root of a variable x
 	if x == 0.0:
@@ -602,9 +602,12 @@ for line in sys.stdin: # read the ms's output from the stdin
 		vector_sfs = '\t'.join( [ str(fifj) for fifj in vector_sfs ]) + '\n'
 		if outgroup == 1:
 			outfile_jsfs.write(vector_sfs)
-		
-infile.close()
+
+outfile_loci.close()
 if outgroup == 1:
 	outfile_jsfs.close()
+
+infile.close()
+
 outfile.close()
 
