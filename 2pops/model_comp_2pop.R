@@ -19,6 +19,7 @@ for(i in commandArgs()){
 nsims_monolocus = 10000 # number of monolocus simulations
 
 outfile = paste('ABC_', nameA, '_', nameB, '/report_', nameA, '_', nameB, '.txt', sep='')
+outfile_best = paste('ABC_', nameA, '_', nameB, '/best_model.txt', sep='')
 
 # colors
 coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
@@ -113,6 +114,7 @@ write(paste('#proba best model among 14 models: ', predicted_model$post.prob, se
 write('\n#votes:', outfile, append=T)
 write.table(t(as.matrix(predicted_model$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
+write(predicted_model$allocation, outfile_best, append=F)
 
 
 # model comparison #2 --> two models: isolation versus migration
