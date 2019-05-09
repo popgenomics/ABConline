@@ -1,5 +1,5 @@
-#!/usr/local/bin/pypy
-# #!/shared/mfs/data/software/miniconda/envs/pypy-2.7-5.10.0/bin/pypy
+#!/shared/mfs/data/software/miniconda/envs/pypy-2.7-5.10.0/bin/pypy
+# #!/usr/local/bin/pypy
 # #!/usr/local/bin/pypy
 
 # #!/gepv/home2/croux/bin/pypy

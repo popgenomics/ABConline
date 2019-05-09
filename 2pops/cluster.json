@@ -1,0 +1,29 @@
+{
+    "__default__" :
+    {
+        "node" : 1,
+        "ntasks" : 1,
+        "n" : 1,
+	"cpusPerTask" : 1,
+	"memPerCpu" : 2500,
+	"time" : "10:00:00"
+    },
+    "fasta2ABC_2pops" :
+    {
+	"cpusPerTask" : 10,
+	"time" : "00:30:00",
+	"memPerCpu" : 3000
+    },
+    "modelComparison" :
+    {
+	"cpusPerTask" : 8,
+	"time" : "02:00:00",
+	"memPerCpu" : 2500
+    },
+    "estimation" :
+    {
+	"cpusPerTask" : 8,
+	"time" : "02:00:00",
+	"memPerCpu" : 2500
+    }
+}

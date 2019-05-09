@@ -1,6 +1,6 @@
-nmultilocus = 200 # number of multilocus simulations per iteration
-nIterations_model_comp = 2 # number of subdirectories for the simulations used in the RF model comparison
-nIterations_estim = 3 # number of subdirectories for the simulations used in the nnet param estimates
+nmultilocus = 500 # number of multilocus simulations per iteration
+nIterations_model_comp = 6 # number of subdirectories for the simulations used in the RF model comparison
+nIterations_estim = 2000 # number of subdirectories for the simulations used in the nnet param estimates
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
 ntree = 1000 # number of tree for the random forest (RF) model comparison
 
@@ -11,15 +11,24 @@ ITERATIONS_MODEL_COMP = range(nIterations_model_comp)
 ITERATIONS_ESTIMATES = range(nIterations_estim)
 
 
-infile = '../../all_loci.fasta'
 nspecies = 2
+
+###
+infile = 'all_loci.fasta'
 nameA = 'txn'
 nameB = 'ama'
-outgroup = 'num'
-region = 'coding'
-Lmin = 300
-max_N_tolerated = 0.005
 nMin = 12
+outgroup = 'num'
+###
+#infile='Messor_barbarusl1_capitatus2_flux.cds'
+#nameA='Messor_barbarus_L1'
+#nameB='Messor_barbarus_L2'
+#nMin=4
+###
+
+region = 'coding'
+Lmin = 100
+max_N_tolerated = 0.1
 Nref = 100000
 mu = 0.000000003
 rho_over_theta = 1
@@ -59,9 +68,15 @@ rule fasta2ABC_2pops:
 		expand("ABC_{nameA}_{nameB}/nLoci.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}_infos.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}.ms", nameA=nameA, nameB=nameB)
-	threads: 1
+	threads: 8
 	shell:
-		"fasta2ABC_2pops.py {infile} {params.nameA} {params.nameB} {params.outgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}"
+		"""
+#		module load conda;
+#		module load pypy/2.7-5.10.0;
+#		module load python/2.7;
+#		source activate R_env;
+		fasta2ABC_2pops.py {infile} {params.nameA} {params.nameB} {params.outgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}
+		"""
 
 
 rule RNAseqFGT:
@@ -75,7 +90,13 @@ rule RNAseqFGT:
 		expand("ABC_{nameA}_{nameB}/results_recombination.txt", nameA=nameA, nameB=nameB)
 	threads: 1
 	shell:	
-		"RNAseqFGT {infile} ABC_{params.nameA}_{params.nameB}/results_recombination.txt"
+		"""
+#		module load conda
+#		module load pypy/2.7-5.10.0
+#		module load python/2.7
+#		source activate R_env
+		RNAseqFGT {infile} ABC_{params.nameA}_{params.nameB}/results_recombination.txt
+		"""
 
 
 rule simulationsModelComp:
@@ -91,6 +112,10 @@ rule simulationsModelComp:
 	threads: 1
 	shell:
 		"""
+#		module load conda
+#		module load pypy/2.7-5.10.0
+#		module load python/2.7
+#		source activate R_env
 		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp
 		"""
 
@@ -107,6 +132,10 @@ rule simulationsEstim:
 	threads: 1
 	shell:
 		"""
+#		module load conda
+#		module load pypy/2.7-5.10.0
+#		module load python/2.7
+#		source activate R_env
 		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim
 		"""
 
@@ -121,6 +150,8 @@ rule modelComparison:
 	threads: nCPU_R
 	shell:
 		"""
+#		module load conda
+#		source activate R_env
 		model_comp_2pop_allModels.R nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=modelComp nSubdir={nIterations_model_comp} ntree={ntree} ncores={nCPU_R} outgroup=1
 		"""
 
@@ -134,6 +165,8 @@ rule estimation:
 	threads: nCPU_R
 	shell:
 		"""
+#		module load conda
+#		source activate R_env
 		estimates_2pop.R nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=estim nSubdir={nIterations_estim} ntree={ntree} ncores={nCPU_R} outgroup=1
 		"""
 

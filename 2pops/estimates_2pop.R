@@ -1,5 +1,5 @@
-#!/usr/bin/Rscript
-# #!/shared/home/croux/.conda/envs/R_env/bin/Rscript
+#!/shared/home/croux/.conda/envs/R_env/bin/Rscript
+# #!/usr/bin/Rscript
 for(i in commandArgs()){
 	tmp = strsplit(i, '=')
 	if(tmp[[1]][1] == 'nameA'){ nameA = tmp[[1]][2] }
@@ -25,8 +25,8 @@ obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 
 ######################################################
 # parameters of the best model, IM_2M_2N and SI_2N
-#source('/shared/home/croux/softwares/ABConline/2pops/get_parameters.R')
-source("/home/croux/Documents/ABConline/2pops/get_parameters.R")
+source('/shared/home/croux/softwares/ABConline/2pops/get_parameters.R')
+#source("/home/croux/Documents/ABConline/2pops/get_parameters.R")
 
 # IM_2M_2N
 model_tmp = 'IM_2M_2N'
@@ -41,12 +41,30 @@ for(i in 1:ncol(posterior)){
 
 # SI_2N
 model_tmp = 'SI_2N'
-if(best_model!=model_tmp){
-	write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
-	posterior = get_posterior(nameA, nameB, nSubdir, model_tmp, nSimulations=nSimulations)
-	write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
-	for(i in 1:ncol(posterior)){
-		write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
-	}
+write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
+posterior = get_posterior(nameA, nameB, nSubdir, model_tmp)
+write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
+for(i in 1:ncol(posterior)){
+	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
+}
+
+
+# AM_2M_2N
+model_tmp = 'AM_2M_2N'
+write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
+posterior = get_posterior(nameA, nameB, nSubdir, model_tmp)
+write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
+for(i in 1:ncol(posterior)){
+	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
+}
+
+
+# SC_2M_2N
+model_tmp = 'SC_2M_2N'
+write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
+posterior = get_posterior(nameA, nameB, nSubdir, model_tmp)
+write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
+for(i in 1:ncol(posterior)){
+	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
 }
 

@@ -1,5 +1,5 @@
-#!/usr/bin/Rscript
-# #!/shared/home/croux/.conda/envs/R_env/bin/Rscript
+#!/shared/home/croux/.conda/envs/R_env/bin/Rscript
+# #!/usr/bin/Rscript
 library('abcrf')
 # model_comp_2pop.R nameA=txn nameB=ama nSubdir=20  ntree=1000 
 for(i in commandArgs()){

@@ -1,5 +1,5 @@
-#!/usr/bin/pypy
-# #!/shared/mfs/data/software/miniconda/envs/pypy-2.7-5.10.0/bin/pypy
+#!/shared/mfs/data/software/miniconda/envs/pypy-2.7-5.10.0/bin/pypy
+# #!/usr/bin/pypy
 import sys
 import os
 from math import ceil
@@ -795,12 +795,12 @@ if nameOut == 'NA':
 else:
 	use_sfs = 1
 commande = 'cat ABC_{0}_{1}/{0}_{1}.ms | mscalc_2pop_observedDataset.py ABC_{0}_{1} {2}'.format(nameA, nameB, use_sfs)
-print(commande)
+#print(commande)
 os.system(commande)
 
 # remove the useless ms file
 commande = 'rm ABC_{0}_{1}/{0}_{1}.ms'.format(nameA, nameB)
-print(commande)
+#print(commande)
 #os.system(commande)
 
 
