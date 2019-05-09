@@ -233,7 +233,7 @@ babar<-function(a,b,space=2,breaks="auto",AL=0.5,nameA="A",nameB="B",xl="",yl=""
 #}
 
 
-get_posterior<-function(nameA, nameB, nCPU, model, nSimulations=980000){
+get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
 	###################
 	# get observed data
 	# observed data
@@ -244,18 +244,6 @@ get_posterior<-function(nameA, nameB, nCPU, model, nSimulations=980000){
 	obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
 	obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 	ss_obs = obs_ss
-
-
-	#################
-	# clean the space
-	commande = paste('rm -rf ABC_', nameA, '_', nameB, '/', model, '_*', sep=''); system(commande)
-
-
-	#################
-	# run simulations
-	nMultilocus = nSimulations / nCPU
-	commande = paste('module load conda; module load pypy/2.7-5.10.0; module load python/2.7; source activate R_env; submit_simulations_2pop.py', nMultilocus, nCPU, model, nameA, nameB, sep=' ')
-	system(commande)
 
 
 	########################
@@ -272,15 +260,15 @@ get_posterior<-function(nameA, nameB, nCPU, model, nSimulations=980000){
 	ss_sim_tmp = NULL
 	params_sim_tmp = NULL
 
-	for(rep in seq(0, nCPU-1, 1)){
+	for(rep in seq(0, nSubdir-1, 1)){
 		# statistics
-		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', model, '_', rep, '/ABCstat.txt', sep=''), h=T)
+		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', model, '_', rep, '/ABCstat.txt', sep=''), h=T)
 		tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
 		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
 		ss_sim_tmp = rbind(ss_sim_tmp, tmp_ss)
 		
 		# params
-		tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', model, '_', rep, '/priorfile.txt', sep=''), h=T)
+		tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', model, '_', rep, '/priorfile.txt', sep=''), h=T)
 		params_sim_tmp = rbind(params_sim_tmp, tmp_params)
 	}
 	# statistics
@@ -301,12 +289,13 @@ get_posterior<-function(nameA, nameB, nCPU, model, nSimulations=980000){
 	transf_obs = rep("logit", ncol(params_sim[[model]]))
 	bb = rbind(apply(x, MARGIN=2, FUN="min"), apply(x, MARGIN=2, FUN="max"))
 	#res2 = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=1000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=10*ncol(x), trace=T)
-	res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=2000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
+	#res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=2000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
+	res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=0.1, rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
 
 	posterior = res$x
 	colnames(posterior) = colnames(params_sim[[model]])
-	write.table(posterior, paste('ABC_', nameA, '_', nameB, '/posterior_', model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
-	pdf(paste('ABC_', nameA, '_', nameB, '/posterior_', model, '.pdf', sep=''), bg='white', width=10, height=8)
+	write.table(posterior, paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
+	pdf(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.pdf', sep=''), bg='white', width=10, height=8)
 	par(mfrow=c(ceiling(nparams/4), 4), mar=c(4.5, 3.75, 3.75, 1.75))
 	for(i in 1:nparams){
 		babar(params_sim[[model]][,i], res$x[,i], xl=colnames(params_sim[[model]])[i], legende=F)

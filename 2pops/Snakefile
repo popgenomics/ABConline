@@ -1,0 +1,139 @@
+nmultilocus = 200 # number of multilocus simulations per iteration
+nIterations_model_comp = 2 # number of subdirectories for the simulations used in the RF model comparison
+nIterations_estim = 3 # number of subdirectories for the simulations used in the nnet param estimates
+nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
+ntree = 1000 # number of tree for the random forest (RF) model comparison
+
+
+MODELS_COMP = ['SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N', 'AM_1M_1N', 'AM_1M_2N', 'AM_2M_1N', 'AM_2M_2N', 'IM_1M_1N', 'IM_1M_2N', 'IM_2M_1N', 'IM_2M_2N', 'SI_1N', 'SI_2N']
+MODELS_ESTIM = ['SC_2M_2N', 'AM_2M_2N', 'IM_2M_2N', 'SI_2N']
+ITERATIONS_MODEL_COMP = range(nIterations_model_comp)
+ITERATIONS_ESTIMATES = range(nIterations_estim)
+
+
+infile = '../../all_loci.fasta'
+nspecies = 2
+nameA = 'txn'
+nameB = 'ama'
+outgroup = 'num'
+region = 'coding'
+Lmin = 300
+max_N_tolerated = 0.005
+nMin = 12
+Nref = 100000
+mu = 0.000000003
+rho_over_theta = 1
+
+
+rule targets:
+	input:
+		expand("ABC_{nameA}_{nameB}/ABCstat_global.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/ABCstat_loci.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}_infos.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/results_recombination.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/modelComp/{model}_{i}/ABCstat.txt", nameA=nameA, nameB=nameB, model=MODELS_COMP, i=ITERATIONS_MODEL_COMP),
+		expand("ABC_{nameA}_{nameB}/estim/{model}_{i}/ABCstat.txt", nameA=nameA, nameB=nameB, model=MODELS_ESTIM, i=ITERATIONS_ESTIMATES),
+		expand("ABC_{nameA}_{nameB}/modelComp/report_{nameA}_{nameB}.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/estim/report_{nameA}_{nameB}.txt", nameA=nameA, nameB=nameB)
+
+
+rule fasta2ABC_2pops:
+	# fasta2ABC_2pops.py ../../all_loci.fasta txn mal num coding 250 0.007 12 100000 0.000000003 1
+	params:
+		nameA={nameA},
+		nameB={nameB},
+		outgroup={outgroup},
+		region={region},
+		Lmin={Lmin},
+		max_N_tolerated={max_N_tolerated},
+		nMin={nMin},
+		Nref={Nref},
+		mu={mu},
+		rho_over_theta={rho_over_theta}
+	input:
+		expand("{infile}", infile=infile)
+	output:
+		expand("ABC_{nameA}_{nameB}/ABCstat_global.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/ABCstat_loci.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/bpfile", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/nLoci.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}_infos.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}.ms", nameA=nameA, nameB=nameB)
+	threads: 1
+	shell:
+		"fasta2ABC_2pops.py {infile} {params.nameA} {params.nameB} {params.outgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}"
+
+
+rule RNAseqFGT:
+	params:
+		nameA={nameA},
+		nameB={nameB}
+	input:
+		expand("{infile}", infile=infile),
+		expand("ABC_{nameA}_{nameB}/nLoci.txt", nameA=nameA, nameB=nameB),
+	output:
+		expand("ABC_{nameA}_{nameB}/results_recombination.txt", nameA=nameA, nameB=nameB)
+	threads: 1
+	shell:	
+		"RNAseqFGT {infile} ABC_{params.nameA}_{params.nameB}/results_recombination.txt"
+
+
+rule simulationsModelComp:
+	params:
+		nmultilocus={nmultilocus}
+	input:
+		"ABC_{nameA}_{nameB}/bpfile",
+		"ABC_{nameA}_{nameB}/nLoci.txt"
+	output:
+		"ABC_{nameA}_{nameB}/modelComp/{model}_{i}/bpfile",
+		"ABC_{nameA}_{nameB}/modelComp/{model}_{i}/priorfile.txt",
+		"ABC_{nameA}_{nameB}/modelComp/{model}_{i}/ABCstat.txt"
+	threads: 1
+	shell:
+		"""
+		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp
+		"""
+
+rule simulationsEstim:
+	params:
+		nmultilocus={nmultilocus}
+	input:
+		"ABC_{nameA}_{nameB}/bpfile",
+		"ABC_{nameA}_{nameB}/nLoci.txt"
+	output:
+		"ABC_{nameA}_{nameB}/estim/{model}_{i}/bpfile",
+		"ABC_{nameA}_{nameB}/estim/{model}_{i}/priorfile.txt",
+		"ABC_{nameA}_{nameB}/estim/{model}_{i}/ABCstat.txt"
+	threads: 1
+	shell:
+		"""
+		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim
+		"""
+
+
+rule modelComparison:
+	input:
+		expand("ABC_{nameA}_{nameB}/ABCstat_global.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/modelComp/{model}_{i}/ABCstat.txt", nameA=nameA, nameB=nameB, model=MODELS_COMP, i=ITERATIONS_MODEL_COMP)
+	output:
+		"ABC_{nameA}_{nameB}/modelComp/report_{nameA}_{nameB}.txt",
+		"ABC_{nameA}_{nameB}/modelComp/best_model.txt"
+	threads: nCPU_R
+	shell:
+		"""
+		model_comp_2pop_allModels.R nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=modelComp nSubdir={nIterations_model_comp} ntree={ntree} ncores={nCPU_R} outgroup=1
+		"""
+
+rule estimation:
+	input:
+		expand("ABC_{nameA}_{nameB}/ABCstat_global.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/estim/{model}_{i}/ABCstat.txt", nameA=nameA, nameB=nameB, model=MODELS_ESTIM, i=ITERATIONS_ESTIMATES)
+	output:
+		"ABC_{nameA}_{nameB}/estim/report_{nameA}_{nameB}.txt",
+		"ABC_{nameA}_{nameB}/estim/best_model.txt"
+	threads: nCPU_R
+	shell:
+		"""
+		estimates_2pop.R nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=estim nSubdir={nIterations_estim} ntree={ntree} ncores={nCPU_R} outgroup=1
+		"""
+
