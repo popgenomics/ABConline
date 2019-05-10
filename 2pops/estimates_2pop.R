@@ -42,7 +42,7 @@ for(i in 1:ncol(posterior)){
 # SI_2N
 model_tmp = 'SI_2N'
 write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
-posterior = get_posterior(nameA, nameB, nSubdir, model_tmp)
+posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model=model_tmp)
 write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
 for(i in 1:ncol(posterior)){
 	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
@@ -52,7 +52,7 @@ for(i in 1:ncol(posterior)){
 # AM_2M_2N
 model_tmp = 'AM_2M_2N'
 write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
-posterior = get_posterior(nameA, nameB, nSubdir, model_tmp)
+posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model=model_tmp)
 write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
 for(i in 1:ncol(posterior)){
 	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
@@ -62,7 +62,7 @@ for(i in 1:ncol(posterior)){
 # SC_2M_2N
 model_tmp = 'SC_2M_2N'
 write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
-posterior = get_posterior(nameA, nameB, nSubdir, model_tmp)
+posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model=model_tmp)
 write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
 for(i in 1:ncol(posterior)){
 	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
