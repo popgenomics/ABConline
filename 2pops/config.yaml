@@ -1,0 +1,13 @@
+nspecies: 2
+infile: all_loci.fasta
+region: coding
+nameA: chi
+nameB: ros
+nameOutgroup: num
+max_N_tolerated: 0.1
+Lmin: 30
+nMin: 12
+Nref: 100000
+mu: 0.000000003
+rho_over_theta: 1
+

@@ -115,7 +115,7 @@ write(paste('#proba best model among 14 models: ', predicted_model$post.prob, se
 write('\n#votes:', outfile, append=T)
 write.table(t(as.matrix(predicted_model$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
-write(predicted_model$allocation, outfile_best, append=F)
+write(paste(predicted_model$allocation, '\n', sep=''), outfile_best, append=F)
 
 
 # model comparison #2 --> two models: isolation versus migration
@@ -161,29 +161,31 @@ write('\n#votes:', outfile, append=T)
 write.table(t(as.matrix(predicted_model_Nhomo_Nhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
 
+# if ongoing migration
+if(predicted_model_iso_mig$allocation=='migration'){
+	# model comparison #4 --> two models: mig homo versus mig hetero
+	Mhomo = NULL
+	for( i in c('SC_1M_1N', 'SC_1M_2N', 'IM_1M_1N', 'IM_1M_2N')){
+		Mhomo = rbind(Mhomo, ss_sim[[i]])
+	}
 
-# model comparison #4 --> two models: mig homo versus mig hetero
-Mhomo = NULL
-for( i in c('SC_1M_1N', 'SC_1M_2N', 'IM_1M_1N', 'IM_1M_2N')){
-	Mhomo = rbind(Mhomo, ss_sim[[i]])
+	Mhetero = NULL
+	for( i in c('SC_2M_1N', 'SC_2M_2N', 'IM_2M_1N', 'IM_2M_2N')){
+		Mhetero = rbind(Mhetero, ss_sim[[i]])
+	}
+
+	modIndexes = c(rep('Mhomo', nrow(Mhomo)), rep('Mhetero', nrow(Mhetero)))
+	mod_Mhomo_Mhetero = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+	predicted_model_Mhomo_Mhetero = predict(mod_Mhomo_Mhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+
+	write('\n#####\n\nMODEL COMPARISON #4: 2 models (Mhomo versus Mhetero)', outfile, append=T)
+	write('#confusion matrix:', outfile, append=T)
+	write.table(mod_Mhomo_Mhetero$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
+	write(paste('\n#best model between Mhomo and Mhetero: ', predicted_model_Mhomo_Mhetero$allocation, sep=''), outfile, append=T)
+	write(paste('#proba best model between Mhomo and Mhetero: ', predicted_model_Mhomo_Mhetero$post.prob, sep=''), outfile, append=T)
+	write('\n#votes:', outfile, append=T)
+	write.table(t(as.matrix(predicted_model_Mhomo_Mhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 }
-
-Mhetero = NULL
-for( i in c('SC_2M_1N', 'SC_2M_2N', 'IM_2M_1N', 'IM_2M_2N')){
-	Mhetero = rbind(Mhetero, ss_sim[[i]])
-}
-
-modIndexes = c(rep('Mhomo', nrow(Mhomo)), rep('Mhetero', nrow(Mhetero)))
-mod_Mhomo_Mhetero = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-predicted_model_Mhomo_Mhetero = predict(mod_Mhomo_Mhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-
-write('\n#####\n\nMODEL COMPARISON #4: 2 models (Mhomo versus Mhetero)', outfile, append=T)
-write('#confusion matrix:', outfile, append=T)
-write.table(mod_Mhomo_Mhetero$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
-write(paste('\n#best model between Mhomo and Mhetero: ', predicted_model_Mhomo_Mhetero$allocation, sep=''), outfile, append=T)
-write(paste('#proba best model between Mhomo and Mhetero: ', predicted_model_Mhomo_Mhetero$post.prob, sep=''), outfile, append=T)
-write('\n#votes:', outfile, append=T)
-write.table(t(as.matrix(predicted_model_Mhomo_Mhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
 
 #######################################################
