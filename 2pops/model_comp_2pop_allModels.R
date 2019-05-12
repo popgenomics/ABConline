@@ -27,9 +27,12 @@ coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2
 coul = colorRampPalette(coul)
 
 # observed data
-obs_ss = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_global.txt', sep=''), h=T)
+obs_ss = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_global.txt', sep=''), h=T) # global statistics over all loci (avg and std)
 obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
 obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
+
+obs_loci = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_loci.txt', sep=''), h=T) # individual statistics for each locus
+
 if( outgroup == 1 ){
 	obs_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/ABCjsfs.txt', sep=''), h=T)
 	ss_obs = cbind(obs_ss, obs_sfs)
@@ -61,20 +64,23 @@ for(m in models){
 	ss_sim_tmp = NULL
 	params_sim_tmp = NULL
 	for(rep in seq(0, nSubdir-1, 1)){
-		# statistics
-		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/ABCstat.txt', sep=''), h=T)
-		tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
-		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
-		if( outgroup == 1 ){ tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/ABCjsfs.txt', sep=''), h=T)
-			tmp = cbind(tmp_ss, tmp_sfs)
-			ss_sim_tmp = rbind(ss_sim_tmp, tmp)
-		}else{
-			ss_sim_tmp = rbind(ss_sim_tmp, tmp_ss)
+		# check if the simulation went well
+		if(file.exists(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/priorfile.txt', sep='')) == TRUE){
+			# statistics
+			tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/ABCstat.txt', sep=''), h=T)
+			tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
+			tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
+			if( outgroup == 1 ){ tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/ABCjsfs.txt', sep=''), h=T)
+				tmp = cbind(tmp_ss, tmp_sfs)
+				ss_sim_tmp = rbind(ss_sim_tmp, tmp)
+			}else{
+				ss_sim_tmp = rbind(ss_sim_tmp, tmp_ss)
+			}
+			
+			# params
+			tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/priorfile.txt', sep=''), h=T)
+			params_sim_tmp = rbind(params_sim_tmp, tmp_params)
 		}
-		
-		# params
-		tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/priorfile.txt', sep=''), h=T)
-		params_sim_tmp = rbind(params_sim_tmp, tmp_params)
 	}
 	# statistics
 	ss_sim[[m]] = ss_sim_tmp 
@@ -98,27 +104,7 @@ ss_2_remove = unique(ss_2_remove)
 
 
 
-# model comparison #1 --> all models
-modIndexes = NULL
-for(m in models){
-	modIndexes = c(modIndexes, rep(m, nrow(ss_sim[[m]])))
-}
-
-mod = abcrf(modIndexes~., data = data.frame(modIndexes, all_models_sim[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-predicted_model = predict(mod, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, all_models_sim[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-
-write('MODEL COMPARISON #1: 14 models', outfile, append=F)
-write('#confusion matrix:', outfile, append=T)
-write.table(mod$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
-write(paste('\n#best model among 14 models: ', predicted_model$allocation, sep=''), outfile, append=T)
-write(paste('#proba best model among 14 models: ', predicted_model$post.prob, sep=''), outfile, append=T)
-write('\n#votes:', outfile, append=T)
-write.table(t(as.matrix(predicted_model$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
-
-write(paste(predicted_model$allocation, '\n', sep=''), outfile_best, append=F)
-
-
-# model comparison #2 --> two models: isolation versus migration
+# model comparison #1 --> two models: isolation versus migration
 modIndexes = NULL
 for(i in 1:length(models)){
 	modIndexes = c(modIndexes, rep(migration[i], nrow(ss_sim[[models[i]]])))
@@ -127,42 +113,71 @@ for(i in 1:length(models)){
 mod_iso_mig = abcrf(modIndexes~., data = data.frame(modIndexes, all_models_sim[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
 predicted_model_iso_mig = predict(mod_iso_mig, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, all_models_sim[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
 
-write('\n#####\n\nMODEL COMPARISON #2: 2 models', outfile, append=T)
+write('\n#####\n\nMODEL COMPARISON #1: migration versus isolation', outfile, append=F)
 write('#confusion matrix:', outfile, append=T)
 write.table(mod_iso_mig$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
-write(paste('\n#best model between migration and isolation: ', predicted_model_iso_mig$allocation, sep=''), outfile, append=T)
-write(paste('#proba best model between migration and isolation: ', predicted_model_iso_mig$post.prob, sep=''), outfile, append=T)
+write(paste('\n#best model: ', predicted_model_iso_mig$allocation, sep=''), outfile, append=T)
+write(paste('#proba best model: ', predicted_model_iso_mig$post.prob, sep=''), outfile, append=T)
 write('\n#votes:', outfile, append=T)
 write.table(t(as.matrix(predicted_model_iso_mig$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
 
 
-# model comparison #3 --> two models: N homo versus N hetero
-Nhomo = NULL
-for( i in c('SC_1M_1N', 'SC_2M_1N', 'AM_1M_1N', 'AM_2M_1N', 'IM_1M_1N', 'IM_2M_1N', 'SI_1N')){
-	Nhomo = rbind(Nhomo, ss_sim[[i]])
-}
-
-Nhetero = NULL
-for( i in c('SC_1M_2N', 'SC_2M_2N', 'AM_1M_2N', 'AM_2M_2N', 'IM_1M_2N', 'IM_2M_2N', 'SI_2N')){
-	Nhetero = rbind(Nhetero, ss_sim[[i]])
-}
-
-modIndexes = c(rep('Nhomo', nrow(Nhomo)), rep('Nhetero', nrow(Nhetero)))
-mod_Nhomo_Nhetero = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(Nhomo, Nhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-predicted_model_Nhomo_Nhetero = predict(mod_Nhomo_Nhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Nhomo, Nhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-
-write('\n#####\n\nMODEL COMPARISON #3: 2 models (Nhomo versus Nhetero)', outfile, append=T)
-write('#confusion matrix:', outfile, append=T)
-write.table(mod_Nhomo_Nhetero$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
-write(paste('\n#best model between Nhomo and Nhetero: ', predicted_model_Nhomo_Nhetero$allocation, sep=''), outfile, append=T)
-write(paste('#proba best model between Nhomo and Nhetero: ', predicted_model_Nhomo_Nhetero$post.prob, sep=''), outfile, append=T)
-write('\n#votes:', outfile, append=T)
-write.table(t(as.matrix(predicted_model_Nhomo_Nhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
-
-
 # if ongoing migration
 if(predicted_model_iso_mig$allocation=='migration'){
+	# model comparison #2 --> IM versus SC
+	IM = c('IM_1M_1N', 'IM_1M_2N', 'IM_2M_1N', 'IM_2M_2N')
+	SC = c('SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N')
+	all_models = NULL
+	modIndexes = NULL
+	for(i in IM){
+		all_models = rbind(all_models, ss_sim[[i]])
+		modIndexes = c(modIndexes, rep('IM', nrow(ss_sim[[i]])))
+	}
+	for(i in SC){
+		all_models = rbind(all_models, ss_sim[[i]])
+		modIndexes = c(modIndexes, rep('SC', nrow(ss_sim[[i]])))
+	}
+	
+	mod = abcrf(modIndexes~., data = data.frame(modIndexes, all_models[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+	predicted_model = predict(mod, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, all_models[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+	
+	write('MODEL COMPARISON #2: IM versus SC', outfile, append=F)
+	write('#confusion matrix:', outfile, append=T)
+	write.table(mod$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
+	write(paste('\n#best model: ', predicted_model$allocation, sep=''), outfile, append=T)
+	write(paste('#proba best model: ', predicted_model$post.prob, sep=''), outfile, append=T)
+	write('\n#votes:', outfile, append=T)
+	write.table(t(as.matrix(predicted_model$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
+
+	write(paste(predicted_model$allocation, '\n', sep=''), outfile_best, append=F)
+	
+	
+	# model comparison #3 --> Nhomo versus Nhetero
+	Nhomo = NULL
+	for( i in c('SC_1M_1N', 'SC_2M_1N', 'IM_1M_1N', 'IM_2M_1N')){
+		Nhomo = rbind(Nhomo, ss_sim[[i]])
+	}
+
+	Nhetero = NULL
+	for( i in c('SC_1M_2N', 'SC_2M_2N', 'IM_1M_2N', 'IM_2M_2N')){
+		Nhetero = rbind(Nhetero, ss_sim[[i]])
+	}
+
+	modIndexes = c(rep('Nhomo', nrow(Nhomo)), rep('Nhetero', nrow(Nhetero)))
+	mod_Nhomo_Nhetero = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(Nhomo, Nhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+	predicted_model_Nhomo_Nhetero = predict(mod_Nhomo_Nhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Nhomo, Nhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+	
+	
+	write('\n#####\n\nMODEL COMPARISON #3: Nhomo versus Nhetero', outfile, append=T)
+	write('#confusion matrix:', outfile, append=T)
+	write.table(mod_Nhomo_Nhetero$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
+	write(paste('\n#best model: ', predicted_model_Nhomo_Nhetero$allocation, sep=''), outfile, append=T)
+	write(paste('#proba best model: ', predicted_model_Nhomo_Nhetero$post.prob, sep=''), outfile, append=T)
+	write('\n#votes:', outfile, append=T)
+	write.table(t(as.matrix(predicted_model_Nhomo_Nhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
+
+
 	# model comparison #4 --> two models: mig homo versus mig hetero
 	Mhomo = NULL
 	for( i in c('SC_1M_1N', 'SC_1M_2N', 'IM_1M_1N', 'IM_1M_2N')){
@@ -178,47 +193,176 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	mod_Mhomo_Mhetero = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
 	predicted_model_Mhomo_Mhetero = predict(mod_Mhomo_Mhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
 
-	write('\n#####\n\nMODEL COMPARISON #4: 2 models (Mhomo versus Mhetero)', outfile, append=T)
+	write('\n#####\n\nMODEL COMPARISON #4: Mhomo versus Mhetero', outfile, append=T)
 	write('#confusion matrix:', outfile, append=T)
 	write.table(mod_Mhomo_Mhetero$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
-	write(paste('\n#best model between Mhomo and Mhetero: ', predicted_model_Mhomo_Mhetero$allocation, sep=''), outfile, append=T)
-	write(paste('#proba best model between Mhomo and Mhetero: ', predicted_model_Mhomo_Mhetero$post.prob, sep=''), outfile, append=T)
+	write(paste('\n#best model: ', predicted_model_Mhomo_Mhetero$allocation, sep=''), outfile, append=T)
+	write(paste('#proba best model: ', predicted_model_Mhomo_Mhetero$post.prob, sep=''), outfile, append=T)
 	write('\n#votes:', outfile, append=T)
 	write.table(t(as.matrix(predicted_model_Mhomo_Mhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 }
 
 
-#######################################################
-## parameters of the best model, IM_2M_2N and SI_2N
-#nSimulations = 980000
-#source('/shared/home/croux/softwares/ABConline/2pops/get_parameters.R')
-#best_model = predicted_model$allocation
-#write(paste('\n#####\n\nparameters of the best model: ', best_model, sep=''), outfile, append=T)
-#posterior = get_posterior(nameA, nameB, nSubdir, best_model, nSimulations=nSimulations)
-#write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
-#for(i in 1:ncol(posterior)){
-#	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
-#}
-#
-## IM_2M_2N
-#model_tmp = 'IM_2M_2N'
-#if(best_model!=model_tmp){
-#	write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
-#	posterior = get_posterior(nameA, nameB, nSubdir, model_tmp, nSimulations=nSimulations)
-#	write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
-#	for(i in 1:ncol(posterior)){
-#		write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
-#	}
-#}
-#
-## SI_2N
-#model_tmp = 'SI_2N'
-#if(best_model!=model_tmp){
-#	write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
-#	posterior = get_posterior(nameA, nameB, nSubdir, model_tmp, nSimulations=nSimulations)
-#	write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
-#	for(i in 1:ncol(posterior)){
-#		write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
-#	}
-#}
-#
+
+# if ongoing migration
+if(predicted_model_iso_mig$allocation=='isolation'){
+	AM = c('AM_1M_1N', 'AM_1M_2N', 'AM_2M_1N', 'AM_2M_2N')
+	SI = c('SI_1N', 'SI_2N')
+	# model comparison #2 --> IM versus SC
+	all_models = NULL
+	modIndexes = NULL
+	for(i in AM){
+		all_models = rbind(all_models, ss_sim[[i]])
+		modIndexes = c(modIndexes, rep('AM', nrow(ss_sim[[i]])))
+	}
+	for(i in SI){
+		all_models = rbind(all_models, ss_sim[[i]])
+		modIndexes = c(modIndexes, rep('SI', nrow(ss_sim[[i]])))
+	}
+	
+	mod = abcrf(modIndexes~., data = data.frame(modIndexes, all_models[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+	predicted_model = predict(mod, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, all_models[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+	
+	write('\n#####\n\nMODEL COMPARISON #2: AM versus SI', outfile, append=T)
+	write('#confusion matrix:', outfile, append=T)
+	write.table(mod$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
+	write(paste('\n#best model: ', predicted_model$allocation, sep=''), outfile, append=T)
+	write(paste('#proba best model: ', predicted_model$post.prob, sep=''), outfile, append=T)
+	write('\n#votes:', outfile, append=T)
+	write.table(t(as.matrix(predicted_model$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
+
+	write(paste(predicted_model$allocation, '\n', sep=''), outfile_best, append=F)
+	
+	
+	# model comparison #3 --> Nhomo versus Nhetero
+	Nhomo = NULL
+	for( i in c('AM_1M_1N', 'AM_2M_1N', 'SI_1N')){
+		Nhomo = rbind(Nhomo, ss_sim[[i]])
+	}
+
+	Nhetero = NULL
+	for( i in c('AM_1M_2N', 'AM_2M_2N', 'SI_2N')){
+		Nhetero = rbind(Nhetero, ss_sim[[i]])
+	}
+
+	modIndexes = c(rep('Nhomo', nrow(Nhomo)), rep('Nhetero', nrow(Nhetero)))
+	mod_Nhomo_Nhetero = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(Nhomo, Nhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+	predicted_model_Nhomo_Nhetero = predict(mod_Nhomo_Nhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Nhomo, Nhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+	
+	
+	write('\n#####\n\nMODEL COMPARISON #3: Nhomo versus Nhetero', outfile, append=T)
+	write('#confusion matrix:', outfile, append=T)
+	write.table(mod_Nhomo_Nhetero$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
+	write(paste('\n#best model: ', predicted_model_Nhomo_Nhetero$allocation, sep=''), outfile, append=T)
+	write(paste('#proba best model: ', predicted_model_Nhomo_Nhetero$post.prob, sep=''), outfile, append=T)
+	write('\n#votes:', outfile, append=T)
+	write.table(t(as.matrix(predicted_model_Nhomo_Nhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
+}
+
+
+
+### LOCUS SPECIFIC MODEL COMPARISON
+nrep = 10
+path = getwd()
+outfile = 'locus_specific_modelComp.txt'
+if(predicted_model_iso_mig$allocation=='isolation'){
+	# get the posterior
+	posterior_IM = read.table(paste("ABC_", nameA, "_", nameB, "/estim/posterior_IM_2M_2N.txt", sep=''), h=T)
+	
+	# get informations about loci 
+	bpfile = read.table(paste("ABC_", nameA, "_", nameB, "/bpfile", sep=''), skip=1, h=F)
+	L = median(as.numeric(bpfile[1,]))
+	nA = median(as.numeric(bpfile[2,]))
+	nB = median(as.numeric(bpfile[3,]))
+	theta = median(as.numeric(bpfile[4,]))
+	rho = median(as.numeric(bpfile[5,]))
+
+	# change directory
+	setwd(paste('ABC_', nameA, '_', nameB, '/modelComp', sep=''))
+
+	# write the monolocus bpfile
+	write(paste('#locus specific model comparison\n', L, '\n', nA, '\n', nB, '\n', theta, '\n', rho, sep=''), 'bpfile', append=F)
+	
+	## simulations
+        N1_mig = NULL
+	N2_mig = NULL
+	Na_mig = NULL
+	Tsplit_mig = NULL
+	M12_mig = NULL
+	M21_mig = NULL
+	
+        N1_iso = NULL
+	N2_iso = NULL
+	Na_iso = NULL
+	Tsplit_iso = NULL
+	M12_iso = NULL
+	M21_iso = NULL
+	
+	Tsplit = NULL
+	for(i in 1:nrow(posterior_IM)){
+		Tsplit = c(Tsplit, rep(posterior_IM$Tsplit[i], nrep))
+		
+		# migration
+		scalar_N = rbeta(nrep, posterior_IM$shape_N_a[i], posterior_IM$shape_N_b[i])
+		N1_mig = c(N1_mig, scalar_N * posterior_IM$N1[i])
+		N2_mig = c(N2_mig, scalar_N * posterior_IM$N2[i])
+		Na_mig = c(Na_mig, scalar_N * posterior_IM$Na[i])
+		
+		scalar_M12 = rbeta(nrep, posterior_IM$shape_M12_a[i], posterior_IM$shape_M12_b[i])
+		M12_mig = c(M12_mig, scalar_M12 * posterior_IM$M12[i])
+		
+		scalar_M21 = rbeta(nrep, posterior_IM$shape_M21_a[i], posterior_IM$shape_M21_b[i])
+		M21_mig = c(M21_mig, scalar_M21 * posterior_IM$M21[i])
+		
+		# isolation
+		scalar_N = rbeta(nrep, posterior_IM$shape_N_a[i], posterior_IM$shape_N_b[i])
+		N1_iso = c(N1_iso, scalar_N * posterior_IM$N1[i])
+		N2_iso = c(N2_iso, scalar_N * posterior_IM$N2[i])
+		Na_iso = c(Na_iso, scalar_N * posterior_IM$Na[i])
+		
+		M12_iso = c(M12_iso, rep(0, nrep))
+		M21_iso = c(M21_iso, rep(0, nrep))
+	}
+	
+	theta_prior = rep(theta, length(Tsplit))
+	rho_prior = rep(rho, length(Tsplit))
+	L_prior = rep(L, length(Tsplit))
+	nA_prior = rep(nA, length(Tsplit))
+	nB_prior = rep(nB, length(Tsplit))
+	ntot = nA_prior + nB_prior
+	
+	prior_mig = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_mig, N2_mig, M12_mig, M21_mig, Tsplit, Tsplit, Na_mig)
+	prior_iso = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_iso, N2_iso, M12_iso, M21_iso, Tsplit, Tsplit, Na_iso)
+
+	# simulations of migration
+	# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
+	write.table(prior_mig, 'prior_mig.txt', sep='\t', col.names=F, row.names=F, quote=F)
+	commande = paste('cat prior_mig.txt | msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
+	system(commande)
+	mig_ss = read.table('ABCstat.txt', h=T)
+	
+	# simulations of isolation
+	# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
+	write.table(prior_iso, 'prior_iso.txt', sep='\t', col.names=F, row.names=F, quote=F)
+	commande = paste('cat prior_iso.txt | msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
+	system(commande)
+	iso_ss = read.table('ABCstat.txt', h=T)
+	
+	# locus_specific model comparison
+	stats_obs = c(3:15, 20:24)
+	stats_sim = c(4, 6, 8, 10, 12, 14, 16, 19, 21, 24, 26, 28, 30, 40, 45, 46, 47, 48)
+	modIndexes = c(rep('migration', nrow(mig_ss)), rep('isolation', nrow(iso_ss)))
+
+	mod_iso_mig = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(mig_ss, iso_ss)[, stats_sim]), ntree = ntree, paral = T, ncores = ncores)
+	predicted_model_iso_mig = predict(mod_iso_mig, data.frame(obs_loci[, stats_obs]), training=data.frame(modIndexes, rbind(mig_ss, iso_ss)[, stats_sim]), ntree = ntree, paral = T, ncores = ncores)
+
+	allocation = predicted_model_iso_mig$allocation
+	post_proba = predicted_model_iso_mig$post.prob
+	res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)
+	
+	write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
+	
+}else{
+	write("no locus specific model comparison since there is no gene flow", outfile, append=F)
+}
+
