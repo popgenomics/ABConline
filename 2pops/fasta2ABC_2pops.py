@@ -420,7 +420,7 @@ if nameOut == 'NA':
 	# For non coding loci
 	if region == 'noncoding':
 		output_info = "locusName\tL_including_N\tL\tnSegSite\tnsamA\tnsamB\n"
-		outfile_info = open('ABC_{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
+		outfile_info = open('ABC_{0}_{1}/{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
 		outfile_info.write(output_info)
 		for locus_i in align['L'].keys():
 			geneName = locus_i
