@@ -265,7 +265,7 @@ if(predicted_model_iso_mig$allocation=='isolation'){
 nrep = 10
 path = getwd()
 outfile = 'locus_specific_modelComp.txt'
-if(predicted_model_iso_mig$allocation=='isolation'){
+if(predicted_model_iso_mig$allocation=='migration'){
 	# get the posterior
 	posterior_IM = read.table(paste("ABC_", nameA, "_", nameB, "/estim/posterior_IM_2M_2N.txt", sep=''), h=T)
 	
