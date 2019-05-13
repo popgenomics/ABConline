@@ -1,6 +1,6 @@
 nmultilocus = 500 # number of multilocus simulations per iteration
 nIterations_model_comp = 6 # number of subdirectories for the simulations used in the RF model comparison
-nIterations_estim = 2000 # number of subdirectories for the simulations used in the nnet param estimates
+nIterations_estim = 1000 # number of subdirectories for the simulations used in the nnet param estimates
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
 ntree = 1000 # number of tree for the random forest (RF) model comparison
 
