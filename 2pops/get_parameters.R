@@ -281,9 +281,30 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
 	##############
 	# inferences
 	ss = 2:40
-	target = matrix(as.numeric(unlist(ss_obs[, ss])),nrow=1)
+	target_rf = ss_obs[, ss]
+	
+	library(abcrf)
+	sim_training = 1:2000
+	params_model_rf = params_sim[[model]][sim_training,]
+	stats_model_rf = ss_sim[[model]][sim_training, ss]
 
+	res_rf = list()
+	for(i in 1:ncol(params_model_rf)){
+		parameter = params_model_rf[,i]
+		data = data.frame(parameter, stats_model_rf)
+		mod = regAbcrf(parameter~., data, ntree=1000)
+		estimate = predict(mod, target_rf, data)
+
+		param_name = colnames(params_sim[[model]])[i]
+		res_rf[[param_name]] = list()
+		res_rf[[param_name]][['expectation']] = estimate$expectation
+		res_rf[[param_name]][['variance']] = estimate$variance
+		res_rf[[param_name]][['quantile025']] = estimate$quantiles[1]
+		res_rf[[param_name]][['quantile975']] = estimate$quantiles[2] 
+	}	
+		
 	library('nnet')
+	target = matrix(as.numeric(unlist(ss_obs[, ss])),nrow=1)
 	x = matrix(as.numeric(unlist(params_sim[[model]])), byrow=F, ncol=ncol(params_sim[[model]]))
 	sumstat = matrix(as.numeric(unlist(ss_sim[[model]][,ss])), byrow=F, ncol=ncol(ss_sim[[model]][,ss]))
 	transf_obs = rep("logit", ncol(params_sim[[model]]))
@@ -294,13 +315,16 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
 	posterior = res$x
 	colnames(posterior) = colnames(params_sim[[model]])
 	write.table(posterior, paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
-	pdf(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.pdf', sep=''), bg='white', width=10, height=8)
-	par(mfrow=c(ceiling(nparams/4), 4), mar=c(4.5, 3.75, 3.75, 1.75))
-	for(i in 1:nparams){
-		babar(params_sim[[model]][,i], res$x[,i], xl=colnames(params_sim[[model]])[i], legende=F)
-	}
-	dev.off()
+	#pdf(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.pdf', sep=''), bg='white', width=10, height=8)
+	#par(mfrow=c(ceiling(nparams/4), 4), mar=c(4.5, 3.75, 3.75, 1.75))
+	#for(i in 1:nparams){
+	#	babar(params_sim[[model]][,i], res$x[,i], xl=colnames(params_sim[[model]])[i], legende=F)
+	#}
+	#dev.off()
 	
-	return(posterior)
+	res_tot = list()
+	res_tot[['random_forest']] = res_rf
+	res_tot[['neural_network']] = posterior	
+	return(res_tot)
 }
 

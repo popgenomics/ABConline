@@ -142,7 +142,7 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	mod = abcrf(modIndexes~., data = data.frame(modIndexes, all_models[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
 	predicted_model = predict(mod, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, all_models[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
 	
-	write('MODEL COMPARISON #2: IM versus SC', outfile, append=F)
+	write('MODEL COMPARISON #2: IM versus SC', outfile, append=T)
 	write('#confusion matrix:', outfile, append=T)
 	write.table(mod$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
 	write(paste('\n#best model: ', predicted_model$allocation, sep=''), outfile, append=T)
