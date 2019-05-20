@@ -2,7 +2,7 @@
 # #!/usr/bin/Rscript
 for(i in commandArgs()){
 	tmp = strsplit(i, '=')
-	if(tmp[[1]][1] == 'Nref'){ Nref = as.float(tmp[[1]][2]) }
+	if(tmp[[1]][1] == 'Nref'){ Nref = as.double(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'nameA'){ nameA = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nameB'){ nameB = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nMin'){ nMin = as.integer(tmp[[1]][2]) }
