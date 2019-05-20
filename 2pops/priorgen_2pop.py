@@ -47,7 +47,7 @@ for i in config_yaml:
 config_yaml.close()
 
 # convert parameter values in coalescent units
-Nref = N_bound[1]
+Nref = (N_bound[1]+N_bound[0])/2.0
 N_bound[0] /= Nref
 N_bound[1] /= Nref
 T_bound[0] /= (4*Nref)
