@@ -33,7 +33,7 @@ region = sys.argv[5] # if == coding: will only deal with synonymous codons; if =
 Lmin = int(sys.argv[6]) # minimum length for a locus to be retained. example: 30
 max_N_tolerated = float(sys.argv[7]) # if an allele has %N > threshold_N --> sequence is rejected
 nMin = int(sys.argv[8]) # minimum number of individuals within a species. example: 10
-Nref = int(sys.argv[9]) # size of the reference population, arbitrary fixed. i.e: Nref=100000
+Nref = int(float(sys.argv[9])) # size of the reference population, arbitrary fixed. i.e: Nref=100000
 mu = float(sys.argv[10]) # mutation rate by bp and by generation. example: 0.00000002
 rho_over_theta = float(sys.argv[11]) # ratio of the recombination rate over mutation. example: 1
 
