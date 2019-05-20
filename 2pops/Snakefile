@@ -26,6 +26,7 @@ ITERATIONS_ESTIMATES = range(nIterations_estim)
 #mu = 0.000000003
 #rho_over_theta = 1
 nspecies = config['nspecies']
+config_yaml = config['config_yaml']
 infile = config['infile']
 region = config['region']
 nameA = config['nameA']
@@ -140,7 +141,7 @@ rule simulationsModelComp:
 #		module load pypy/2.7-5.10.0
 #		module load python/2.7
 #		source activate R_env
-		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp
+		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {config_yaml}
 		"""
 
 rule simulationsEstim:
@@ -160,7 +161,7 @@ rule simulationsEstim:
 #		module load pypy/2.7-5.10.0
 #		module load python/2.7
 #		source activate R_env
-		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim
+		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim {config_yaml}
 		"""
 
 
