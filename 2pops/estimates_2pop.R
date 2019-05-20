@@ -38,11 +38,9 @@ for(model_tmp in list_models_param){
 	for(i in 1:ncol(posterior)){
 		if(colnames(posterior)[i]=='N1' || colnames(posterior)[i]=='N2' || colnames(posterior)[i]=='Na'){
 			write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025))*Nref, as.numeric(quantile(posterior[,i], 0.5))*Nref, as.numeric(quantile(posterior[,i], 0.975))*Nref, sep='\t'), outfile, append=T)
-		}else if{
-			if(colnames(posterior)[i]=='Tsplit' || colnames(posterior)[i]=='Tam' || colnames(posterior)[i]=='Tsc'){
-				write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025))*4*Nref, as.numeric(quantile(posterior[,i], 0.5))*4*Nref, as.numeric(quantile(posterior[,i], 0.975))*4*Nref, sep='\t'), outfile, append=T)
-			}
-		}else{
+		}else if(colnames(posterior)[i]=='Tsplit' || colnames(posterior)[i]=='Tam' || colnames(posterior)[i]=='Tsc'){
+			write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025))*4*Nref, as.numeric(quantile(posterior[,i], 0.5))*4*Nref, as.numeric(quantile(posterior[,i], 0.975))*4*Nref, sep='\t'), outfile, append=T)
+		} else{
 			write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
 		}
 	}
