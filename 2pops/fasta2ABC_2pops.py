@@ -386,7 +386,7 @@ if nameOut == 'NA':
 				bpfile_L2.append(int(ceil(nSites)))
 				bpfile_L3.append(nA)
 				bpfile_L4.append(nB)
-				bpfile_L5.append(4*Nref*mu*nSites)
+				bpfile_L5.append(4*Nref*mu*nSites) # theta = 4.Nref.µ.L, where Nref is the diploid population size
 				bpfile_L6.append(4*Nref*mu*nSites*rho_over_theta)
 					
 				# informations about locus
@@ -496,7 +496,7 @@ if nameOut == 'NA':
 				bpfile_L2.append(int(ceil(nSites)))
 				bpfile_L3.append(nA)
 				bpfile_L4.append(nB)
-				bpfile_L5.append(4*Nref*mu*nSites)
+				bpfile_L5.append(4*Nref*mu*nSites) # theta = 4.Nref.µ.L, where Nref is the diploid population size
 				bpfile_L6.append(4*Nref*mu*nSites*rho_over_theta)
 					
 				# informations about locus
@@ -627,7 +627,7 @@ else: # if there is an outgroup
 					bpfile_L2.append(int(ceil(nSites)))
 					bpfile_L3.append(nA)
 					bpfile_L4.append(nB)
-					bpfile_L5.append(4*Nref*mu*nSites*scalar[locus_i])
+					bpfile_L5.append(4*Nref*mu*nSites*scalar[locus_i]) # theta = 4.Nref.µ.L, where Nref is the diploid population size
 					bpfile_L6.append(4*Nref*mu*nSites*rho_over_theta*scalar[locus_i])
 						
 					# informations about locus
@@ -757,7 +757,7 @@ else: # if there is an outgroup
 					bpfile_L2.append(int(ceil(nSites)))
 					bpfile_L3.append(nA)
 					bpfile_L4.append(nB)
-					bpfile_L5.append(4*Nref*mu*nSites*scalar[locus_i])
+					bpfile_L5.append(4*Nref*mu*nSites*scalar[locus_i]) # theta = 4.Nref.µ.L, where Nref is the diploid population size
 					bpfile_L6.append(4*Nref*mu*nSites*rho_over_theta*scalar[locus_i])
 						
 					# informations about locus

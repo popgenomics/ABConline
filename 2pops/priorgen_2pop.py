@@ -7,7 +7,7 @@ from numpy.random import uniform
 from numpy.random import binomial
 from numpy.random import beta
 from random import shuffle
-help = "\t\033[1;31;40mTakes one model specifier and a number of multilocus simulations as argument:\033[0m\n\t\t"
+help = "\t\033[1;31;40mTakes one model specifier, a number of multilocus simulations and a config.yaml file containing prior boundaries as arguments:\033[0m\n\t\t"
 help += "\n\t\t".join(["SC_1M_1N", "SC_1M_2N", "SC_2M_1N", "SC_2M_2N", "AM_1M_1N", "AM_1M_2N", "AM_2M_1N", "AM_2M_2N", "IM_1M_1N", "IM_1M_2N", "IM_2M_1N", "IM_2M_2N", "SI_1N", "SI_2N"])
 help += "\n\n"
 help += "\t\033[1;32;40m#SI\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -ej tbs 2 1 -eN tbs tbs\n"
@@ -16,18 +16,42 @@ help += "\t\033[1;32;30m#PAM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 t
 help += "\t\033[1;32;40m#IM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs\n"
 help += "\t\033[1;32;40m#SC\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -n 1 tbs -n 2 tbs -eM tbs 0 -ej tbs 2 1 -eN tbs tbs\n"
 help += "\t\033[1;32;40m#PSC\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ema tbs 2 0 0 0 0 -ema tbs 2 0 tbs tbs 0 -ema tbs 2 0 0 0 0 -ej tbs 2 1 -eN tbs tbs\n\n"
-help += "\t\033[1;32;40mExample: ./priorgen.py SC_2M_2N 1000\033[0m\n"
+help += "\t\033[1;32;40mExample: ./priorgen.py SC_2M_2N 1000 config_yaml\033[0m\n"
 
-if len(sys.argv) != 3:
+if len(sys.argv) != 4:
 	print(help)
 	sys.exit()
 
 # Configuration of the prior distribution
 nMultilocus = int(sys.argv[2])
-N_bound = [0, 100]
-T_bound = [0, 25]
-M_bound = [0, 40]
+
 shape_bound = [0.01, 50]
+N_bound = [0, 0] # number of diploid individuals in the population
+T_bound = [0, 0] # number of generations
+M_bound = [0, 0] # 4.N.m , so the number of diploid migrant copies is 2.N.m
+config_yaml = open(sys.argv[3], 'r')
+for i in config_yaml:
+	i = i.strip().split(':')
+	if(i[0] == 'N_min'):
+		N_bound[0] = float(i[1])
+	if(i[0] == 'N_max'):
+		N_bound[1] = float(i[1])
+	if(i[0] == 'Tsplit_min'):
+		T_bound[0] = float(i[1])
+	if(i[0] == 'Tsplit_max'):
+		T_bound[1] = float(i[1])
+	if(i[0] == 'M_min'):
+		M_bound[0] = float(i[1])
+	if(i[0] == 'M_max'):
+		M_bound[1] = float(i[1])
+config_yaml.close()
+
+# convert parameter values in coalescent units
+Nref = N_bound[1]
+N_bound[0] /= Nref
+N_bound[1] /= Nref
+T_bound[0] /= (4*Nref)
+T_bound[1] /= (4*Nref)
 
 # read bpfile
 infile = open("bpfile", "r")

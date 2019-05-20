@@ -2,6 +2,7 @@
 # #!/usr/bin/Rscript
 for(i in commandArgs()){
 	tmp = strsplit(i, '=')
+	if(tmp[[1]][1] == 'Nref'){ Nref = as.float(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'nameA'){ nameA = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nameB'){ nameB = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nMin'){ nMin = as.integer(tmp[[1]][2]) }
@@ -28,43 +29,22 @@ obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 source('/shared/home/croux/softwares/ABConline/2pops/get_parameters.R')
 #source("/home/croux/Documents/ABConline/2pops/get_parameters.R")
 
-# IM_2M_2N
-model_tmp = 'IM_2M_2N'
-write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
-posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model=model_tmp)
-write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
-for(i in 1:ncol(posterior)){
-	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
-}
-
-
-
-# SI_2N
-model_tmp = 'SI_2N'
-write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
-posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model=model_tmp)
-write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
-for(i in 1:ncol(posterior)){
-	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
-}
-
-
-# AM_2M_2N
-model_tmp = 'AM_2M_2N'
-write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
-posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model=model_tmp)
-write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
-for(i in 1:ncol(posterior)){
-	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
-}
-
-
-# SC_2M_2N
-model_tmp = 'SC_2M_2N'
-write(paste('\n#####\n\nparameters of model: ', model_tmp, sep=''), outfile, append=T)
-posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model=model_tmp)
-write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
-for(i in 1:ncol(posterior)){
-	write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
+# SI_1N; SI_2N; IM_2M_2N; AM_2M_2N; SC_2M_2N
+list_models_param = c('SI_1N', 'SI_2N', 'IM_2M_2N', 'AM_2M_2N', 'SC_2M_2N')
+for(model_tmp in list_models_param){
+	write(paste('\n#####\n\nparameters of model using neural network: ', model_tmp, sep=''), outfile, append=T)
+	posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model=model_tmp)
+	write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
+	for(i in 1:ncol(posterior)){
+		if(colnames(posterior)[i]=='N1' || colnames(posterior)[i]=='N2' || colnames(posterior)[i]=='Na'){
+			write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025))*Nref, as.numeric(quantile(posterior[,i], 0.5))*Nref, as.numeric(quantile(posterior[,i], 0.975))*Nref, sep='\t'), outfile, append=T)
+		}else{
+			if(colnames(posterior)[i]=='Tsplit' || colnames(posterior)[i]=='Tam' || colnames(posterior)[i]=='Tsc'){
+				write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025))*4*Nref, as.numeric(quantile(posterior[,i], 0.5))*4*Nref, as.numeric(quantile(posterior[,i], 0.975))*4*Nref, sep='\t'), outfile, append=T)
+			}
+		}else{
+			write(paste(colnames(posterior)[i], as.numeric(quantile(posterior[,i], 0.025)), as.numeric(quantile(posterior[,i], 0.5)), as.numeric(quantile(posterior[,i], 0.975)), sep='\t'), outfile, append=T)
+		}
+	}
 }
 
