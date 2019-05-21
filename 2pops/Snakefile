@@ -44,6 +44,11 @@ rule targets:
 		expand("ABC_{nameA}_{nameB}/estim/posterior_SC_2M_2N.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/estim/posterior_SI_2N.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/estim/posterior_SI_1N.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/estim/posterior_IM_2M_2N.pdf", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/estim/posterior_AM_2M_2N.pdf", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/estim/posterior_SC_2M_2N.pdf", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/estim/posterior_SI_2N.pdf", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/estim/posterior_SI_1N.pdf", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/modelComp/locus_specific_modelComp.txt", nameA=nameA, nameB=nameB)
 	shell:
 		"""
@@ -162,7 +167,12 @@ rule estimation:
 		"ABC_{nameA}_{nameB}/estim/posterior_AM_2M_2N.txt",
 		"ABC_{nameA}_{nameB}/estim/posterior_SC_2M_2N.txt",
 		"ABC_{nameA}_{nameB}/estim/posterior_SI_1N.txt",
-		"ABC_{nameA}_{nameB}/estim/posterior_SI_2N.txt"
+		"ABC_{nameA}_{nameB}/estim/posterior_SI_2N.txt",
+		"ABC_{nameA}_{nameB}/estim/posterior_IM_2M_2N.pdf",
+		"ABC_{nameA}_{nameB}/estim/posterior_AM_2M_2N.pdf",
+		"ABC_{nameA}_{nameB}/estim/posterior_SC_2M_2N.pdf",
+		"ABC_{nameA}_{nameB}/estim/posterior_SI_1N.pdf",
+		"ABC_{nameA}_{nameB}/estim/posterior_SI_2N.pdf"
 	threads: nCPU_R
 	shell:
 		"""
