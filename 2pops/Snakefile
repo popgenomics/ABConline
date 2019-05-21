@@ -6,7 +6,7 @@ ntree = 1000 # number of tree for the random forest (RF) model comparison
 
 
 MODELS_COMP = ['SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N', 'AM_1M_1N', 'AM_1M_2N', 'AM_2M_1N', 'AM_2M_2N', 'IM_1M_1N', 'IM_1M_2N', 'IM_2M_1N', 'IM_2M_2N', 'SI_1N', 'SI_2N']
-MODELS_ESTIM = ['SC_2M_2N', 'AM_2M_2N', 'IM_2M_2N', 'SI_2N']
+MODELS_ESTIM = ['SC_2M_2N', 'AM_2M_2N', 'IM_2M_2N', 'SI_2N', 'SI_1N']
 ITERATIONS_MODEL_COMP = range(nIterations_model_comp)
 ITERATIONS_ESTIMATES = range(nIterations_estim)
 
@@ -43,6 +43,7 @@ rule targets:
 		expand("ABC_{nameA}_{nameB}/estim/posterior_AM_2M_2N.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/estim/posterior_SC_2M_2N.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/estim/posterior_SI_2N.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/estim/posterior_SI_1N.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/modelComp/locus_specific_modelComp.txt", nameA=nameA, nameB=nameB)
 	shell:
 		"""
@@ -158,13 +159,10 @@ rule estimation:
 	output:
 		"ABC_{nameA}_{nameB}/estim/report_{nameA}_{nameB}.txt",
 		"ABC_{nameA}_{nameB}/estim/posterior_IM_2M_2N.txt",
-		"ABC_{nameA}_{nameB}/estim/posterior_IM_2M_2N.pdf",
 		"ABC_{nameA}_{nameB}/estim/posterior_AM_2M_2N.txt",
-		"ABC_{nameA}_{nameB}/estim/posterior_AM_2M_2N.pdf",
 		"ABC_{nameA}_{nameB}/estim/posterior_SC_2M_2N.txt",
-		"ABC_{nameA}_{nameB}/estim/posterior_SC_2M_2N.pdf",
-		"ABC_{nameA}_{nameB}/estim/posterior_SI_2N.txt",
-		"ABC_{nameA}_{nameB}/estim/posterior_SI_2N.pdf"
+		"ABC_{nameA}_{nameB}/estim/posterior_SI_1N.txt",
+		"ABC_{nameA}_{nameB}/estim/posterior_SI_2N.txt"
 	threads: nCPU_R
 	shell:
 		"""

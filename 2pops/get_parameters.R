@@ -1,6 +1,7 @@
 #!/usr/bin/Rscript
 # function to estimate the parameters
 abc_nnet_multivar <- function(target,x,sumstat,tol,gwt,rejmethod=F,noweight=F,transf="none",bb=c(0,0),nb.nnet=10,size.nnet=5,trace=T, MaxNWts=10000){
+	options(digits=5)
 	require(nnet)
 	# target is the set of target summary stats
 	# x is the parameter vector (long vector of numbers from the simulations) and is the dependent variable for the regression
@@ -234,6 +235,7 @@ babar<-function(a,b,space=2,breaks="auto",AL=0.5,nameA="A",nameB="B",xl="",yl=""
 
 
 get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
+	options(digits=5)
 	###################
 	# get observed data
 	# observed data
