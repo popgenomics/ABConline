@@ -284,14 +284,15 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
 	# inferences
 	ss = 2:40
 	target_rf = ss_obs[, ss]
-	
+
+	# RANDOM FOREST	
 	library(abcrf)
-	sim_training = 1:2000
-	params_model_rf = params_sim[[model]][sim_training,]
-	stats_model_rf = ss_sim[[model]][sim_training, ss]
+	sim_training = 1:5000 # in case of debug
+	params_model_rf = params_sim[[model]][sim_training,] # in case of debug
+	stats_model_rf = ss_sim[[model]][sim_training, ss] # in case of debug
 
 	res_rf = list()
-	for(i in 1:ncol(params_model_rf)){
+	for(i in 1:nparams){
 		parameter = params_model_rf[,i]
 		data = data.frame(parameter, stats_model_rf)
 		mod = regAbcrf(parameter~., data, ntree=1000)
@@ -305,6 +306,8 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
 		res_rf[[param_name]][['quantile975']] = estimate$quantiles[2] 
 	}	
 		
+
+	# NEURAL NETWORK
 	library('nnet')
 	target = matrix(as.numeric(unlist(ss_obs[, ss])),nrow=1)
 	x = matrix(as.numeric(unlist(params_sim[[model]])), byrow=F, ncol=ncol(params_sim[[model]]))
@@ -317,16 +320,53 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
 	posterior = res$x
 	colnames(posterior) = colnames(params_sim[[model]])
 	write.table(posterior, paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
-	#pdf(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.pdf', sep=''), bg='white', width=10, height=8)
-	#par(mfrow=c(ceiling(nparams/4), 4), mar=c(4.5, 3.75, 3.75, 1.75))
-	#for(i in 1:nparams){
-	#	babar(params_sim[[model]][,i], res$x[,i], xl=colnames(params_sim[[model]])[i], legende=F)
-	#}
-	#dev.off()
+
 	
 	res_tot = list()
 	res_tot[['random_forest']] = res_rf
 	res_tot[['neural_network']] = posterior	
+
+	# plot pdf	
+	library(ggplot2)
+	library(ggpubr)
+	theme_set(theme_classic())
+	figure = list()
+
+	for(i in 1:nparams){
+		param_name = colnames(params_sim[[model]])[i]
+		
+		scale = 1
+		if(param_name == 'N1' || param_name == 'N2' || param_name == 'Na'){
+			scale = Nref
+		}else if(param_name == 'Tsplit' || param_name == 'Tam' || param_name == 'Tsc'){ scale = 4*Nref }
+		
+		prior = x[,i] * scale
+		posterior = res$x[,i] * scale
+		prior = data.frame(x = prior, label=rep('prior', length(prior)))
+		posterior = data.frame(x = posterior, label=rep('posterior', length(posterior)))
+		df=rbind(prior, posterior)
+
+		rf_estimate = as.numeric(res_rf[[param_name]][['expectation']]) * scale
+		rf_estimate_inf = as.numeric(res_rf[[param_name]][['quantile025']]) * scale
+		rf_estimate_sup = as.numeric(res_rf[[param_name]][['quantile975']]) * scale
+		
+		
+		pp = ggdensity(df, x='x', fill='label') +
+			theme(axis.text=element_text(size=15), axis.title=element_text(size=15), legend.text=element_text(size=15)) +
+			geom_vline(xintercept = rf_estimate, color = "black", size=1.25) +
+			geom_vline(xintercept = rf_estimate_inf, color = "black", size=0.25, linetype="dashed") +
+			geom_vline(xintercept = rf_estimate_sup, color = "black", size=0.25, linetype="dashed") +
+			labs(fill = "") +
+			scale_x_continuous(name = param_name) +
+			scale_y_continuous(name = 'density') +
+			scale_fill_manual(values = c("#f7f7f7", "#f1a340"))
+		
+		figure[[param_name]] = pp
+	}
+	ggarrange(plotlist=figure, common.legend = TRUE, labels='AUTO', align='hv')
+	ggsave(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.pdf', sep=''), bg='white', width=13, height=10)
+
+	# retur inferences	
 	return(res_tot)
 }
 
