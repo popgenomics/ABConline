@@ -363,6 +363,9 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
 	
 }else{
+	# change directory
+	setwd(paste('ABC_', nameA, '_', nameB, '/modelComp', sep=''))
+
 	write("no locus specific model comparison since there is no gene flow", outfile, append=F)
 }
 
