@@ -364,7 +364,7 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
 		figure[[param_name]] = pp
 	}
 	ggarrange(plotlist=figure, common.legend = TRUE, labels='AUTO', align='hv')
-	ggsave(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.pdf', sep=''), bg='white', width=13, height=10)
+	ggsave(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.pdf', sep=''), bg='white', width=20, height=10)
 
 	# retur inferences	
 	return(res_tot)
