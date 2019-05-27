@@ -8,9 +8,9 @@ import time
 #    for model in SI; do for N in 1N 2N; do ./submit.py 100000 10 ${model}_${N}; done; done
 
 
-if len(sys.argv) != 8:
-	print("\n\tsubmit_simulations_2pop.py [nmultilocus] [iteration] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB] [sub_dir_sim] [config_yaml]")
-	print("\n\tex: submit_simulations_2pop.py 1000 2 SI_1N flo mal sim_SI_1N config.yaml\n\tto simulate 1000 multilocus simulations at the second iteration, in the folder sim_SI_1N") 
+if len(sys.argv) != 9:
+	print("\n\tsubmit_simulations_2pop.py [nmultilocus] [iteration] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB] [sub_dir_sim] [sub_dir_model] [config_yaml]")
+	print("\n\tex: submit_simulations_2pop.py 1000 2 SI_1N flo mal sim_SI_1N SI_1N config.yaml\n\tto simulate 1000 multilocus simulations at the second iteration, in the folder sim_SI_1N") 
 	sys.exit(0)
 
 nmultilocus = int(sys.argv[1]) # 10000
@@ -19,7 +19,8 @@ model = sys.argv[3]
 nameA = sys.argv[4] # name of the species A
 nameB = sys.argv[5] # name of the species B
 sub_dir_sim = sys.argv[6] # name of the subdir where the simulations will be run
-config_yaml = sys.argv[7]
+sub_dir_model = sys.argv[7] # name of the sub_sub_dir containing ABCstat.txt
+config_yaml = sys.argv[8]
 
 print(model)
 path = os.getcwd() + '/ABC_{0}_{1}'.format(nameA, nameB)
@@ -57,9 +58,9 @@ if mscommand == "":
 #tmp += "cd {0}/{1}_{2}; ".format(path, model, iteration)
 
 tmp = "mkdir {0}/{1}; ".format(path, sub_dir_sim)
-tmp += "mkdir {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, model, iteration)
-tmp += "cp {0}/bpfile {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, model, iteration)
-tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, model, iteration)
+tmp += "mkdir {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
+tmp += "cp {0}/bpfile {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
+tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 
 #tmp = "mkdir {0}/{1}_{2}; ".format(path, sub_dir_sim, iteration)
 #tmp += "cp {0}/bpfile {0}/{1}_{2}; ".format(path, sub_dir_sim, iteration)

@@ -31,10 +31,11 @@ source('/shared/home/croux/softwares/ABConline/2pops/get_parameters.R')
 
 # SI_2N; IM_2M_2N; AM_2M_2N; SC_2M_2N
 options(digits=5)
-list_models_param = c('SI_1N', 'SI_2N', 'IM_2M_2N', 'AM_2M_2N', 'SC_2M_2N')
+#list_models_param = c('SI_1N', 'SI_2N', 'IM_2M_2N', 'AM_2M_2N', 'SC_2M_2N')
+list_models_param = c('IM_2M_2N')
 for(model_tmp in list_models_param){
 	write(paste('\n#####\n\nparameters of model using neural_network (upper lines) and random_forest (lower lines): ', model_tmp, sep=''), outfile, append=T)
-	posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model=model_tmp)
+	posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model=model_tmp, sub_dir_model=model_tmp)
 	write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
 	for(i in 1:ncol(posterior[['neural_network']])){
 		param_i = colnames(posterior[['neural_network']])[i]

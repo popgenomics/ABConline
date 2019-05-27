@@ -234,7 +234,7 @@ babar<-function(a,b,space=2,breaks="auto",AL=0.5,nameA="A",nameB="B",xl="",yl=""
 #}
 
 
-get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
+get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model){
 	options(digits=5)
 	###################
 	# get observed data
@@ -319,7 +319,7 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
 
 	posterior = res$x
 	colnames(posterior) = colnames(params_sim[[model]])
-	write.table(posterior, paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
+	write.table(posterior, paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
 
 	
 	res_tot = list()
@@ -364,7 +364,7 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model){
 		figure[[param_name]] = pp
 	}
 	ggarrange(plotlist=figure, common.legend = TRUE, labels='AUTO', align='hv')
-	ggsave(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', model, '.pdf', sep=''), bg='white', width=20, height=10)
+	ggsave(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.pdf', sep=''), bg='white', width=20, height=10)
 
 	# retur inferences	
 	return(res_tot)
