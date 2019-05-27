@@ -94,14 +94,20 @@ rule RNAseqFGT:
 		nameA={nameA},
 		nameB={nameB}
 	input:
-		expand("{infile}", infile=infile),
-		expand("ABC_{nameA}_{nameB}/nLoci.txt", nameA=nameA, nameB=nameB),
+		infos=expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}_infos.txt", nameA=nameA, nameB=nameB),
+		fasta=expand("{infile}", infile=infile),
+		nLoci=expand("ABC_{nameA}_{nameB}/nLoci.txt", nameA=nameA, nameB=nameB),
 	output:
 		expand("ABC_{nameA}_{nameB}/results_recombination.txt", nameA=nameA, nameB=nameB)
 	threads: 1
 	shell:	
 		"""
-		RNAseqFGT {infile} ABC_{params.nameA}_{params.nameB}/results_recombination.txt
+		x=$(cat {input.infos}  | grep -v locusName | awk '{print $2}' | sort -n | head -n1)
+		if (($x<99990)); then;
+			RNAseqFGT {input.fasta} {output}
+		else:
+			echo "{input.fasta} not in correct FASTA format (line length > 100000)" > {output}
+		fi
 		"""
 
 
