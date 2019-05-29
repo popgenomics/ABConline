@@ -1,7 +1,7 @@
-# snakemake  
+# A - snakemake  
 **The entire workflow is based on snakemake, which is essential for analysis.**  
 
-# python  
+# B - python  
 2pops/fasta2ABC_2pops.py  
 2pops/mscalc_2pop_observedDataset.py  
 2pops/mscalc_2pop.py  
@@ -23,7 +23,7 @@ from random import shuffle
 from numpy.random import randint  
 import time  
   
-# R  
+# C - R  
 **uses Rscript from /usr/bin or elsewhere**
 2pops/collaborative_plot.R  
 2pops/estimates_2pop_best.R  
@@ -40,9 +40,8 @@ library(abcrf)
 library('nnet')  
 library(ggplot2)  
 library(ggpubr)  
-
   
-# C
+# D - C
 **msnsam**  
 ## info  
 C code, compiled by executing the command ./clms (calling gcc) in the msnsam/ directory  
@@ -51,6 +50,6 @@ C code, compiled by executing the command ./clms (calling gcc) in the msnsam/ di
 ## info  
 C code compiled by: cc -Wall -o RNAseqFGT RNAseqFGT.c RNAseqFGT_seq_reading.c RNAseqFGT_analysis.c -I RNAseqFGT.h  
   
-# external  
+# E - external  
 **pandoc** (https://pandoc.org/index.html)  
 
