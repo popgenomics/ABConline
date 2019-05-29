@@ -16,6 +16,7 @@
 https://snakemake.readthedocs.io/en/stable/  
 
 # 2 - python  
+**Executables have to be linked to a bin directory**  
 ## scripts  
 2pops/fasta2ABC_2pops.py  
 2pops/mscalc_2pop_observedDataset.py  
@@ -29,16 +30,16 @@ https://snakemake.readthedocs.io/en/stable/
 **uses pypy as python interpreter**    
 import sys  
 import os  
-from math import ceil  
 import random  
+import time  
+from math import ceil  
 from numpy.random import uniform  
 from numpy.random import binomial  
 from numpy.random import beta  
-from random import shuffle  
 from numpy.random import randint  
-import time  
   
 # 3 - R  
+**Executables have to be linked to a bin directory**  
 ## scripts  
 **uses Rscript from /usr/bin or elsewhere**  
 2pops/collaborative_plot.R  
@@ -58,6 +59,7 @@ library(ggplot2)
 library(ggpubr)  
   
 # 4 - C
+**Executables have to be linked to a bin directory**  
 ## msnsam  
 ### info  
 C code, compiled by executing the command ./clms (calling gcc) in the msnsam/ directory  
