@@ -1,3 +1,10 @@
+# Table of contents
+1. [Snakemake](#1---snakemake)  
+2. [Scripts in python](#2---python)  
+3. [Scripts in R](#3---r)  
+4. [Codes in C](#4---c)  
+5. [External codes](#5---external)  
+
 # 1 - snakemake  
 **The entire workflow is based on snakemake, which is essential for analysis.**  
 https://snakemake.readthedocs.io/en/stable/  
