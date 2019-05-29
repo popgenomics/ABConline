@@ -43,12 +43,12 @@ library(ggplot2)
 library(ggpubr)  
   
 # 4 - C
-**msnsam**  
-## info  
+## **msnsam**  
+### info  
 C code, compiled by executing the command ./clms (calling gcc) in the msnsam/ directory  
    
-**RNAseqFGT_src**  
-## info  
+##**RNAseqFGT_src**  
+### info  
 C code compiled by: cc -Wall -o RNAseqFGT RNAseqFGT.c RNAseqFGT_seq_reading.c RNAseqFGT_analysis.c -I RNAseqFGT.h  
   
 # 5 - external  
