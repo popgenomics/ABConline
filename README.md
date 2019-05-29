@@ -1,7 +1,11 @@
 # Table of contents
 1. [Snakemake](#1---snakemake)  
 2. [Scripts in python](#2---python)  
+	1. [scripts](##scripts)  
+	2. [dependencies](##dependencies)  
 3. [Scripts in R](#3---r)  
+	1. [scripts](##scripts)  
+	2. [dependencies](##dependencies)  
 4. [Codes in C](#4---c)  
 5. [External codes](#5---external)  
 
@@ -10,6 +14,7 @@
 https://snakemake.readthedocs.io/en/stable/  
 
 # 2 - python  
+## scripts  
 2pops/fasta2ABC_2pops.py  
 2pops/mscalc_2pop_observedDataset.py  
 2pops/mscalc_2pop.py  
@@ -32,6 +37,7 @@ from numpy.random import randint
 import time  
   
 # 3 - R  
+## scripts  
 **uses Rscript from /usr/bin or elsewhere**  
 2pops/collaborative_plot.R  
 2pops/estimates_2pop_best.R  
