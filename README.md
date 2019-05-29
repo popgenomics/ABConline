@@ -1,11 +1,11 @@
 # Table of contents
 1. [Snakemake](#1---snakemake)  
 2. [Scripts in python](#2---python)  
-	1. [scripts](##scripts)  
-	2. [dependencies](##dependencies)  
+	1. [scripts](#scripts)  
+	2. [dependencies](#dependencies)  
 3. [Scripts in R](#3---r)  
-	1. [scripts](##scripts)  
-	2. [dependencies](##dependencies)  
+	1. [scripts](#scripts)  
+	2. [dependencies](#dependencies)  
 4. [Codes in C](#4---c)  
 5. [External codes](#5---external)  
 
