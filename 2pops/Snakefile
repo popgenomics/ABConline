@@ -1,7 +1,7 @@
 nmultilocus = 500 # number of multilocus simulations per iteration
 nIterations_model_comp = 6 # number of subdirectories for the simulations used in the RF model comparison
-nIterations_estim = 1000 # number of subdirectories for the simulations used in the nnet param estimates
-nIterations_gof = 100 # number of subdirectories for the simulations used in the nnet param estimates
+nIterations_estim = 2000 # number of subdirectories for the simulations used in the nnet param estimates
+nIterations_gof = 200 # number of subdirectories for the simulations used in the nnet param estimates
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
 ntree = 1000 # number of tree for the random forest (RF) model comparison
 
@@ -35,17 +35,19 @@ rho_over_theta = config['rho_over_theta']
 
 rule targets:
 	input:
+		expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}_infos.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/ABCstat_global.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/ABCstat_loci.txt", nameA=nameA, nameB=nameB),
-		expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}_infos.txt", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/sfs_plot.pdf", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/sfs_table.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/results_recombination.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/modelComp/report_{nameA}_{nameB}.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/modelComp/best_model.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/modelComp/locus_specific_modelComp.txt", nameA=nameA, nameB=nameB),
-		expand("ABC_{nameA}_{nameB}/estim/report_{nameA}_{nameB}.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/best_model/report_{nameA}_{nameB}.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/best_model/posterior_bestModel.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/best_model/posterior_bestModel.pdf", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/estim/report_{nameA}_{nameB}.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/estim/posterior_IM_2M_2N.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/estim/posterior_IM_2M_2N.pdf", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/gof/goodness_of_fit_test.txt", nameA=nameA, nameB=nameB)
@@ -77,7 +79,9 @@ rule fasta2ABC_2pops:
 		expand("ABC_{nameA}_{nameB}/bpfile", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/nLoci.txt", nameA=nameA, nameB=nameB),
 		expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}_infos.txt", nameA=nameA, nameB=nameB),
-		expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}.ms", nameA=nameA, nameB=nameB)
+		expand("ABC_{nameA}_{nameB}/{nameA}_{nameB}.ms", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/sfs_plot.pdf", nameA=nameA, nameB=nameB),
+		expand("ABC_{nameA}_{nameB}/sfs_table.txt", nameA=nameA, nameB=nameB)
 	threads: 8
 	shell:
 		"""
@@ -86,6 +90,7 @@ rule fasta2ABC_2pops:
 #		module load python/2.7;
 #		source activate R_env;
 		fasta2ABC_2pops.py {infile} {params.nameA} {params.nameB} {params.nameOutgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}
+		if [ {params.nameOutgroup} = 'NA' ]; then echo "No outgroup = no joint SFS of derived allele frequency" > ABC_{params.nameA}_{params.nameB}/sfs_table.txt && pandoc ABC_{params.nameA}_{params.nameB}/sfs_table.txt ABC_{params.nameA}_{params.nameB}/sfs_plot.pdf; fi
 		"""
 
 
