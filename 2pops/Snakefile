@@ -91,7 +91,10 @@ rule fasta2ABC_2pops:
 #		source activate R_env;
 		module load pandoc/2.7.2;
 		fasta2ABC_2pops.py {infile} {params.nameA} {params.nameB} {params.nameOutgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}
-		if [ {params.nameOutgroup} = 'NA' ]; then echo "No outgroup = no joint SFS of derived allele frequency" > ABC_{params.nameA}_{params.nameB}/sfs_table.txt && pandoc ABC_{params.nameA}_{params.nameB}/sfs_table.txt ABC_{params.nameA}_{params.nameB}/sfs_plot.pdf; fi
+		if [ {params.nameOutgroup} = 'NA' ]; then
+			echo "No outgroup = no joint SFS of derived allele frequency" > ABC_{params.nameA}_{params.nameB}/sfs_table.txt
+			pandoc ABC_{params.nameA}_{params.nameB}/sfs_table.txt -o ABC_{params.nameA}_{params.nameB}/sfs_plot.pdf
+		fi
 		"""
 
 
