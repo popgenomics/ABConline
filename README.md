@@ -7,6 +7,8 @@
 	1. [scripts](#scripts)  
 	2. [dependencies](#dependencies)  
 4. [Codes in C](#4---c)  
+	1. [msnsam (by Jeffrey Ross-Ibarra)](#msnsam)  
+	2. [RNAseqFGT (by Laurent Duret)](#RNAseqFGT)  
 5. [External codes](#5---external)  
 
 # 1 - snakemake  
@@ -56,11 +58,11 @@ library(ggplot2)
 library(ggpubr)  
   
 # 4 - C
-## **msnsam**  
+## msnsam  
 ### info  
 C code, compiled by executing the command ./clms (calling gcc) in the msnsam/ directory  
    
-## **RNAseqFGT_src**  
+## RNAseqFGT  
 ### info  
 C code compiled by: cc -Wall -o RNAseqFGT RNAseqFGT.c RNAseqFGT_seq_reading.c RNAseqFGT_analysis.c -I RNAseqFGT.h  
   
