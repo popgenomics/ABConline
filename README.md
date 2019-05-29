@@ -47,7 +47,7 @@ library(ggpubr)
 ### info  
 C code, compiled by executing the command ./clms (calling gcc) in the msnsam/ directory  
    
-##**RNAseqFGT_src**  
+## **RNAseqFGT_src**  
 ### info  
 C code compiled by: cc -Wall -o RNAseqFGT RNAseqFGT.c RNAseqFGT_seq_reading.c RNAseqFGT_analysis.c -I RNAseqFGT.h  
   
