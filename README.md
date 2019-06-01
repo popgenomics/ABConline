@@ -10,6 +10,8 @@
 	1. [msnsam (by Jeffrey Ross-Ibarra)](#msnsam)  
 	2. [RNAseqFGT (by Laurent Duret)](#RNAseqFGT)  
 5. [External codes](#5---external)  
+6. [Workflow](#6---workflow)  
+	1. [Two populations](#two-populations)  
 
 # 1 - snakemake  
 **The entire workflow is based on snakemake, which is essential for analysis.**  
@@ -71,10 +73,8 @@ C code compiled by: cc -Wall -o RNAseqFGT RNAseqFGT.c RNAseqFGT_seq_reading.c RN
 # 5 - external  
 **pandoc** (https://pandoc.org/index.html)  
 The Pandoc call requires in this workflow that **pdflatex** is pre-installed.  
-
-<object data="https://github.com/popgenomics/ABConline/blob/master/dag_2pops.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="http://yoursite.com/the.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://yoursite.com/the.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
+  
+# 6 - workflow  
+## two populations  
+![DAG (directed acyclic graph)](https://github.com/popgenomics/ABConline/blob/master/dag_2pops.pdf.png)  
 
