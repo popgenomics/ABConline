@@ -72,3 +72,9 @@ C code compiled by: cc -Wall -o RNAseqFGT RNAseqFGT.c RNAseqFGT_seq_reading.c RN
 **pandoc** (https://pandoc.org/index.html)  
 The Pandoc call requires in this workflow that **pdflatex** is pre-installed.  
 
+<object data="https://github.com/popgenomics/ABConline/blob/master/dag_2pops.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="http://yoursite.com/the.pdf">
+        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://yoursite.com/the.pdf">Download PDF</a>.</p>
+    </embed>
+</object>
+
