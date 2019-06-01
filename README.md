@@ -54,7 +54,7 @@ from numpy.random import randint
 library(plotly)  
 library(viridis)  
 library(abcrf)  
-library('nnet')  
+library(nnet)  
 library(ggplot2)  
 library(ggpubr)  
   
@@ -70,4 +70,5 @@ C code compiled by: cc -Wall -o RNAseqFGT RNAseqFGT.c RNAseqFGT_seq_reading.c RN
   
 # 5 - external  
 **pandoc** (https://pandoc.org/index.html)  
+The Pandoc call requires in this workflow that **pdflatex** is pre-installed.  
 
