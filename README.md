@@ -11,8 +11,8 @@
 	2. [RNAseqFGT (by Laurent Duret)](#RNAseqFGT)  
 5. [External codes](#5---external)  
 6. [Config files](#6---config-files)  
-	1. [cluster.json](#cluster.json)  
-	2. [config.yaml](#config.yaml)  
+	1. [cluster.json](#cluster-.-json)  
+	2. [config.yaml](#config-.-yaml)  
 7. [Workflow](#7---workflow)  
 	1. [Two populations](#two-populations)  
 
