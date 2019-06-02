@@ -11,8 +11,8 @@
 	2. [RNAseqFGT (by Laurent Duret)](#RNAseqFGT)  
 5. [External codes](#5---external)  
 6. [Config files](#6---config-files)  
-	1. [cluster.json](#cluster-.-json)  
-	2. [config.yaml](#config-.-yaml)  
+	1. [cluster.json](#clusterjson)  
+	2. [config.yaml](#configyaml)  
 7. [Workflow](#7---workflow)  
 	1. [Two populations](#two-populations)  
 
@@ -79,7 +79,7 @@ The Pandoc call requires in this workflow that **pdflatex** is pre-installed.
   
 # 6 - config files  
 ## cluster.json  
-This contains informations about the submited jobs, in particular, the resources required (CPU, memory, duration).  
+This file contains informations for **Slurm** about the submited jobs, in particular, the required resources (CPU, memory, duration).  
 ```
 {  
     "__default__" :  
@@ -119,7 +119,7 @@ This contains informations about the submited jobs, in particular, the resources
 ``` 
   
 ## config.yaml  
-configuration file used by Snakemake to adapt the workflow to a particular analysis. Contains information such as species names, region type (encoding, non-coding), prior borders, etc...  
+Configuration file used by Snakemake to adapt the workflow to a particular analysis. Contains information such as species names, region type (encoding, non-coding), prior borders, etc...  
 ```  
 nspecies: 2  
 infile: all_loci.fasta  
