@@ -80,7 +80,7 @@ The Pandoc call requires in this workflow that **pdflatex** is pre-installed.
 # 6 - config files  
 ## cluster.json  
 This contains informations about the submited jobs, in particular, the resources required (CPU, memory, duration).  
-`
+```
 {  
     "__default__" :  
     {  
@@ -116,11 +116,11 @@ This contains informations about the submited jobs, in particular, the resources
 	"memPerCpu" : 2500  
     }  
 }  
-`  
+``` 
   
 ## config.yaml  
 configuration file used by Snakemake to adapt the workflow to a particular analysis. Contains information such as species names, region type (encoding, non-coding), prior borders, etc...  
-`  
+```  
 nspecies: 2  
 infile: all_loci.fasta  
 region: coding  
@@ -138,7 +138,7 @@ Tsplit_min: 0
 Tsplit_max: 200000  
 M_min: 0  
 M_max: 10  
-`  
+```  
   
 # 7 - workflow  
 ## two populations  
