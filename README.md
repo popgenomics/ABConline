@@ -17,7 +17,7 @@
 	1. [Two populations](#two-populations)  
 
 # 1 - snakemake  
-**The entire workflow is based on snakemake, which is essential for analysis.**  
+**The entire workflow is based on snakemake.**  
 https://snakemake.readthedocs.io/en/stable/  
 
 # 2 - python  
