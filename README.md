@@ -67,11 +67,11 @@ library(ggpubr)
 **Executables have to be linked to a bin directory**  
 ## msnsam  
 ### info  
-C code, compiled by executing the command ./clms (calling gcc) in the msnsam/ directory  
+C code, compiled by executing the command ```./clms``` (calling gcc) in the msnsam/ directory  
    
 ## RNAseqFGT  
 ### info  
-C code compiled by: cc -Wall -o RNAseqFGT RNAseqFGT.c RNAseqFGT_seq_reading.c RNAseqFGT_analysis.c -I RNAseqFGT.h  
+C code compiled by: ```gcc -Wall -o RNAseqFGT RNAseqFGT.c RNAseqFGT_seq_reading.c RNAseqFGT_analysis.c -I RNAseqFGT.h```  
   
 # 5 - external  
 **pandoc** (https://pandoc.org/index.html)  
