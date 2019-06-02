@@ -81,63 +81,63 @@ The Pandoc call requires in this workflow that **pdflatex** is pre-installed.
 ## cluster.json  
 This contains informations about the submited jobs, in particular, the resources required (CPU, memory, duration).  
 `
-{
-    "__default__" :
-    {
-        "node" : 1,
-        "ntasks" : 1,
-        "n" : 1,
-	"cpusPerTask" : 1,
-	"memPerCpu" : 2500,
-	"time" : "00:20:00"
-    },
-    "fasta2ABC_2pops" :
-    {
-	"cpusPerTask" : 10,
-	"time" : "01:00:00",
-	"memPerCpu" : 3000
-    },
-    "modelComparison" :
-    {
-	"cpusPerTask" : 8,
-	"time" : "03:00:00",
-	"memPerCpu" : 2500
-    },
-    "estimation" :
-    {
-	"cpusPerTask" : 8,
-	"time" : "03:00:00",
-	"memPerCpu" : 2500
-    },
-    "estimation_best_model" :
-    {
-	"cpusPerTask" : 8,
-	"time" : "03:00:00",
-	"memPerCpu" : 2500
-    }
-}
+{  
+    "__default__" :  
+    {  
+        "node" : 1,  
+        "ntasks" : 1,  
+        "n" : 1,  
+	"cpusPerTask" : 1,  
+	"memPerCpu" : 2500,  
+	"time" : "00:20:00"  
+    },  
+    "fasta2ABC_2pops" :  
+    {  
+	"cpusPerTask" : 10,  
+	"time" : "01:00:00",  
+	"memPerCpu" : 3000  
+    },  
+    "modelComparison" :  
+    {  
+	"cpusPerTask" : 8,  
+	"time" : "03:00:00",  
+	"memPerCpu" : 2500  
+    },  
+    "estimation" :  
+    {  
+	"cpusPerTask" : 8,  
+	"time" : "03:00:00",  
+	"memPerCpu" : 2500  
+    },  
+    "estimation_best_model" :  
+    {  
+	"cpusPerTask" : 8,  
+	"time" : "03:00:00",  
+	"memPerCpu" : 2500  
+    }  
+}  
 `  
   
 ## config.yaml  
 configuration file used by Snakemake to adapt the workflow to a particular analysis. Contains information such as species names, region type (encoding, non-coding), prior borders, etc...  
 `  
-nspecies: 2
-infile: all_loci.fasta
-region: coding
-nameA: chi
-nameB: ros
-nameOutgroup: num
-max_N_tolerated: 0.1
-Lmin: 30
-nMin: 12
-mu: 0.000000003
-rho_over_theta: 1
-N_min: 0
-N_max: 200000
-Tsplit_min: 0
-Tsplit_max: 200000
-M_min: 0
-M_max: 10
+nspecies: 2  
+infile: all_loci.fasta  
+region: coding  
+nameA: chi  
+nameB: ros  
+nameOutgroup: num  
+max_N_tolerated: 0.1  
+Lmin: 30  
+nMin: 12  
+mu: 0.000000003  
+rho_over_theta: 1  
+N_min: 0  
+N_max: 200000  
+Tsplit_min: 0  
+Tsplit_max: 200000  
+M_min: 0  
+M_max: 10  
 `  
   
 # 7 - workflow  
