@@ -119,7 +119,7 @@ This file contains informations for **Slurm** about the submited jobs, in partic
 ``` 
   
 ## config.yaml  
-Configuration file used by Snakemake to adapt the workflow to a particular analysis. Contains information such as species names, region type (encoding, non-coding), prior borders, etc...  
+Configuration file used by Snakemake to adapt the workflow to a particular analysis. Contains information such as species names, genomic region (coding, noncoding), prior boundaries, etc...  
 ```  
 nspecies: 2  
 infile: all_loci.fasta  
