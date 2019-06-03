@@ -145,6 +145,6 @@ M_max: 10
 ![DAG (directed acyclic graph)](https://github.com/popgenomics/ABConline/blob/master/dag_2pops.pdf.png)  
   
 # 8 - example
-![grey zone](https://github.com/popgenomics/ABConline/blob/master/figure_greyzone.html)  
+![grey zone](https://raw.githubusercontent.com/popgenomics/ABConline/master/figure_greyzone.html)  
   
 
