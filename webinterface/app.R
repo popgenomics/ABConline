@@ -1,3 +1,4 @@
+#!/usr/bin/Rscript
 #
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
@@ -14,32 +15,57 @@ library(shinydashboardPlus)
 library(DT)
 library(shinyWidgets)
 library(dashboardthemes) # library(devtools); install_github("nik01010/dashboardthemes")
+library(shinymaterial)
 
-# Define UI for application that draws a histogram
+
+# welcome
+welcome_page <- dashboardBody(
+  fluidRow(
+    box(
+      title = h2("Snakemake pipeline"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+      mainPanel(htmlOutput("welcome_picture"))
+    )
+  )
+)
+
+
+# upload
 upload_data <- dashboardBody(
         tags$head(tags$style(HTML("a {color: black}"))),
         fluidRow(
             box(
-                title = h2("Sequence Alignment Upload"), height = 200,  width = 6, solidHeader = TRUE, status = "success",
-                fileInput("infile", label = NULL)
+                title = h2("Number of ABC analysis to run"), height = 250, width = 6, solidHeader = TRUE, background = NULL, status = "primary",
+                shinyjs::useShinyjs(),
+                #numericInput(inputId = "number_of_ABC", label = NULL,  value = 1, min = 1, max = 5, step = 1),
+                selectInput("number_of_ABC", label = h4("1 to 5 ABC analyses can be performed from the same input file"), choices = list("1" = 1, "2" = 2, "3" = 3, "4" = 4, "5" = 5), selected = 1)
+                
+               # actionButton("number_of_ABC_validation", "Validate")
             ),
             
             box(
-                title = h2("Email address"), height = 200,  width = 3, solidHeader = TRUE, status = "primary",
-                textInput("mail_address", label = NULL, value = "user@gmail.com")
-            ),
-            
-            box(
-                title = h2("Genomic regions"), height = 200,  width = 3, solidHeader = TRUE, status = "warning",
-#                radioButtons("region", label = NULL, selected = "noncoding", choices = list("coding" = "coding", "non coding" = "noncoding"))
-                prettyRadioButtons("region", label = NULL, shape = "round", status = "warning", fill = TRUE, inline = TRUE, animation = "pulse", bigger = TRUE,
-                                   selected = "noncoding", choices = list("coding" = "coding", "non coding" = "noncoding"))
+                title = h2("Email address"), height = 250,  width = 6, solidHeader = TRUE, status = "primary",
+                textInput("mail_address", label = h4("address to receive the download link of the results"), value = "user@gmail.com")
             )
         ),
+
+     fluidRow(NULL, soldHeader = TRUE, status ="danger",
+              box(
+                  title = h2("Sequence Alignment Upload"), height = 200,  width = 6, solidHeader = TRUE, status = "success",
+                  fileInput("infile", label = NULL)
+              ),
+              
+             
+             box(
+                 title = h2("Genomic regions"), height = 200,  width = 6, solidHeader = TRUE, status = "warning",
+                 #                radioButtons("region", label = NULL, selected = "noncoding", choices = list("coding" = "coding", "non coding" = "noncoding"))
+                 prettyRadioButtons("region", label = NULL, shape = "round", status = "warning", fill = TRUE, inline = TRUE, animation = "pulse", bigger = TRUE,
+                                    selected = "noncoding", choices = list("coding" = "coding", "non coding" = "noncoding"))
+             )
+        ),     
         
         fluidRow(align="left",
             box(
-                title = h2("Input file"), height = 675,  width = 6, solidHeader = TRUE, background = "green", status = "success",
+                title = h2("Input file"), width = 6, solidHeader = TRUE, background = "green", status = "success",
                 h3(strong("Fasta file")),
                 h3("A single fasta file containing all sequences obtained from all populations/species, and for all genes is the only inputfile to upload."),
                 h3("Even sequences obtained from non-studied species can be included in the file. The user will specify the names of the species to consider after the upload ."),
@@ -53,9 +79,17 @@ upload_data <- dashboardBody(
             ),
             
             box(
-                title = h2("Informations about the uploaded file"), height = 675,  width = 6, solidHeader = TRUE, status = "danger",
+                title = h2("Informations about the uploaded file"),  width = 6, solidHeader = TRUE, status = "success",
                 uiOutput("upload")
                 
+            )
+        ),
+
+        fluidRow(
+            box("", width = 12, solidHeader = TRUE, status = "info",
+                prettyCheckbox(inputId = "check_upload", shape = "round", value = FALSE,
+                           label = strong("Please check/valid your choices"), icon = icon("check"),
+                           animation = "tada", status = "success", bigger = TRUE)
             )
         ),
 
@@ -204,6 +238,14 @@ filtering <- dashboardBody(
                    h3(strong("nMin"), " becomes the number of sequences sampled for each species, for each locus, to produce a standardized joint SFS used by ", strong("ABC"), ".")
                )
         )
+    ),
+    
+    fluidRow(
+        box("", width = 12, solidHeader = TRUE, status = "info",
+            prettyCheckbox(inputId = "check_filtering", shape = "round", value = FALSE,
+                           label = strong("Please check/valid your choices"), icon = icon("check"),
+                           animation = "tada", status = "success", bigger = TRUE)
+        )
     )
 )
 
@@ -224,6 +266,14 @@ populations <- dashboardBody(
             prettyRadioButtons("presence_outgroup", label = h3("Presence of an outgroup"), shape = "round", status = "warning", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
                                choices = list("no" = "no", "yes" = "yes"), selected = "no"),
             uiOutput("input_names_outgroup_ui")
+        )
+    ),
+
+    fluidRow(
+        box("", width = 8, solidHeader = TRUE, status = "info",
+            prettyCheckbox(inputId = "check_populations", shape = "round", value = FALSE,
+                           label = strong("Please check/valid your choices"), icon = icon("check"),
+                           animation = "tada", status = "success", bigger = TRUE)
         )
     )
 )
@@ -269,7 +319,7 @@ prior <- dashboardBody(
                    enable_label = TRUE, label_text = "Informations about population sizes", label_status = "danger",
                    
                    h3("The effective population sizes ", em(strong("Ne")), "is the number of diploid individuals within current and ancestral species/populations."),
-                   h3("In the", strong("ABC"), "simulations,", em(strong("Ne")), "is independent between all species/populations.")
+                   h3("In the", strong("ABC"), "simulations,", em(strong("Ne")), "is independent between all current and ancestral species/populations.")
                )
         ),
         
@@ -303,7 +353,7 @@ prior <- dashboardBody(
                    fluidRow(
                        column(width=5, numericInput("M_min", label = h5('min'), value = 0.4)),
                        column(width=5, numericInput("M_max", label = h5('max'), value = 20))
-                   )
+                       )
               ),
               
               boxPlus(
@@ -314,51 +364,63 @@ prior <- dashboardBody(
                   h3("Migration rates are expressed in", strong(em("4.N.m,")), "where", strong(em("m")), "is the fraction of each subpopulation made up of new migrants each generation.")
               )
         )
-    )
-)
-
-
-run_ABC <- dashboardBody(
-    fluidRow(
-        # PRINT INPUT
-        fluidRow(
-            column(width = 7,
-                boxPlus(
-                    title = h2("Information summary"), width = NULL, icon = "fa fa-heart", solidHeader = TRUE, gradientColor = "teal",
-                    boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
-                    enable_label = TRUE, label_text = "Please check the following information", label_status = "success",
+    ),
     
-                    tableOutput("parameters")
-                )
-            ),
-        
-        # RUN ABC
-            column(width = 7,
-                boxPlus(
-                    title = h3("You are 3 clicks away from the coffee break"), width = NULL, icon = "fa fa-heart", solidHeader = TRUE, gradientColor = "teal",
-                    boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
-                    enable_label = TRUE, label_text = "Are you ready?", label_status = "danger",
-                    footer = actionButton("runABC", label = "Run the ABC", size = 'md', width = '100%', fullwidth = TRUE),
-                    h3("Submission of the ABC workflow")
-                )
-            )
+    fluidRow(
+        box("", width = 8, solidHeader = TRUE, status = "info",
+            prettyCheckbox(inputId = "check_prior", shape = "round", value = FALSE,
+                           label = strong("Please check/valid your choices"), icon = icon("check"),
+                           animation = "tada", status = "success", bigger = TRUE)
         )
     )
 )
+
+
+
+run_ABC <- dashboardBody(
+    # PRINT INFOX BOXES OF CHECKING
+    fluidRow(
+            boxPlus(
+#                shiny::tags$h3("Checked options"),
+                width = 10,
+                uiOutput('check_upload_info'),
+                uiOutput('check_filtering_info'),
+                uiOutput('check_populations_info'),
+                uiOutput('check_prior_info')
+            )
+        ),
+    
+    # PRINT INPUT
+    fluidRow(
+        column(width = 10,
+            boxPlus(
+                title = h2("Information summary"), width = NULL, icon = "fa fa-heart", solidHeader = TRUE, gradientColor = "teal",
+                boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
+                enable_label = TRUE, label_text = "Please check the following information", label_status = "success",
+
+                tableOutput("parameters")
+            )
+        ),
+    
+    # RUN ABC
+    uiOutput("run_ABC")
+    )
+)
+
 
 
 ui <- dashboardPage(
     dashboardHeader(title = "fastABC"),
     dashboardSidebar(
         sidebarMenu(
-            #style = "position: fixed; overflow: visible;",
-            menuItem("Welcome", tabName = "welcome", icon = icon("door-open")),
-            menuItem("Upload data", tabName = "upload", icon = icon("cloud-upload")),
-            menuItem("Data filtering", tabName = "filtering", icon = icon("bath")),
-            menuItem("Populations/species", tabName = "populations", icon = icon("users-cog")),
-            menuItem("Prior distributions", tabName = "simulations", icon = icon("dice")),
-            menuItem("Run ABC", tabName = "run_abc", icon = icon("microchip")),
-            menuItem("Informations", tabName = "information", icon = icon("info-circle"))            
+            style = "position: fixed; overflow: visible;",
+            menuItem(h3("Welcome"), tabName = "welcome", icon = icon("door-open", "fa-2x")),
+            menuItem(h3("Upload data"), tabName = "upload", icon = icon("cloud-upload", "fa-2x")),
+            menuItem(h3("Data filtering"), tabName = "filtering", icon = icon("bath", "fa-2x")),
+            menuItem(h3("Populations/species"), tabName = "populations", icon = icon("users-cog", "fa-2x")),
+            menuItem(h3("Prior distributions"), tabName = "simulations", icon = icon("dice", "fa-2x")),
+            menuItem(h3("Run ABC"), tabName = "run_abc", icon = icon("microchip", "fa-2x")),
+            menuItem(h3("Informations"), tabName = "information", icon = icon("info-circle", "fa-2x"))            
         )
     ),
     
@@ -374,32 +436,32 @@ ui <- dashboardPage(
         tabItems(
             # Welcome
             tabItem(tabName = "welcome",
-                    "Coucou les gens"
+                welcome_page
             ),
             
             # Upload data
             tabItem(tabName = "upload",
-               upload_data
+                upload_data
             ),
         
             #  Filtering
             tabItem(tabName = "filtering",
-               filtering
+                filtering
             ),
             
             # Populations
             tabItem(tabName = "populations",
-                    populations
+                populations
             ),
  
             # Simulations
             tabItem(tabName = "simulations",
-                    prior
+                prior
             ),
 
             # Run the BAC inferences
             tabItem(tabName = "run_abc",
-                    run_ABC
+                run_ABC
             ),
             
             # Informations
@@ -414,28 +476,38 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session = session) {
     options(shiny.maxRequestSize=4000*1024^2)
-    #  UPLOAD DATA    
+    #  WELCOME
+    output$welcome_picture <-
+      renderText({
+        c(
+          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/dag_2pops.pdf.png align="middle" height="auto" width="1275" margin="0 auto">'
+        )
+      }
+    )
+    
+    #  UPLOAD DATA
+    ## GET THE SUMMARY STATS ABOUT THE UPLOADED FILE
         ## list of species
         list_species = reactive({
             if(is.null(input$infile)){return ()}
             system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f2 | sort -u", sep=" "), intern = T)
         })
         output$list_species <- renderDataTable(data.frame("species" = list_species()))
-        
+
         ## list of individuals
         list_individuals = reactive({
             if(is.null(input$infile)){return ()}
             system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f3 | sort -u", sep=" "), intern = T)
         })
         output$list_individuals <- renderDataTable(data.frame("individuals" = list_individuals()))
-    
+
         ## list of loci
         list_loci = reactive({
             if(is.null(input$infile)){return ()}
             system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f1 | sort -u | cut -d'>' -f2", sep=" "), intern = T)
         })
         output$list_loci <- renderDataTable(data.frame("loci" = list_loci()))
-    
+
             ## Summary Stats code ##
         # this reactive output contains the summary of the dataset and display the summary in table format
         nSpecies = reactive({length(system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f2 | sort -u", sep=" "), intern = T))})
@@ -445,7 +517,7 @@ server <- function(input, output, session = session) {
             if(is.null(input$infile)){return ()}
             data.frame("nSpecies" = length(list_species()), "nIndividuals" = length(list_individuals()), "nLoci" = length(list_loci()))
         })
-        
+
         ## MainPanel tabset renderUI code ##
         # the following renderUI is used to dynamically generate the tabsets when the file is loaded. 
         # Until the file is loaded, app will not show the tabset.
@@ -459,6 +531,13 @@ server <- function(input, output, session = session) {
                     tabPanel("List of loci", dataTableOutput("list_loci"))
                 )
         })
+
+        ## Number of ABC analysis to perform
+      #  observeEvent(input$number_of_ABC_validation, {
+        observe(if(input$check_upload){
+            shinyjs::disable("number_of_ABC")
+        })
+        
 
     # POPULATIONS/SPECIES
         output$input_names_ui <- renderUI({
@@ -488,7 +567,6 @@ server <- function(input, output, session = session) {
         infile = input$infile$name # name of the input fasta file
         region = input$region # coding or noncoding
         nspecies = input$nspecies # number of species to simulate
-        
         if(nspecies == 1){
             species_names = c(input$nameA)
             species_names_row = c('nameA')
@@ -500,6 +578,9 @@ server <- function(input, output, session = session) {
                 if(nspecies == 4){
                     species_names = c(input$nameA, input$nameB, input$nameC, input$nameD) # name of the simulated species
                     species_names_row = c('nameA', "nameB", "nameC", "nameD")
+                }else{
+                    species_names = "NA"
+                    species_names_row = "NA"
                 }
             }
         }
@@ -530,15 +611,64 @@ server <- function(input, output, session = session) {
     }, rownames = TRUE, colnames = TRUE)
     
     # RUN ABC
-        observeEvent(input$runABC, {
-            confirmSweetAlert(
-                session = session,
-                inputId = "myconfirmation",
-                type = "warning",
-                title = "Want to confirm ?",
-                danger_mode = TRUE
+    ## only show the action button RUN ABC if a file is uploaded and 4 checkings were made
+    output$run_ABC <- renderUI({
+    if(is.null(input$infile)==FALSE && input$check_upload == TRUE && input$check_filtering == TRUE && input$check_populations == TRUE && input$check_prior == TRUE){
+        a <-column(width = 10,
+               boxPlus(
+                   title = h2("Run ABC"), width = NULL, icon = "fa fa-heart", solidHeader = TRUE, gradientColor = "teal",
+                   boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
+                   enable_label = TRUE, label_text = "Are you ready?", label_status = "danger",
+                   h3("Submission of the ABC workflow"),
+                   actionButton("runABC", label = "Run the ABC", size = 'md', width = '100%', fullwidth = TRUE),
+                   h3("Number of submitted analysis"),
+                   verbatimTextOutput('nClicks')
+               )
             )
-        })
+        }else{return()}
+    })
+    
+    output$nClicks <- renderText({ input$runABC })
+    
+    ## removing the "Run the ABC" button after clicking on it
+  #  observeEvent(input$runABC, {
+    observeEvent(input$runABC, {if (input$runABC == input$number_of_ABC)  removeUI(selector='#run_ABC', immediate=TRUE)}, autoDestroy=TRUE)
+
+    ## Check upload
+    output$check_upload_info <- renderUI({
+        if(input$check_upload == FALSE) {
+            a <- infoBox(title= NULL, value = h3("NON CHECKED"), subtitle = NULL, icon = icon("cloud-upload"), color = "red", fill = TRUE, width = 3)
+        } else if(input$check_upload == TRUE){
+            a <- infoBox(title= NULL, value = h3("CHECKED"), subtitle = NULL, icon = icon("cloud-upload"), color = "green", fill = TRUE, width = 3)
+        }
+    })
+    
+    ## Check filtering
+    output$check_filtering_info <- renderUI({
+        if(input$check_filtering == FALSE) {
+            a <- infoBox(title= NULL, value = h3("NON CHECKED"), subtitle = NULL, icon = icon("bath"), color = "red", fill = TRUE, width = 3)
+        } else if(input$check_filtering == TRUE){
+            a <- infoBox(title= NULL, value = h3("CHECKED"), subtitle = NULL, icon = icon("bath"), color = "green", fill = TRUE, width = 3)
+        }
+    })
+    
+    ## Check populations
+    output$check_populations_info <- renderUI({
+        if(input$check_populations == FALSE) {
+            a <- infoBox(title= NULL, value = h3("NON CHECKED"), subtitle = NULL, icon = icon("users-cog"), color = "red", fill = TRUE, width = 3)
+        } else if(input$check_populations == TRUE){
+            a <- infoBox(title= NULL, value = h3("CHECKED"), subtitle = NULL, icon = icon("users-cog"), color = "green", fill = TRUE, width = 3)
+        }
+    })
+    
+    ## Check prior
+    output$check_prior_info <- renderUI({
+        if(input$check_prior == FALSE) {
+            a <- infoBox(title= NULL, value = h3("NON CHECKED"), subtitle = NULL, icon = icon("dice"), color = "red", fill = TRUE, width = 3)
+        } else if(input$check_prior == TRUE){
+            a <- infoBox(title= NULL, value = h3("CHECKED"), subtitle = NULL, icon = icon("dice"), color = "green", fill = TRUE, width = 3)
+        }
+    })
 }
 
 # Run the application 
@@ -598,5 +728,5 @@ shinyApp(ui = ui, server = server)
 #        })
 #    }
 #    
-#    shinyApp(ui, server)
+# shinyApp(ui, server)
     
