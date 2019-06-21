@@ -2,18 +2,17 @@
 # #!/usr/bin/Rscript
 for(i in commandArgs()){
         tmp = strsplit(i, '=')
-        if(tmp[[1]][1] == 'nameA'){ nameA = tmp[[1]][2] }
-        if(tmp[[1]][1] == 'nameB'){ nameB = tmp[[1]][2] }
+        if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] }
 }
 
 # simulations
-x = read.table(paste('ABC_', nameA, '_', nameB, '/gof/simulations.txt', sep=''), h=T)
+x = read.table(paste(timeStamp, '/gof/simulations.txt', sep=''), h=T)
 
 # observation
-y = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_global.txt', sep=''), h=T)
+y = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
 
 # outfile
-outfile = paste("ABC_", nameA, "_", nameB, "/gof/goodness_of_fit_test.txt", sep='')
+outfile = paste(timeStamp, "/gof/goodness_of_fit_test.txt", sep='')
 
 
 # function to compute the pval

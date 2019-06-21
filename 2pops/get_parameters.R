@@ -242,7 +242,7 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 	coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
 	coul = colorRampPalette(coul)
 
-	obs_ss = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_global.txt', sep=''), h=T)
+	obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
 	obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
 	obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 	ss_obs = obs_ss
@@ -264,13 +264,13 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 
 	for(rep in seq(0, nSubdir-1, 1)){
 		# statistics
-		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', model, '_', rep, '/ABCstat.txt', sep=''), h=T)
+		tmp_ss = read.table(paste(timeStamp, '/', sub_dir_sim, '/', model, '_', rep, '/ABCstat.txt', sep=''), h=T)
 		tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
 		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
 		ss_sim_tmp = rbind(ss_sim_tmp, tmp_ss)
 		
 		# params
-		tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', model, '_', rep, '/priorfile.txt', sep=''), h=T)
+		tmp_params = read.table(paste(timeStamp, '/', sub_dir_sim, '/', model, '_', rep, '/priorfile.txt', sep=''), h=T)
 		params_sim_tmp = rbind(params_sim_tmp, tmp_params)
 	}
 	# statistics
@@ -319,7 +319,7 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 
 	posterior = res$x
 	colnames(posterior) = colnames(params_sim[[model]])
-	write.table(posterior, paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
+	write.table(posterior, paste(timeStamp, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
 
 	
 	res_tot = list()
@@ -364,7 +364,7 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 		figure[[param_name]] = pp
 	}
 	ggarrange(plotlist=figure, common.legend = TRUE, labels='AUTO', align='hv')
-	ggsave(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.pdf', sep=''), bg='white', width=20, height=10)
+	ggsave(paste(timeStamp, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.pdf', sep=''), bg='white', width=20, height=10)
 
 	# retur inferences	
 	return(res_tot)

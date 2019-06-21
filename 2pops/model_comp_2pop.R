@@ -6,6 +6,7 @@ for(i in commandArgs()){
 	tmp = strsplit(i, '=')
 	if(tmp[[1]][1] == 'nameA'){ nameA = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nameB'){ nameB = tmp[[1]][2] }
+	if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nMin'){ nMin = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'sub_dir_sim'){ sub_dir_sim = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nSubdir'){ nSubdir = as.integer(tmp[[1]][2]) } # number of subdirectories where simulations were ran
@@ -19,28 +20,28 @@ for(i in commandArgs()){
 #nSubdir = 6
 nsims_monolocus = 10000 # number of monolocus simulations
 
-outfile = paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
-outfile_best = paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/best_model.txt', sep='')
+outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
+outfile_best = paste(timeStamp, '/', sub_dir_sim, '/best_model.txt', sep='')
 
 # colors
 coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
 coul = colorRampPalette(coul)
 
 # observed data
-obs_ss = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_global.txt', sep=''), h=T)
+obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
 obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
 obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 if( outgroup == 1 ){
-	obs_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/ABCjsfs.txt', sep=''), h=T)
+	obs_sfs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)
 	ss_obs = cbind(obs_ss, obs_sfs)
 	
 	sfs=matrix(as.numeric(obs_sfs), byrow=T, ncol=nMin+1)
 	colnames(sfs) = paste('f', nameB, 0:nMin, sep='_')
 	rownames(sfs) = paste('f', nameA, 0:nMin, sep='_')
-	write.table(sfs, paste('ABC_', nameA, '_', nameB, '/sfs_table.txt', sep=''), col.names=T, row.names=T, sep='\t', quote=F)
+	write.table(sfs, paste(timeStamp, '/sfs_table.txt', sep=''), col.names=T, row.names=T, sep='\t', quote=F)
 	
 	sfs[1,2]=0; sfs[2,1]=0 # remove the singletons, ONLY FOR THE REPRESENTATION
-	pdf(paste('ABC_', nameA, '_', nameB, '/sfs_plot.pdf', sep=''), bg="white")
+	pdf(paste(timeStamp, '/sfs_plot.pdf', sep=''), bg="white")
 	image(log10(sfs), col=coul(100), xlab = paste('frequency in ', nameA, sep=''), ylab = paste('frequency in ', nameB, sep=''), cex=1.5, cex.axis=1.5, cex.lab=1.5)
 	dev.off()
 }else{
@@ -62,10 +63,10 @@ for(m in models){
 	params_sim_tmp = NULL
 	for(rep in seq(0, nSubdir-1, 1)){
 		# statistics
-		tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/ABCstat.txt', sep=''), h=T)
+		tmp_ss = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/ABCstat.txt', sep=''), h=T)
 		tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
 		tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
-		if( outgroup == 1 ){ tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/ABCjsfs.txt', sep=''), h=T)
+		if( outgroup == 1 ){ tmp_sfs = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/ABCjsfs.txt', sep=''), h=T)
 			tmp = cbind(tmp_ss, tmp_sfs)
 			ss_sim_tmp = rbind(ss_sim_tmp, tmp)
 		}else{
@@ -73,7 +74,7 @@ for(m in models){
 		}
 		
 		# params
-		tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/priorfile.txt', sep=''), h=T)
+		tmp_params = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/priorfile.txt', sep=''), h=T)
 		params_sim_tmp = rbind(params_sim_tmp, tmp_params)
 	}
 	# statistics

@@ -12,16 +12,17 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'ntree'){ ntree = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'outgroup'){ outgroup = as.integer(tmp[[1]][2]) } # 0: no outgroup, no SFS used. 1: outgroup, SFS used
 	if(tmp[[1]][1] == 'bestModel'){ bestModel = tmp[[1]][2] } # name of the best model
+	if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] } # name of timeStamp
 }
 
-outfile = paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
+outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
 
 # colors
 coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
 coul = colorRampPalette(coul)
 
 # observed data
-obs_ss = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_global.txt', sep=''), h=T)
+obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
 obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
 obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 

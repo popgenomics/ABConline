@@ -6,6 +6,7 @@ for(i in commandArgs()){
 	tmp = strsplit(i, '=')
 	if(tmp[[1]][1] == 'nameA'){ nameA = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nameB'){ nameB = tmp[[1]][2] }
+	if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nMin'){ nMin = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'sub_dir_sim'){ sub_dir_sim = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nSubdir'){ nSubdir = as.integer(tmp[[1]][2]) } # number of subdirectories where simulations were ran
@@ -19,31 +20,31 @@ for(i in commandArgs()){
 #nSubdir = 6
 nsims_monolocus = 10000 # number of monolocus simulations
 
-outfile = paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
-outfile_best = paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/best_model.txt', sep='')
+outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
+outfile_best = paste(timeStamp, '/', sub_dir_sim, '/best_model.txt', sep='')
 
 # colors
 coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
 coul = colorRampPalette(coul)
 
 # observed data
-obs_ss = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_global.txt', sep=''), h=T) # global statistics over all loci (avg and std)
+obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T) # global statistics over all loci (avg and std)
 obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
 obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 
-obs_loci = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_loci.txt', sep=''), h=T) # individual statistics for each locus
+obs_loci = read.table(paste(timeStamp, '/ABCstat_loci.txt', sep=''), h=T) # individual statistics for each locus
 
 if( outgroup == 1 ){
-	obs_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/ABCjsfs.txt', sep=''), h=T)
+	obs_sfs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)
 	ss_obs = cbind(obs_ss, obs_sfs)
 	
 	sfs=matrix(as.numeric(obs_sfs), byrow=T, ncol=nMin+1)
 	colnames(sfs) = paste('f', nameB, 0:nMin, sep='_')
 	rownames(sfs) = paste('f', nameA, 0:nMin, sep='_')
-	write.table(sfs, paste('ABC_', nameA, '_', nameB, '/sfs_table.txt', sep=''), col.names=T, row.names=T, sep='\t', quote=F)
+	write.table(sfs, paste(timeStamp, '/sfs_table.txt', sep=''), col.names=T, row.names=T, sep='\t', quote=F)
 	
 	sfs[1,2]=0; sfs[2,1]=0 # remove the singletons, ONLY FOR THE REPRESENTATION
-	pdf(paste('ABC_', nameA, '_', nameB, '/sfs_plot.pdf', sep=''), bg="white")
+	pdf(paste(timeStamp, '/sfs_plot.pdf', sep=''), bg="white")
 	image(log10(sfs), col=coul(100), xlab = paste('frequency in ', nameA, sep=''), ylab = paste('frequency in ', nameB, sep=''), cex=1.5, cex.axis=1.5, cex.lab=1.5)
 	dev.off()
 }else{
@@ -65,12 +66,12 @@ for(m in models){
 	params_sim_tmp = NULL
 	for(rep in seq(0, nSubdir-1, 1)){
 		# check if the simulation went well
-		if(file.exists(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/priorfile.txt', sep='')) == TRUE){
+		if(file.exists(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/priorfile.txt', sep='')) == TRUE){
 			# statistics
-			tmp_ss = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/ABCstat.txt', sep=''), h=T)
+			tmp_ss = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/ABCstat.txt', sep=''), h=T)
 			tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
 			tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
-			if( outgroup == 1 ){ tmp_sfs = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/ABCjsfs.txt', sep=''), h=T)
+			if( outgroup == 1 ){ tmp_sfs = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/ABCjsfs.txt', sep=''), h=T)
 				tmp = cbind(tmp_ss, tmp_sfs)
 				ss_sim_tmp = rbind(ss_sim_tmp, tmp)
 			}else{
@@ -78,7 +79,7 @@ for(m in models){
 			}
 			
 			# params
-			tmp_params = read.table(paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/', m, '_', rep, '/priorfile.txt', sep=''), h=T)
+			tmp_params = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/priorfile.txt', sep=''), h=T)
 			params_sim_tmp = rbind(params_sim_tmp, tmp_params)
 		}
 	}
@@ -330,10 +331,10 @@ outfile = 'locus_specific_modelComp.txt'
 if(predicted_model_iso_mig$allocation=='migration'){
 	if(predicted_model_Mhomo_Mhetero$allocation=='Mhetero'){
 		# get the posterior
-		posterior_IM = read.table(paste("ABC_", nameA, "_", nameB, "/estim/posterior_IM_2M_2N.txt", sep=''), h=T)
+		posterior_IM = read.table(paste(timeStamp, "/estim/posterior_IM_2M_2N.txt", sep=''), h=T)
 		
 		# get informations about loci 
-		bpfile = read.table(paste("ABC_", nameA, "_", nameB, "/bpfile", sep=''), skip=1, h=F)
+		bpfile = read.table(paste(timeStamp, "/bpfile", sep=''), skip=1, h=F)
 		L = median(as.numeric(bpfile[1,]))
 		nA = median(as.numeric(bpfile[2,]))
 		nB = median(as.numeric(bpfile[3,]))
@@ -341,7 +342,7 @@ if(predicted_model_iso_mig$allocation=='migration'){
 		rho = median(as.numeric(bpfile[5,]))
 
 		# change directory
-		setwd(paste('ABC_', nameA, '_', nameB, '/modelComp', sep=''))
+		setwd(paste(timeStamp, '/modelComp', sep=''))
 
 		# write the monolocus bpfile
 		write(paste('#locus specific model comparison\n', L, '\n', nA, '\n', nB, '\n', theta, '\n', rho, sep=''), 'bpfile', append=F)
@@ -400,14 +401,14 @@ if(predicted_model_iso_mig$allocation=='migration'){
 		# simulations of migration
 		# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
 		write.table(prior_mig, 'prior_mig.txt', sep='\t', col.names=F, row.names=F, quote=F)
-		commande = paste('cat prior_mig.txt | msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
+		commande = paste('cat prior_mig.txt | msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | pypy mscalc_2pop.py', sep='')
 		system(commande)
 		mig_ss = read.table('ABCstat.txt', h=T)
 		
 		# simulations of isolation
 		# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
 		write.table(prior_iso, 'prior_iso.txt', sep='\t', col.names=F, row.names=F, quote=F)
-		commande = paste('cat prior_iso.txt | msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
+		commande = paste('cat prior_iso.txt | msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | pypy mscalc_2pop.py', sep='')
 		system(commande)
 		iso_ss = read.table('ABCstat.txt', h=T)
 		
@@ -426,12 +427,12 @@ if(predicted_model_iso_mig$allocation=='migration'){
 		write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
 	}else{ # if migration but homogeneous
 		# change directory
-		setwd(paste('ABC_', nameA, '_', nameB, '/modelComp', sep=''))
+		setwd(paste(timeStamp, '/modelComp', sep=''))
 		write("no locus specific model comparison since gene flow is supported as being homogeneous among loci", outfile, append=F)
 	}
 }else{
 	# change directory
-	setwd(paste('ABC_', nameA, '_', nameB, '/modelComp', sep=''))
+	setwd(paste(timeStamp, '/modelComp', sep=''))
 	write("no locus specific model comparison since there is no support for ongoing gene flow", outfile, append=F)
 }
 

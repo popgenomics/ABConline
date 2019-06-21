@@ -6,36 +6,38 @@ from math import ceil
 import random
 
 # check the arguments
-if len(sys.argv) != 12:
+if len(sys.argv) != 13:
 	print("\n\tfasta2ABC_2pops.py produces: bpfile (for simulations) and summary statistics (for inferences)")
 	print("\n\033[1;33m\tExample: ./fasta2ABC_2pops.py all_loci.fasta flo mal coding 30 0.1 10 100000 0.00000002 1\033[0m\n")
 	print("\t\targ1 =\tname of the fasta file containing all of the sequences")
-	print("\t\targ2 =\tID of species A (example: flo)")
-	print("\t\targ3 =\tID of species B (example: mal)")
-	print("\t\targ4 =\tID of the outgroup (exmaple: num)")
-	print("\t\targ5 =\t'coding' or 'noncoding', to study only synonymous polymorphisms (if coding) or all SNPs (if noncoding)")
-	print("\t\targ6 =\tminimum length of a locus to be considered, i.e, number of total positions minus the positions containing a N")
-	print("\t\targ7 =\tvalue in [0-1]. Corresponds to a threshold of %N above which a sequence is rejected")
-	print("\t\targ8 =\tinteger, corresponding to the minimum number of retained sequences (after rejection).\n\t\t\tif not enough sequences are retained, the loci is excluded from the analysis")
-	print("\t\targ9 =\tsize of the reference population, arbitrary fixed. i.e: Nref=100000")
-	print("\t\targ10 =\tmutation rate by bp and by generation. example: 0.00000002")
-	print("\t\targ11 =\tratio of the recombination rate over mutation. example: 1")
-	if(len(sys.argv)<12):
-		sys.exit("\n\033[1;31m ERROR in fasta2ABC_2pops.py: 10 arguments are required: {0} missing\033[0m\n".format(12-len(sys.argv)))
-	if(len(sys.argv)>12):
-		sys.exit("\n\033[1;31m ERROR in fasta2ABC_2pops.py: 10 arguments are required: {0} too much\033[0m\n".format(len(sys.argv)-12))
+	print("\t\targ2 =\tname of the project's directory (in practice: a random timestamp")
+	print("\t\targ3 =\tID of species A (example: flo)")
+	print("\t\targ4 =\tID of species B (example: mal)")
+	print("\t\targ5 =\tID of the outgroup (exmaple: num)")
+	print("\t\targ6 =\t'coding' or 'noncoding', to study only synonymous polymorphisms (if coding) or all SNPs (if noncoding)")
+	print("\t\targ7 =\tminimum length of a locus to be considered, i.e, number of total positions minus the positions containing a N")
+	print("\t\targ8 =\tvalue in [0-1]. Corresponds to a threshold of %N above which a sequence is rejected")
+	print("\t\targ9 =\tinteger, corresponding to the minimum number of retained sequences (after rejection).\n\t\t\tif not enough sequences are retained, the loci is excluded from the analysis")
+	print("\t\targ10 =\tsize of the reference population, arbitrary fixed. i.e: Nref=100000")
+	print("\t\targ11 =\tmutation rate by bp and by generation. example: 0.00000002")
+	print("\t\targ12 =\tratio of the recombination rate over mutation. example: 1")
+	if(len(sys.argv)<13):
+		sys.exit("\n\033[1;31m ERROR in fasta2ABC_2pops.py: 12 arguments are required: {0} missing\033[0m\n".format(13-len(sys.argv)))
+	if(len(sys.argv)>13):
+		sys.exit("\n\033[1;31m ERROR in fasta2ABC_2pops.py: 12 arguments are required: {0} too much\033[0m\n".format(len(sys.argv)-13))
 
 fileName = sys.argv[1] # example: all_loci.fasta
-nameA = sys.argv[2] # name of species A. example: flo
-nameB = sys.argv[3] # name of species B. example: mal
-nameOut = sys.argv[4] # name of the outgroup. example: num
-region = sys.argv[5] # if == coding: will only deal with synonymous codons; if == noncoding: will deal with all positions
-Lmin = int(sys.argv[6]) # minimum length for a locus to be retained. example: 30
-max_N_tolerated = float(sys.argv[7]) # if an allele has %N > threshold_N --> sequence is rejected
-nMin = int(sys.argv[8]) # minimum number of individuals within a species. example: 10
-Nref = int(float(sys.argv[9])) # size of the reference population, arbitrary fixed. i.e: Nref=100000
-mu = float(sys.argv[10]) # mutation rate by bp and by generation. example: 0.00000002
-rho_over_theta = float(sys.argv[11]) # ratio of the recombination rate over mutation. example: 1
+timeStamp = sys.argv[2] # example: timeStamp used as directory for the project
+nameA = sys.argv[3] # name of species A. example: flo
+nameB = sys.argv[4] # name of species B. example: mal
+nameOut = sys.argv[5] # name of the outgroup. example: num
+region = sys.argv[6] # if == coding: will only deal with synonymous codons; if == noncoding: will deal with all positions
+Lmin = int(sys.argv[7]) # minimum length for a locus to be retained. example: 30
+max_N_tolerated = float(sys.argv[8]) # if an allele has %N > threshold_N --> sequence is rejected
+nMin = int(sys.argv[9]) # minimum number of individuals within a species. example: 10
+Nref = int(float(sys.argv[10])) # size of the reference population, arbitrary fixed. i.e: Nref=100000
+mu = float(sys.argv[11]) # mutation rate by bp and by generation. example: 0.00000002
+rho_over_theta = float(sys.argv[12]) # ratio of the recombination rate over mutation. example: 1
 
 test = os.path.isfile(fileName)
 if test == False:
@@ -47,10 +49,10 @@ if nameA == nameB:
 if region not in ['coding', 'noncoding']:
 	sys.exit("\n\t\033[1;31m ERROR in fasta2ABC_2pops.py: '{0}' is not an expected argument. 'coding' or 'noncoding' are expected here\033[0m\n".format(region))
 
-if os.path.isdir('ABC_{0}_{1}'.format(nameA, nameB)) == True:
-	commande = 'rm -rf ABC_{0}_{1}'.format(nameA, nameB)
+if os.path.isdir('{0}'.format(timeStamp)) == True:
+	commande = 'rm -rf {0}'.format(timeStamp)
 	os.system(commande)
-commande = 'mkdir ABC_{0}_{1}'.format(nameA, nameB)
+commande = 'mkdir {0}'.format(timeStamp)
 os.system(commande)
 
 def coloredSeq(seq):
@@ -288,14 +290,14 @@ bpfile_L5 = [] # theta
 bpfile_L6 = [] # rho
 
 output_ms = "./msnsam tbs 20 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -n 1 tbs -n 2 tbs -ej tbs 1 2 -eN tbs tbs\n3579 27011 59243\n\n"
-outfile_ms = open('ABC_{0}_{1}/{0}_{1}.ms'.format(nameA, nameB), 'w')
+outfile_ms = open('{0}/{1}_{2}.ms'.format(timeStamp, nameA, nameB), 'w')
 outfile_ms.write(output_ms)
 
 if nameOut == 'NA':
 	# For coding loci
 	if region == 'coding':
 		output_info = "locusName\tL_including_N\tLsyno\tnSynSegSite\tnsamA\tnsamB\n"
-		outfile_info = open('ABC_{0}_{1}/{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
+		outfile_info = open('{0}/{1}_{2}_infos.txt'.format(timeStamp, nameA, nameB), 'w')
 		outfile_info.write(output_info)
 		for locus_i in align['L'].keys():
 			geneName = locus_i
@@ -409,18 +411,18 @@ if nameOut == 'NA':
 		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
 		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
 
-		outfile = open('ABC_{0}_{1}/nLoci.txt'.format(nameA, nameB), 'w')
+		outfile = open('{0}/nLoci.txt'.format(timeStamp), 'w')
 		outfile.write('{0}'.format(len(bpfile_L2)))
 		outfile.close()
 
-		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
+		outfile = open('{0}/bpfile'.format(timeStamp), 'w')
 		outfile.write(bpfile)
 		outfile.close()
 		
 	# For non coding loci
 	if region == 'noncoding':
 		output_info = "locusName\tL_including_N\tL\tnSegSite\tnsamA\tnsamB\n"
-		outfile_info = open('ABC_{0}_{1}/{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
+		outfile_info = open('{0}/{1}_{2}_infos.txt'.format(timeStamp, nameA, nameB), 'w')
 		outfile_info.write(output_info)
 		for locus_i in align['L'].keys():
 			geneName = locus_i
@@ -519,19 +521,18 @@ if nameOut == 'NA':
 		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
 		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
 
-		outfile = open('ABC_{0}_{1}/nLoci.txt'.format(nameA, nameB), 'w')
+		outfile = open('{0}/nLoci.txt'.format(timeStamp), 'w')
 		outfile.write('{0}'.format(len(bpfile_L2)))
 		outfile.close()
 		
-		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
+		outfile = open('{0}/bpfile'.format(timeStamp), 'w')
 		outfile.write(bpfile)
 		outfile.close()
-		
 else: # if there is an outgroup
 	# For coding loci
 	if region == 'coding':
 		output_info = "locusName\tL_including_N\tLsyno\tnSynSegSite\tnsamA\tnsamB\tmutation_scalar\n"
-		outfile_info = open('ABC_{0}_{1}/{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
+		outfile_info = open('{0}/{1}_{2}_infos.txt'.format(timeStamp, nameA, nameB), 'w')
 		outfile_info.write(output_info)
 		for locus_i in align['L'].keys():
 			if locus_i in consensus:
@@ -539,7 +540,6 @@ else: # if there is an outgroup
 				
 				nA = len(align['align'][nameA][locus_i]['id'])
 				nB = len(align['align'][nameB][locus_i]['id'])
-				
 				L = align['L'][locus_i] 
 				interspe = [] # contains the interspecific alignment
 				interspeName = [] # contains the id of sequences in the interspecific alignment
@@ -623,7 +623,6 @@ else: # if there is an outgroup
 							locus_ms = locus_ms + "".join( [ str(j) for j in i ] ) + "\n"
 					
 					outfile_ms.write(locus_ms + '\n')
-					
 					bpfile_L2.append(int(ceil(nSites)))
 					bpfile_L3.append(nA)
 					bpfile_L4.append(nB)
@@ -650,18 +649,18 @@ else: # if there is an outgroup
 		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
 		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
 
-		outfile = open('ABC_{0}_{1}/nLoci.txt'.format(nameA, nameB), 'w')
+		outfile = open('{0}/nLoci.txt'.format(timeStamp), 'w')
 		outfile.write('{0}'.format(len(bpfile_L2)))
 		outfile.close()
 		
-		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
+		outfile = open('{0}/bpfile'.format(timeStamp), 'w')
 		outfile.write(bpfile)
 		outfile.close()
 	
 	# For coding loci
 	if region == 'noncoding':
 		output_info = "locusName\tL_including_N\tL\tnSegSite\tnsamA\tnsamB\tmutation_scalar\n"
-		outfile_info = open('ABC_{0}_{1}/{0}_{1}_infos.txt'.format(nameA, nameB), 'w')
+		outfile_info = open('{0}/{1}_{2}_infos.txt'.format(timeStamp, nameA, nameB), 'w')
 		outfile_info.write(output_info)
 		for locus_i in align['L'].keys():
 			if locus_i in consensus:
@@ -780,11 +779,11 @@ else: # if there is an outgroup
 		bpfile += '\t'.join([ str(i) for i in bpfile_L5 ]) + '\n'
 		bpfile += '\t'.join([ str(i) for i in bpfile_L6 ]) + '\n'
 
-		outfile = open('ABC_{0}_{1}/nLoci.txt'.format(nameA, nameB), 'w')
+		outfile = open('{0}/nLoci.txt'.format(timeStamp), 'w')
 		outfile.write('{0}'.format(len(bpfile_L2)))
 		outfile.close()
 		
-		outfile = open('ABC_{0}_{1}/bpfile'.format(nameA, nameB), 'w')
+		outfile = open('{0}/bpfile'.format(timeStamp), 'w')
 		outfile.write(bpfile)
 		outfile.close()
 
@@ -794,13 +793,12 @@ if nameOut == 'NA':
 	use_sfs = 0
 else:
 	use_sfs = 1
-commande = 'cat ABC_{0}_{1}/{0}_{1}.ms | mscalc_2pop_observedDataset.py ABC_{0}_{1} {2}'.format(nameA, nameB, use_sfs)
+commande = 'cat {0}/{1}_{2}.ms | pypy mscalc_2pop_observedDataset.py {0} {3}'.format(timeStamp, nameA, nameB, use_sfs)
 #print(commande)
 os.system(commande)
 
 # remove the useless ms file
-commande = 'rm ABC_{0}_{1}/{0}_{1}.ms'.format(nameA, nameB)
+commande = 'rm {0}/{1}_{2}.ms'.format(timeStamp, nameA, nameB)
 #print(commande)
 #os.system(commande)
-
 

@@ -5,6 +5,7 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'Nref'){ Nref = as.double(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'nameA'){ nameA = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nameB'){ nameB = tmp[[1]][2] }
+	if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] } # timeStamp used to name the project's directory
 	if(tmp[[1]][1] == 'nMin'){ nMin = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'sub_dir_sim'){ sub_dir_sim = tmp[[1]][2] }
 	if(tmp[[1]][1] == 'nSubdir'){ nSubdir = as.integer(tmp[[1]][2]) } # number of subdirectories where simulations were ran
@@ -13,14 +14,14 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'outgroup'){ outgroup = as.integer(tmp[[1]][2]) } # 0: no outgroup, no SFS used. 1: outgroup, SFS used
 }
 
-outfile = paste('ABC_', nameA, '_', nameB, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
+outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
 
 # colors
 coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
 coul = colorRampPalette(coul)
 
 # observed data
-obs_ss = read.table(paste('ABC_', nameA, '_', nameB, '/ABCstat_global.txt', sep=''), h=T)
+obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
 obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
 obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 

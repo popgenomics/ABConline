@@ -1,5 +1,7 @@
 nspecies: 2
+config_yaml: /shared/mfs/data/home/croux/scratch/test/ABConline/outgroup/config.yaml
 infile: all_loci.fasta
+timeStamp: Ng4PymB1dy
 region: coding
 nameA: chi
 nameB: ros
