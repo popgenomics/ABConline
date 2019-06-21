@@ -69,7 +69,7 @@ tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration
 
 #tmp += "module load python/2.7.12; "
 #tmp += "module load java; "
-tmp += "python priorgen_2pop.py {0} {1} {2} | msnsam tbs {3} {4} | pypy mscalc_2pop.py".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand)
+tmp += "priorgen_2pop.py {0} {1} {2} | msnsam tbs {3} {4} | mscalc_2pop.py".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand)
 tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=02:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, iteration, tmp)
 print(tmp)
 os.system(tmp) # to submit the job using slurm

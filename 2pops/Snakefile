@@ -89,7 +89,7 @@ rule fasta2ABC_2pops:
 #		module load python/2.7;
 #		source activate R_env;
 #		module load pandoc/2.7.2;
-		pypy fasta2ABC_2pops.py {infile} {timeStamp} {params.nameA} {params.nameB} {params.nameOutgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}
+		fasta2ABC_2pops.py {infile} {timeStamp} {params.nameA} {params.nameB} {params.nameOutgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}
 		"""
 
 
@@ -128,7 +128,7 @@ rule simulationsModelComp:
 	threads: 1
 	shell:
 		"""
-		python submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
+		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
 		"""
 
 rule simulationsEstim:
@@ -144,7 +144,7 @@ rule simulationsEstim:
 	threads: 1
 	shell:
 		"""
-		python submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
+		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
 		"""
 
 
@@ -203,7 +203,7 @@ rule simulation_best_model:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		python submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
+		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
 		"""
 
 
@@ -235,7 +235,7 @@ rule simulation_gof:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		python submit_simulations_gof_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp}
+		submit_simulations_gof_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp}
 		"""
 
 

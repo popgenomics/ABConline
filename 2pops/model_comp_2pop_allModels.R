@@ -401,14 +401,14 @@ if(predicted_model_iso_mig$allocation=='migration'){
 		# simulations of migration
 		# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
 		write.table(prior_mig, 'prior_mig.txt', sep='\t', col.names=F, row.names=F, quote=F)
-		commande = paste('cat prior_mig.txt | msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | pypy mscalc_2pop.py', sep='')
+		commande = paste('cat prior_mig.txt | msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
 		system(commande)
 		mig_ss = read.table('ABCstat.txt', h=T)
 		
 		# simulations of isolation
 		# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
 		write.table(prior_iso, 'prior_iso.txt', sep='\t', col.names=F, row.names=F, quote=F)
-		commande = paste('cat prior_iso.txt | msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | pypy mscalc_2pop.py', sep='')
+		commande = paste('cat prior_iso.txt | msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
 		system(commande)
 		iso_ss = read.table('ABCstat.txt', h=T)
 		

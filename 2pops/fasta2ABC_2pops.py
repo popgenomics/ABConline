@@ -793,7 +793,7 @@ if nameOut == 'NA':
 	use_sfs = 0
 else:
 	use_sfs = 1
-commande = 'cat {0}/{1}_{2}.ms | pypy mscalc_2pop_observedDataset.py {0} {3}'.format(timeStamp, nameA, nameB, use_sfs)
+commande = 'cat {0}/{1}_{2}.ms | mscalc_2pop_observedDataset.py {0} {3}'.format(timeStamp, nameA, nameB, use_sfs)
 #print(commande)
 os.system(commande)
 

@@ -1,5 +1,8 @@
 # Table of contents
-1. [Snakemake](#1---snakemake)  
+1. [Snakemake](#1---snakemake)   
+	1. [info](#info)  
+	2. [execution](#execution)  
+	3. [dependencies](#dependencies)  
 2. [Scripts in python](#2---python)  
 	1. [scripts](#scripts)  
 	2. [dependencies](#dependencies)  
@@ -17,8 +20,19 @@
 	1. [Two populations](#two-populations)  
 
 # 1 - snakemake  
+## info  
 **The entire workflow is based on snakemake.**  
 https://snakemake.readthedocs.io/en/stable/  
+  
+## execution  
+Please adapt the pathway to your system.  
+snakemake -p -j 999 --snakefile /shared/mfs/data/home/croux/softwares/ABConline/2pops/Snakefile --configfile /shared/mfs/data/home/croux/scratch/test/ABConline/outgroup/config_5.yaml --cluster-config /shared/mfs/data/home/croux/scratch/test/ABConline/outgroup/cluster.json --cluster "sbatch --nodes={cluster.node} --ntasks={cluster.n} --cpus-per-task={cluster.cpusPerTask} --time={cluster.time}"  
+  
+## dependencies  
+Needs:  
+1 Snakefile  
+1 config.yaml file
+1 cluster.json file  
 
 # 2 - python  
 **Executables have to be linked to a bin directory**  
