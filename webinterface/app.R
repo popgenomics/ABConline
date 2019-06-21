@@ -22,12 +22,16 @@ library(shinymaterial)
 welcome_page <- dashboardBody(
   fluidRow(
     box(
+      title = h2("Compared models"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+                mainPanel(htmlOutput("models_2pops"))
+    ),
+    
+    box(
       title = h2("Snakemake pipeline"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-      mainPanel(htmlOutput("welcome_picture"))
+                mainPanel(htmlOutput("welcome_picture"))
     )
   )
 )
-
 
 # upload
 upload_data <- dashboardBody(
@@ -480,10 +484,19 @@ server <- function(input, output, session = session) {
     output$welcome_picture <-
       renderText({
         c(
-          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/dag_2pops.pdf.png align="middle" height="auto" width="1275" margin="0 auto">'
+          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/dag_2pops.pdf.png align="middle" height="auto" width="1275" margin="0 auto">'
         )
       }
     )
+    
+    output$models_2pops <-
+      renderText({
+        c(
+          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/models_2pops.PNG align="middle" height="auto" width="1275" margin="0 auto">'
+        )
+      }
+      )
+    
     
     #  UPLOAD DATA
     ## GET THE SUMMARY STATS ABOUT THE UPLOADED FILE
