@@ -21,42 +21,93 @@ library(shinymaterial)
 # welcome
 welcome_page <- dashboardBody(
   fluidRow(
-    box(
-      title = h2("Overview"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+ #   box(title = h2("Overview"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+    boxPlus(title = h2("Overview"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
         h3(strong("fastABC"), "is a DNA sequence analysis workflow to study the demographic history of sampled populations or species by using Approximate Bayesian Computations."),
         h3("From a single uploaded input file containing sequenced genes or DNA fragments,", strong("fastABC"), "will:"),
         h3(strong("1."), "simulate different models/scenarios."),
         h3(strong("2."), "select the best model using an ABC approach based on", a(span(strong("random forests."), style = "color:teal"), href="https://cran.r-project.org/web/packages/abcrf/index.html", target="_blank")),
         h3(strong("3."), "estimate the parameters of the best model using a", a(span(strong("neural network"), style = "color:teal"), href="https://cran.r-project.org/web/packages/abc/index.html", target="_blank"), "approach."),
-        h3(strong("4."), "measure the robustness of the analyses.", strong("fastABC"), "is transparent on the ability of its inferences to reproduce the observed data."),
-        hr(),
-      
-        h3("FastABC is composed of two elements:"),
-        h3(strong("1."), "A web interface developed in", a(span(strong("Shiny,"), style = "color:teal"), href="https://shiny.rstudio.com/", target="_blank"), "which will execute"),
-        h3(strong("2."), "a workflow managed by", a(span(strong("Snakemake."), style = "color:teal"), href="https://snakemake.readthedocs.io/en/stable/", target="_blank")),
-        h3("The code is fully open-source, freely distributed on", a(span(strong("GitHub"), style = "color:teal"), href="https://github.com/popgenomics/ABConline", target="_blank"), "and can be immediately redeployed on any cluster using", a(span(strong("SLURM"), style = "color:teal"), href="https://slurm.schedmd.com/documentation.html", target="_blank"), "thanks to a", a(span(strong("Singularity"), style = "color:teal"), href="https://sylabs.io/docs/#doc-3.2", target="_blank"), "image."),
-        
-        h3("This redeployment allows the user to modify the models to be compared, to add summary statistics, etc..."),
-        h3("The workflow can be simply executed from the command line without going through the web interface."),
-        
-        h3("However, if desired, the web interface can also be freely hosted and linked to any cluster.")
+        h3(strong("4."), "measure the robustness of the analyses.", strong("fastABC"), "is transparent on the ability of its inferences to reproduce the observed data.")
       )
     ),
   
   fluidRow(
-    box(
-      title = h2("Compared models"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-                mainPanel(htmlOutput("models_picture"))
+    #box(title = h2("Compared demographic models"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+    boxPlus(title = h2("Compared demographic models"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+                mainPanel(width=12, htmlOutput("models_picture"),
+                         h3(strong("2 populations/species")),
+                         h3(strong("SI"), "= strict isolation: subdivision of an ancestral diploid panmictic population (of size Nanc) in two diploid populations (of constant sizes Npop1 and Npop2) at time Tsplit."),
+                         h3(strong("AM"), "= ancestral migration: the two newly formed populations continue to exchange alleles until time TAM."),
+                         h3(strong("IM"), "= isolation with migration: the two daughter populations continuously exchange alleles until present time."),
+                         h3(strong("SC"), "= secondary contact: the daughter populations first evolve in isolation (forward in time), then experience a secondary contact and start exchanging alleles at time TSC. Red phylogenies represent possible gene trees under each alternative model."),
+                         hr(),
+                         h3(strong("4 populations/species")),
+                         h3("A single generalist model, declined in 64 sub-models according to if there is one:"),
+                         h3("migration (bidirectional) or no migration between A and B, and/or between C and D."),
+                         h3("bidirectional, unidirectional or no migration between A and C, and/or between B and D."),
+                         h3("In case of migration between A and B (and between C and D), the gene flow takes place since their separation Tsplit_AB (and Tsplit_CD)."),
+                         h3("In case of migration between A and C (and between B and D), the gene flow occurs during a secondary contact TSC_AC (and TSC_BD) lower than", code("min(c(Tsplit_AB, Tsplit_CD))"), ".")
+                )
       
     ),
     
-    box(
-      title = h2("Model comparisons for 2 populations/species"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-      mainPanel(htmlOutput("model_comparisons"))
+    
+    #box(title = h2("Compared genomic models"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+    boxPlus(title = h2("Compared genomic models"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+                
+      fluidRow(
+        # Sidebar panel for inputs
+        column(width=4,
+               # Input: Slider for the number of bins
+               sliderInput(inputId = "Ne", label = h3("Effective population size:"), min = 0, max = 1000000, value = 10000, step=1000),
+               sliderInput(inputId = "alpha", label = h3("Shape parameter #1:"), min = 0, max = 50, value = 10),
+               sliderInput(inputId = "beta", label = h3("Shape parameter #2:"), min = 0, max = 50, value = 3)	
+        ),
+        
+        # Main panel for displaying outputs
+        column(width=8,
+               # Output: density
+               plotOutput(outputId = "genomic_hetero")
+        )
+      ),
+      
+      fluidRow(
+        column(width=12,
+               h3("All demographic models exist under AT LEAST two alternative genomic models:"),
+               h3(strong("1."), "a model where the effective size", strong("(Ne)"), "is genomically homogeneous (orange bar), i.e., all locus are simulated by sharing the same", strong("Ne"), "value. In this model,", strong("fastABC"), "will try to estimate the value of", strong("Ne"), "best explaining the observed data.", strong("Ne"), "being independent between all populations (current, past)."),
+               h3(strong("2."), "a model where", strong("Ne"), "is genomically heterogeneous (green distribution), i.e., all locus are simulated with a value of", strong("Ne"), "drawn in a Beta distribution. In this model,", strong("fastABC"), "will try to estimate the value of", strong("Ne"), "as well as the two shape parameters", strong("(shape1 and shape2)"), "that best explain the observations. Here,", strong("fastABC"), "assumes that all populations (current and past)", strong("share the same Beta distribution"), "but are independently rescaled by different", strong("Ne"), "values."),
+               hr(),
+               h3("In addition, all demographic models with migration have two alternative models of introgression:"),
+               h3(strong("1."), "a model where all of the loci share the same introgression rate for a given direction, but these rates are independent between directions. Here,", strong("fastABC"), "will simply try to estimate the introgression rate for each direction."),
+               h3(strong("2."), "a model where all of the loci share the same introgression rate for a given direction, but these rates are independent between directions. Here,", strong("fastABC"), "will simply try to estimate the introgression rate for each direction.")
+               
+        )     
+        )
     ),
     
-    box(
-      title = h2("Snakemake pipeline"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+#    box(title = h2("Model comparisons for 2 populations/species"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+    boxPlus(title = h2("Model comparisons for 2 populations/species"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+
+      mainPanel(htmlOutput("model_comparisons"))
+    ),
+
+    boxPlus(title = h2("Architecture"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+        column(width=12,
+          h3("FastABC is composed of two elements:"),
+          h3(strong("1."), "A web interface developed in", a(span(strong("Shiny,"), style = "color:teal"), href="https://shiny.rstudio.com/", target="_blank"), "which will execute..."),
+          h3(strong("2."), "...a workflow managed by", a(span(strong("Snakemake."), style = "color:teal"), href="https://snakemake.readthedocs.io/en/stable/", target="_blank")),
+          h3("The code is fully open-source, freely distributed on", a(span(strong("GitHub"), style = "color:teal"), href="https://github.com/popgenomics/ABConline", target="_blank"), "and can be immediately redeployed on any cluster using", a(span(strong("SLURM"), style = "color:teal"), href="https://slurm.schedmd.com/documentation.html", target="_blank"), "thanks to a", a(span(strong("Singularity"), style = "color:teal"), href="https://sylabs.io/docs/#doc-3.2", target="_blank"), "image."),
+          
+          h3("This redeployment allows the user to modify the models to be compared, to add summary statistics, etc..."),
+          h3("The workflow can be simply executed from the command line without going through the web interface."),
+          
+          h3("However, if desired, the web interface can also be freely hosted and linked to any cluster.")
+        )
+      ),
+
+#    box(title = h2("Snakemake pipeline"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+    boxPlus(title = h2("Snakemake pipeline"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
                 mainPanel(htmlOutput("welcome_picture"))
     )
   )
@@ -66,8 +117,8 @@ welcome_page <- dashboardBody(
 upload_data <- dashboardBody(
         tags$head(tags$style(HTML("a {color: black}"))),
         fluidRow(
-            box(
-                title = h2("Number of ABC analysis to run"), height = 250, width = 6, solidHeader = TRUE, background = NULL, status = "primary",
+         #   box(title = h2("Number of ABC analysis to run"), height = 250, width = 6, solidHeader = TRUE, background = NULL, status = "primary",
+            boxPlus(title = h2("Number of ABC analysis to run"), height = 250, width = 6, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
                 shinyjs::useShinyjs(),
                 #numericInput(inputId = "number_of_ABC", label = NULL,  value = 1, min = 1, max = 5, step = 1),
                 selectInput("number_of_ABC", label = h4("1 to 5 ABC analyses can be performed from the same input file"), choices = list("1" = 1, "2" = 2, "3" = 3, "4" = 4, "5" = 5), selected = 1)
@@ -75,21 +126,22 @@ upload_data <- dashboardBody(
                # actionButton("number_of_ABC_validation", "Validate")
             ),
             
-            box(
-                title = h2("Email address"), height = 250,  width = 6, solidHeader = TRUE, status = "primary",
+        #    box(title = h2("Email address"), height = 250,  width = 6, solidHeader = TRUE, status = "primary",
+            boxPlus(title = h2("Email address"), height = 250, width = 6, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
                 textInput("mail_address", label = h4("address to receive the download link of the results"), value = "user@gmail.com")
             )
         ),
 
      fluidRow(NULL, soldHeader = TRUE, status ="danger",
-              box(
-                  title = h2("Sequence Alignment Upload"), height = 200,  width = 6, solidHeader = TRUE, status = "success",
+#              box(title = h2("Sequence Alignment Upload"), height = 200,  width = 6, solidHeader = TRUE, status = "success",
+              boxPlus(title = h2("Sequence Alignment Upload"), height = 200,  width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+
                   fileInput("infile", label = NULL)
               ),
               
              
-             box(
-                 title = h2("Genomic regions"), height = 200,  width = 6, solidHeader = TRUE, status = "warning",
+#             box(title = h2("Genomic regions"), height = 200,  width = 6, solidHeader = TRUE, status = "warning",
+             boxPlus(title = h2("Genomic regions"), height = 200,  width = 6, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
                  #                radioButtons("region", label = NULL, selected = "noncoding", choices = list("coding" = "coding", "non coding" = "noncoding"))
                  prettyRadioButtons("region", label = NULL, shape = "round", status = "warning", fill = TRUE, inline = TRUE, animation = "pulse", bigger = TRUE,
                                     selected = "noncoding", choices = list("coding" = "coding", "non coding" = "noncoding"))
@@ -97,8 +149,8 @@ upload_data <- dashboardBody(
         ),     
         
         fluidRow(align="left",
-            box(
-                title = h2("Input file"), width = 6, solidHeader = TRUE, background = "green", status = "success",
+            #box(title = h2("Input file"), width = 6, solidHeader = TRUE, background = "green", status = "success",
+                boxPlus(title = h2("Input file"), width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
                 h3(strong("Fasta file")),
                 h3("A single fasta file containing all sequences obtained from all populations/species, and for all genes is the only inputfile to upload."),
                 h3("Even sequences obtained from non-studied species can be included in the file. The user will specify the names of the species to consider after the upload ."),
@@ -111,8 +163,8 @@ upload_data <- dashboardBody(
                 br()
             ),
             
-            box(
-                title = h2("Informations about the uploaded file"),  width = 6, solidHeader = TRUE, status = "success",
+            #box(title = h2("Informations about the uploaded file"),  width = 6, solidHeader = TRUE, status = "success",
+            boxPlus(title = h2("Informations about the uploaded file"), width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
                 uiOutput("upload")
                 
             )
@@ -215,8 +267,9 @@ upload_data <- dashboardBody(
 filtering <- dashboardBody(
     fluidRow(
         column(width = 4,
-               box(
-                   title = h2("Maximum proportion of N"), width = NULL, solidHeader = TRUE, status = "primary", height = 225,
+               #box(title = h2("Maximum proportion of N"), width = NULL, solidHeader = TRUE, status = "primary", height = 225,
+                boxPlus(title = h2("Maximum proportion of N"), height = 225, width = NULL, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                    sliderInput("max_N_tolerated", label = NULL,  min = 0, max = 1, value = 0.1, step = 0.005)
                ),
                boxPlus(
@@ -231,8 +284,9 @@ filtering <- dashboardBody(
         ),
         
         column(width = 4,
-               box(
-                   title = h2("Minimum gene length"), width = NULL, solidHeader = TRUE, status = "success", height = 225,
+              # box(title = h2("Minimum gene length"), width = NULL, solidHeader = TRUE, status = "success", height = 225,
+              boxPlus(title = h2("Minimum gene length"), height = 225, width = NULL, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                    numericInput("Lmin", label = NULL, value = 30)
                ),
 
@@ -259,8 +313,9 @@ filtering <- dashboardBody(
         ),
         
         column(width = 4,
-               box(
-                   title = h2("Minimum number of sequences"), width = NULL, solidHeader = TRUE, status = "warning", height = 225,
+               #box(title = h2("Minimum number of sequences"), width = NULL, solidHeader = TRUE, status = "warning", height = 225,
+                boxPlus(title = h2("Minimum number of sequences"), height = 225, width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                    numericInput("nMin", label = NULL, value = 12)
                ),
                boxPlus(
@@ -291,16 +346,18 @@ filtering <- dashboardBody(
 
 populations <- dashboardBody(
     fluidRow(
-        box(
-            title = h2("Number of populations/species"), width = 4, solidHeader = TRUE, status = "primary", height = 600,
+        #box(title = h2("Number of populations/species"), width = 4, solidHeader = TRUE, status = "primary", height = 600,
+        boxPlus(title = h2("Number of populations/species"), height = 600, width = 4, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                    
 #            radioButtons("nspecies", label = h3("Number of gene pools"), choices = list("One gene pool" = 1, "Two gene pools" = 2, "Four gene pools" = 4), selected = 2),
             prettyRadioButtons("nspecies", label = h3("Number of gene pools"), shape = "round", status = "primary", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
                                choices = list("One gene pool" = 1, "Two gene pools" = 2, "Four gene pools" = 4), selected = 2),
             uiOutput("input_names_ui")
         ),
         
-        box(
-            title = h2("Outgroup species"), width = 4, solidHeader = TRUE, status = "warning", height = 600,
+        #box(title = h2("Outgroup species"), width = 4, solidHeader = TRUE, status = "warning", height = 600,
+        boxPlus(title = h2("Outgroup species"), height = 600, width = 4, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                    
 #            radioButtons("presence_outgroup", label = h3("Presence of an outgroup"), choices = list("no" = "no", "yes" = "yes"), selected = "no"),
             prettyRadioButtons("presence_outgroup", label = h3("Presence of an outgroup"), shape = "round", status = "warning", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
                                choices = list("no" = "no", "yes" = "yes"), selected = "no"),
@@ -321,9 +378,9 @@ populations <- dashboardBody(
 prior <- dashboardBody(
     fluidRow(
         column(width = 4,
-               box(
-               #    title = strong("Mutation and recombination"), icon = "fas fa-bolt", width = 12, solidHeader = TRUE, gradientColor = "olive", boxToolSize = "lg", footer_padding = TRUE, collapsible = FALSE, collapsed = FALSE, closable = FALSE,
-                   title = h2("Mutation and recombination"), width = NULL, solidHeader = TRUE, status = "primary", height = 250,
+              #box(title = h2("Mutation and recombination"), width = NULL, solidHeader = TRUE, status = "primary", height = 250,
+              boxPlus(title = h2("Mutation and recombination"), height = 250, width = NULL, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                    fluidRow(
                         column(width=5, numericInput("mu", label = h5('Mutation rate'), value = 0.000000003)),
                         column(width=5, numericInput("rho_over_theta", label = h5('Ratio r/µ'), value = 0.1))
@@ -342,10 +399,9 @@ prior <- dashboardBody(
                    h3("If the ratio is (unnecessarily) setted to values above 10, simulations will take too long.")
                ),
                
-               box(
-                    #title = strong("Ne (# of diploid individuals)"), icon = "fas fa-users", width = 12, solidHeader = TRUE, gradientColor = "purple", boxToolSize = "lg", footer_padding = TRUE, collapsible = FALSE, collapsed = FALSE, closable = FALSE,
-                   
-                    title = h2("Population sizes"), width = NULL, solidHeader = TRUE, status = "danger", height = 250,
+#               box(title = h2("Population sizes"), width = NULL, solidHeader = TRUE, status = "danger", height = 250,
+               boxPlus(title = h2("Population sizes"), height = 250, width = NULL, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                     fluidRow(
                         column(width=5, numericInput("N_min", label = h5('min'), value = 100)),
                         column(width=5, numericInput("N_max", label = h5('max'), value = 1000000))
@@ -363,9 +419,9 @@ prior <- dashboardBody(
         ),
         
         column(width = 4,
-               box(
-                   #title = strong("Time of split (# of generations)"), icon = "fas fa-history", width = 12, solidHeader = TRUE, gradientColor = "teal", boxToolSize = "lg", footer_padding = TRUE, collapsible = FALSE, collapsed = FALSE, closable = FALSE,
-                   title = h2("Time of split"), width = NULL, solidHeader = TRUE, status = "warning", height = 250,
+               #box(title = h2("Time of split"), width = NULL, solidHeader = TRUE, status = "warning", height = 250,
+              boxPlus(title = h2("Time of split"), height = 250, width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                   fluidRow(
                        column(width=5, numericInput("Tsplit_min", label = h5('min'), value = 100)),
                        column(width=5, numericInput("Tsplit_max", label = h5('max'), value = 1000000))
@@ -385,11 +441,10 @@ prior <- dashboardBody(
                    h3("For each simulation in the ", strong("SC"), " and ", strong("AM"), " models, the time of secondary contact between lines", strong(em("(Tsc),")), " or old migration stop times", strong(em("(Tam)")), "are drawn uniformly between", strong(em("Tsplit_min")), "and", strong(em("Tsplit_sampled.")))
                ),
                
-               box(
-                   #title = strong("Migration rate (4.N.m per generation)"), icon = "fas fa-helicopter", width = 12, solidHeader = TRUE, gradientColor = "teal", boxToolSize = "lg", footer_padding = TRUE, collapsible = FALSE, collapsed = FALSE, closable = FALSE,
-                   
-                   title = h2("Migration rates"), icon = NULL, width = NULL, solidHeader = TRUE, status = "success", height = 250,
-                   fluidRow(
+              # box(title = h2("Migration rates"), icon = NULL, width = NULL, solidHeader = TRUE, status = "success", height = 250,
+              boxPlus(title = h2("Migration rates"), height = 250, width = NULL, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
+                                      fluidRow(
                        column(width=5, numericInput("M_min", label = h5('min'), value = 0.4)),
                        column(width=5, numericInput("M_max", label = h5('max'), value = 20))
                        )
@@ -450,16 +505,23 @@ run_ABC <- dashboardBody(
 informations <- dashboardBody(
     fluidRow(
       column(width = 10,
-        box(title = h2("Citations"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-            h3("Please, in case of publication of a study based on fastABC, do not forget to quote the following references:"),
+#        box(title = h2("Citations"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+        boxPlus(title = h2("Citations"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+            h3("Please, in case of publication of a study using fastABC, do not forget to quote the following references:"),
             h3(code('Csilléry, Katalin, Olivier François, and Michael GB Blum. "abc: an R package for approximate Bayesian computation (ABC)." Methods in ecology and evolution 3.3 (2012): 475-479.')),
             h3(code('Pudlo, Pierre, Jean-Michel Marin, Arnaud Estoup, Jean-Marie Cornuet, Mathieu Gautier, and Christian P. Robert. "Reliable ABC model choice via random forests." Bioinformatics 32, no. 6 (2015): 859-866.')),
             h3(code('Roux, Camille, Christelle Fraisse, Jonathan Romiguier, Yoann Anciaux, Nicolas Galtier, and Nicolas Bierne. "Shedding light on the grey zone of speciation along a continuum of genomic divergence." PLoS biology 14, no. 12 (2016): e2000234.'))
         ),
         
-        box(title = h2("Acknowledgment"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+#        box(title = h2("Acknowledgment"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+        boxPlus(title = h2("Acknowledgment"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
             h3("Please, if you use this online version of fastABC, do not forget to recognize the free provision of calculation cores by France Bioinformatique"),
             h3(code("The demographic inferences were conducted on the IFB Core Cluster which is part of the National Network of Compute Resources (NNCR) of the", a(span(strong("Institut Français de Bioinformatique (IFB)."), style = "color:teal"), href="https://www.france-bioinformatique.fr/fr", target="_blank")))
+        ),
+        
+#        box(title = h2("Partners"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+        boxPlus(title = h2("Partners"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+            mainPanel(htmlOutput("logos"))
         )
       )
     )
@@ -556,6 +618,19 @@ server <- function(input, output, session = session) {
         )
       }
       )
+    
+    ## example of genomic heterogeneity
+    output$genomic_hetero <- renderPlot({
+      par(las=1)
+      y_points = dbeta(0:100/100, input$alpha, input$beta)
+      x_points = 0:100/100 * input$Ne
+      plot(x_points, y_points, type='l', xlab = expression(paste("Genomic distribution of ", italic('Ne'), sep=" ")), ylab='density', col="white", cex.axis = 1.5, cex.lab=1.5, xlim=c(min(c(x_points, input$Ne*1.2)), max(c(x_points, input$Ne*1.2))))
+      
+      x_points = c(0, x_points, max(x_points), 0)
+      y_points = c(0, y_points, 0, 0)
+      polygon(x_points, y_points, border = 'NA', col="#b2df8a")
+      abline(v=input$Ne, lwd=4, col="#fee08b")
+    })
     
     
     #  UPLOAD DATA
@@ -774,6 +849,16 @@ server <- function(input, output, session = session) {
             a <- infoBox(title= NULL, value = h3("CHECKED"), subtitle = NULL, icon = icon("dice"), color = "green", fill = TRUE, width = 3)
         }
     })
+    
+    ## INFORMATIONS
+    ### LOGOS
+    output$logos <-
+      renderText({
+        c(
+          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/logos.png align="middle" height="auto" width="1000" margin="0 auto">'
+        )
+      }
+      )
 }
 
 # Run the application 
