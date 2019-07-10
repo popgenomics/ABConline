@@ -17,6 +17,7 @@ library(shinyWidgets)
 library(dashboardthemes) # library(devtools); install_github("nik01010/dashboardthemes")
 library(shinyhelper)
 library(plotly)
+library(viridis)
 
 # welcome
 welcome_page <- dashboardBody(
@@ -539,6 +540,10 @@ distribution_statistics <- dashboardBody(
     #)
  # )
 #))
+  tags$head(
+    tags$style(type='text/css', 
+               ".nav-tabs {font-size: 18px} ")),    
+  
   tabsetPanel(type = "tabs",
               tabPanel("Summarized jSFS", plotlyOutput("plot_obs_stats_sites")),
               tabPanel("Polymorphism", plotlyOutput("plot_obs_stats_diversity")),
@@ -996,18 +1001,20 @@ server <- function(input, output, session = session) {
       )
       axis_x <- list(
         title = "",
-        titlefont = f
+        titlefont = f,
+        tickfont = list(size = 20)
       )     
       axis_y <- list(
         title = "Proportion of sites",
-        titlefont = f
+        titlefont = f,
+        tickfont = list(size = 20)
       )
       
       statistics_obs_sites = c(locus_spe()$sf_avg, locus_spe()$sxA_avg, locus_spe()$sxB_avg, locus_spe()$ss_avg)
       statistics_names_sites = rep(c("proportion of\nfixed differences\nbetween A and B", "proportion of\npolymorphic sites\nexclusive to A", "proportion of\npolymorphic sites\nexclusive to B", "proportion of\nshared polymorphic sites\nbetween A and B"), each = nLoci)
       data_obs_sites = data.frame(statistics_obs_sites, statistics_names_sites)
       head(data_obs_sites)
-      graph_sites = plot_ly(data_obs_sites, y=~statistics_obs_sites, x=~statistics_names_sites, color=~statistics_names_sites, type="box") %>% layout(xaxis = axis_x, yaxis = axis_y)     
+      graph_sites = plot_ly(data_obs_sites, y=~statistics_obs_sites, x=~statistics_names_sites, color=~statistics_names_sites, type="violin", box = list( visible = T ), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(4)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)))     
       return(graph_sites)
     })
     
@@ -1022,17 +1029,19 @@ server <- function(input, output, session = session) {
       )
       axis_x <- list(
         title = "",
-        titlefont = f
+        titlefont = f,
+        tickfont = list(size = 20)
       )
       axis_y <- list(
         title = "Index of diversity per site",
-        titlefont = f
+        titlefont = f,
+        tickfont = list(size = 20)
       )
       statistics_obs_diversity = c(locus_spe()$piA_avg, locus_spe()$piB_avg, locus_spe()$thetaA_avg, locus_spe()$thetaB_avg)
       statistics_names_diversity = rep(c("diversity in sp. A\n(measured by pi)", "diversity in sp. B\n(measured by pi)", "diversity in sp. A\n(measured by Watterson's theta)", "diversity in sp. B\n(measured by Watterson's theta)"), each = nLoci)
       data_obs_diversity = data.frame(statistics_obs_diversity, statistics_names_diversity)
       
-      graph_diversity = plot_ly(data_obs_diversity, y=~statistics_obs_diversity, x=~statistics_names_diversity, color=~statistics_names_diversity, type="box") %>% layout(xaxis = axis_x, yaxis = axis_y)
+      graph_diversity = plot_ly(data_obs_diversity, y=~statistics_obs_diversity, x=~statistics_names_diversity, color=~statistics_names_diversity, type="violin", box = list( visible = T ), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(4)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)))
       return(graph_diversity)
     })
     
@@ -1047,17 +1056,19 @@ server <- function(input, output, session = session) {
       )
       axis_x <- list(
         title = "",
-        titlefont = f
+        titlefont = f,
+        tickfont = list(size = 20)
       )
       axis_y <- list(
         title = "Tajima's D",
-        titlefont = f
+        titlefont = f,
+        tickfont = list(size = 20)
       )
       statistics_obs_tajima = c(locus_spe()$DtajA_avg, locus_spe()$DtajB_avg)
       statistics_names_tajima = rep(c("Tajima's D in sp. A", "Tajima's D in sp. B"), each = nLoci)
       data_obs_tajima = data.frame(statistics_obs_tajima, statistics_names_tajima)
       
-      graph_tajima = plot_ly(data_obs_tajima, y=~statistics_obs_tajima, x=~statistics_names_tajima, color=~statistics_names_tajima, type="box") %>% layout(xaxis = axis_x, yaxis = axis_y)
+      graph_tajima = plot_ly(data_obs_tajima, y=~statistics_obs_tajima, x=~statistics_names_tajima, color=~statistics_names_tajima, type="violin", box = list( visible = T ), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(2)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)))
       return(graph_tajima)
     })
     
@@ -1068,23 +1079,24 @@ server <- function(input, output, session = session) {
       nLoci = nrow(locus_spe())
       f <- list(
         family = "Arial",
-        size = 20
+        size = 30
       )
       axis_x <- list(
         title = "",
-        titlefont = f
+        tickfont = list(size = 20)
       )
       
       axis_y <- list(
         title = "Measure of divergence/differentiation",
-        titlefont = f
+        titlefont = f,
+        tickfont = list(size = 20)
       )
       
       statistics_obs_divergence = c(locus_spe()$divAB_avg, locus_spe()$netdivAB_avg, locus_spe()$FST_avg)
       statistics_names_divergence = rep(c("raw divergence between\nsp. A and sp. B", "net divergence between\nsp. A and sp. B", "Fst between\nsp. A and sp. B"), each = nLoci)
       data_obs_divergence = data.frame(statistics_obs_divergence, statistics_names_divergence)
       
-      graph_divergence = plot_ly(data_obs_divergence, y=~statistics_obs_divergence, x=~statistics_names_divergence, color=~statistics_names_divergence, type="box") %>% layout(xaxis = axis_x, yaxis = axis_y)
+      graph_divergence = plot_ly(data_obs_divergence, y=~statistics_obs_divergence, x=~statistics_names_divergence, color=~statistics_names_divergence, type="violin", box = list( visible = T ), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(3)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)) )
       return(graph_divergence)
     })
     
