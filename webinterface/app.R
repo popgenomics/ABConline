@@ -15,21 +15,107 @@ library(shinydashboardPlus)
 library(DT)
 library(shinyWidgets)
 library(dashboardthemes) # library(devtools); install_github("nik01010/dashboardthemes")
-library(shinymaterial)
-
+library(shinyhelper)
 
 # welcome
 welcome_page <- dashboardBody(
   fluidRow(
-    box(
-      title = h2("Compared models"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-                mainPanel(htmlOutput("models_2pops"))
+ #   box(title = h2("Overview"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+    boxPlus(title = h2("Overview"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+        h3(strong("fastABC"), "is a DNA sequence analysis workflow to study the demographic history of sampled populations or species by using Approximate Bayesian Computations."),
+        h3("From a single uploaded input file containing sequenced genes or DNA fragments,", strong("fastABC"), "will:"),
+        h3(strong("1."), "simulate different models/scenarios."),
+        h3(strong("2."), "select the best model using an ABC approach based on", a(span(strong("random forests."), style = "color:teal"), href="https://cran.r-project.org/web/packages/abcrf/index.html", target="_blank")),
+        h3(strong("3."), "estimate the parameters of the best model using a", a(span(strong("neural network"), style = "color:teal"), href="https://cran.r-project.org/web/packages/abc/index.html", target="_blank"), "approach."),
+        h3(strong("4."), "measure the robustness of the analyses.", strong("fastABC"), "is transparent on the ability of its inferences to reproduce the observed data."),
+        hr(),
+        h3("The first goal of", strong("fastABC"), "is to distinguish between isolation versus migration models for sister gene pools."),
+        h3("Its ultimate goal is to produce for each studied gene the probability of being associated with a species barrier.")
+        
+      )
+    ),
+  
+  fluidRow(
+    #box(title = h2("Compared demographic models"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+    boxPlus(title = h2("Compared demographic models"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+                mainPanel(width=NULL, htmlOutput("models_picture"),
+                         h3(strong("2 populations/species")),
+                         h3(strong("SI"), "= strict isolation: subdivision of an ancestral diploid panmictic population (of size Nanc) in two diploid populations (of constant sizes Npop1 and Npop2) at time Tsplit."),
+                         h3(strong("AM"), "= ancestral migration: the two newly formed populations continue to exchange alleles until time TAM."),
+                         h3(strong("IM"), "= isolation with migration: the two daughter populations continuously exchange alleles until present time."),
+                         h3(strong("SC"), "= secondary contact: the daughter populations first evolve in isolation (forward in time), then experience a secondary contact and start exchanging alleles at time TSC. Red phylogenies represent possible gene trees under each alternative model."),
+                         hr(),
+                         h3(strong("4 populations/species")),
+                         h3("A single generalist model, declined in 64 sub-models according to if there is one:"),
+                         h3("migration (bidirectional) or no migration between A and B, and/or between C and D."),
+                         h3("bidirectional, unidirectional or no migration between A and C, and/or between B and D."),
+                         h3("In case of migration between A and B (and between C and D), the gene flow takes place since their separation Tsplit_AB (and Tsplit_CD)."),
+                         h3("In case of migration between A and C (and between B and D), the gene flow occurs during a secondary contact TSC_AC (and TSC_BD) lower than", code("min(c(Tsplit_AB, Tsplit_CD))"), ".")
+                )
+      
     ),
     
-    box(
-      title = h2("Snakemake pipeline"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-                mainPanel(htmlOutput("welcome_picture"))
-    )
+    
+    #box(title = h2("Compared genomic models"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+    boxPlus(title = h2("Compared genomic models"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+                
+      fluidRow(
+        # Sidebar panel for inputs
+        column(width=4,
+               # Input: Slider for the number of bins
+               sliderInput(inputId = "Ne", label = h3("Effective population size:"), min = 0, max = 1000000, value = 10000, step=1000),
+               sliderInput(inputId = "alpha", label = h3("Shape parameter #1:"), min = 1, max = 10, value = 10, step=0.1),
+               sliderInput(inputId = "beta", label = h3("Shape parameter #2:"), min = 1, max = 10, value = 3, step=0.1)	
+        ),
+        
+        # Main panel for displaying outputs
+        column(width=8,
+               # Output: density
+               plotOutput(outputId = "genomic_hetero")
+        )
+      ),
+      
+      fluidRow(
+        column(width=12,
+               h3("All demographic models exist under AT LEAST two alternative genomic models:"),
+               h3(strong("1."), "a model where the effective size", strong("(Ne)"), "is genomically homogeneous (orange bar), i.e., all locus are simulated by sharing the same", strong("Ne"), "value. In this model,", strong("fastABC"), "will try to estimate the value of", strong("Ne"), "best explaining the observed data.", strong("Ne"), "being independent between all populations (current, past)."),
+               h3(strong("2."), "a model where", strong("Ne"), "is genomically heterogeneous (green distribution), i.e., all locus are simulated with a value of", strong("Ne"), "drawn in a Beta distribution. In this model,", strong("fastABC"), "will try to estimate the value of", strong("Ne"), "as well as the two shape parameters", strong("(shape1 and shape2)"), "that best explain the observations. Here,", strong("fastABC"), "assumes that all populations (current and past)", strong("share the same Beta distribution"), "but are independently rescaled by different", strong("Ne"), "values."),
+               hr(),
+               h3("In addition, all demographic models with migration have two alternative models of introgression:"),
+               h3(strong("1."), "a model where all of the loci share the same introgression rate for a given direction, but these rates are independent between directions. Here,", strong("fastABC"), "will simply try to estimate the introgression rate for each direction."),
+               h3(strong("2."), "a model where introgression rates are Beta distributed throughout genomes.", strong("fastABC"), "assumes independent Beta distributions for each direction where gene flow occurs."),
+               htmlOutput("homo_hetero")
+               
+        )     
+        )
+    ),
+    
+#    box(title = h2("Model comparisons for 2 populations/species"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+    boxPlus(title = h2("Model comparisons for 2 populations/species"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+          htmlOutput("model_comparisons"),
+          h3(strong("fastABC"), "performs hierarchical model comparisons."),
+          h3(strong("1."), "comparison between all models with", strong("current isolation"), "({SI; AM} x {Ne_homo; Ne_hetero} x {M_homo; M_hetero}) versus", strong("ongoing migration"), "({IM; SC} x {Ne_homo; Ne_hetero} x {M_homo; M_hetero})"),
+          h3(strong("2. if current isolation ->"), "comparison between", strong("SI"), "({Ne_homo; Ne_hetero}) versus", strong("AM"), "({Ne_homo; Ne_hetero} x {M_homo; M_hetero})"),
+          h3(strong("2. if ongoing migration ->"), "comparison between", strong("IM"), "({Ne_homo; Ne_hetero} x {M_homo; M_hetero}) versus", strong("SC"), "({Ne_homo; Ne_hetero} x {M_homo; M_hetero})"),
+          h3(strong("3."), "the last step is to determine whether effective size", strong("(Ne)"), "and migration rates", strong("(N.m)"), "are homogeneously or heterogenously distributed in genomes.")
+          
+    ),
+
+    boxPlus(title = h2("Architecture"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+        column(width=12,
+          h3("FastABC is composed of two elements:"),
+          h3(strong("1."), "A web interface developed in", a(span(strong("Shiny,"), style = "color:teal"), href="https://shiny.rstudio.com/", target="_blank"), "which will execute..."),
+          h3(strong("2."), "...a workflow managed by", a(span(strong("Snakemake."), style = "color:teal"), href="https://snakemake.readthedocs.io/en/stable/", target="_blank")),
+          htmlOutput("welcome_picture"),
+          hr(),
+          h3("The code is fully open-source, freely distributed on", a(span(strong("GitHub"), style = "color:teal"), href="https://github.com/popgenomics/ABConline", target="_blank"), "and can be immediately redeployed on any cluster using", a(span(strong("SLURM"), style = "color:teal"), href="https://slurm.schedmd.com/documentation.html", target="_blank"), "thanks to a", a(span(strong("Singularity"), style = "color:teal"), href="https://sylabs.io/docs/#doc-3.2", target="_blank"), "image."),
+          
+          h3("This redeployment allows the user to modify the models to be compared, to add summary statistics, etc..."),
+          h3("The workflow can be simply executed from the command line without going through the web interface."),
+          
+          h3("However, if desired, the web interface can also be freely hosted and linked to any cluster.")
+        )
+      )
   )
 )
 
@@ -37,8 +123,8 @@ welcome_page <- dashboardBody(
 upload_data <- dashboardBody(
         tags$head(tags$style(HTML("a {color: black}"))),
         fluidRow(
-            box(
-                title = h2("Number of ABC analysis to run"), height = 250, width = 6, solidHeader = TRUE, background = NULL, status = "primary",
+         #   box(title = h2("Number of ABC analysis to run"), height = 250, width = 6, solidHeader = TRUE, background = NULL, status = "primary",
+            boxPlus(title = h2("Number of ABC analysis to run"), height = 250, width = 6, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
                 shinyjs::useShinyjs(),
                 #numericInput(inputId = "number_of_ABC", label = NULL,  value = 1, min = 1, max = 5, step = 1),
                 selectInput("number_of_ABC", label = h4("1 to 5 ABC analyses can be performed from the same input file"), choices = list("1" = 1, "2" = 2, "3" = 3, "4" = 4, "5" = 5), selected = 1)
@@ -46,34 +132,35 @@ upload_data <- dashboardBody(
                # actionButton("number_of_ABC_validation", "Validate")
             ),
             
-            box(
-                title = h2("Email address"), height = 250,  width = 6, solidHeader = TRUE, status = "primary",
+        #    box(title = h2("Email address"), height = 250,  width = 6, solidHeader = TRUE, status = "primary",
+            boxPlus(title = h2("Email address"), height = 250, width = 6, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
                 textInput("mail_address", label = h4("address to receive the download link of the results"), value = "user@gmail.com")
             )
         ),
 
      fluidRow(NULL, soldHeader = TRUE, status ="danger",
-              box(
-                  title = h2("Sequence Alignment Upload"), height = 200,  width = 6, solidHeader = TRUE, status = "success",
+#              box(title = h2("Sequence Alignment Upload"), height = 200,  width = 6, solidHeader = TRUE, status = "success",
+              boxPlus(title = h2("Sequence Alignment Upload"), height = 200,  width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+
                   fileInput("infile", label = NULL)
               ),
               
              
-             box(
-                 title = h2("Genomic regions"), height = 200,  width = 6, solidHeader = TRUE, status = "warning",
+#             box(title = h2("Genomic regions"), height = 200,  width = 6, solidHeader = TRUE, status = "warning",
+             boxPlus(title = h2("Genomic regions"), height = 200,  width = 6, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
                  #                radioButtons("region", label = NULL, selected = "noncoding", choices = list("coding" = "coding", "non coding" = "noncoding"))
                  prettyRadioButtons("region", label = NULL, shape = "round", status = "warning", fill = TRUE, inline = TRUE, animation = "pulse", bigger = TRUE,
                                     selected = "noncoding", choices = list("coding" = "coding", "non coding" = "noncoding"))
-             )
+                 )
         ),     
         
         fluidRow(align="left",
-            box(
-                title = h2("Input file"), width = 6, solidHeader = TRUE, background = "green", status = "success",
+            #box(title = h2("Input file"), width = 6, solidHeader = TRUE, background = "green", status = "success",
+                boxPlus(title = h2("Expected input file's format"), width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
                 h3(strong("Fasta file")),
                 h3("A single fasta file containing all sequences obtained from all populations/species, and for all genes is the only inputfile to upload."),
                 h3("Even sequences obtained from non-studied species can be included in the file. The user will specify the names of the species to consider after the upload ."),
-                h3("Its format is largely inspired by the output of", a(strong("Reads2snp"), href="https://kimura.univ-montp2.fr/PopPhyl/index.php?section=tools"), " but can be post-produced without Reads2snp."),
+                h3("Its format is largely inspired by the output of", a(strong("Reads2snp"), href="https://kimura.univ-montp2.fr/PopPhyl/index.php?section=tools", target="_blank"), " but can be post-produced without Reads2snp."),
                 hr(),
                 h3("All sequences's have to respect the following structure:"),
                 h3(strong(">gene|species or population|individual|allele1 or allele2")),
@@ -82,8 +169,8 @@ upload_data <- dashboardBody(
                 br()
             ),
             
-            box(
-                title = h2("Informations about the uploaded file"),  width = 6, solidHeader = TRUE, status = "success",
+            #box(title = h2("Informations about the uploaded file"),  width = 6, solidHeader = TRUE, status = "success",
+            boxPlus(title = h2("Informations about the uploaded file"), width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = TRUE, collapsed = FALSE,
                 uiOutput("upload")
                 
             )
@@ -186,8 +273,9 @@ upload_data <- dashboardBody(
 filtering <- dashboardBody(
     fluidRow(
         column(width = 4,
-               box(
-                   title = h2("Maximum proportion of N"), width = NULL, solidHeader = TRUE, status = "primary", height = 225,
+               #box(title = h2("Maximum proportion of N"), width = NULL, solidHeader = TRUE, status = "primary", height = 225,
+                boxPlus(title = h2("Maximum proportion of missing data (N, gaps, ...)"), height = 225, width = NULL, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                    sliderInput("max_N_tolerated", label = NULL,  min = 0, max = 1, value = 0.1, step = 0.005)
                ),
                boxPlus(
@@ -195,13 +283,16 @@ filtering <- dashboardBody(
                    boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
                    enable_label = TRUE, label_text = "EXPLANATIONS", label_status = "primary",
                     h3("-Variable between 0 and 1."),
-                    h3("-Defines the maximum proportion of N in the sequence of a gene in an individual beyond which this sequence is not considered.")
+                    h3("-Defines the maximum proportion of N in the sequence of a gene in an individual beyond which this sequence is not considered."),
+                    hr(),
+                    h3(a(span(strong("Example", style = "color:blue")), href="https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/max_N_tolerated.png", target="_blank"))
                )
         ),
         
         column(width = 4,
-               box(
-                   title = h2("Minimum gene length"), width = NULL, solidHeader = TRUE, status = "success", height = 225,
+              # box(title = h2("Minimum gene length"), width = NULL, solidHeader = TRUE, status = "success", height = 225,
+              boxPlus(title = h2("Minimum sequence length per gene"), height = 225, width = NULL, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                    numericInput("Lmin", label = NULL, value = 30)
                ),
 
@@ -221,25 +312,30 @@ filtering <- dashboardBody(
                     h3("    -more than two codons segregate (even synonyms)."),
                     h3("    -at least one N is found in a codon, in an individual."),
                     br(),
-                    h3("Lmin = (number of ", strong("monomorphic positions"), "that can be considered) + (number of ", strong("biallelic positions"), "that can be considered).")
+                    h3("Number of positions to consider = (number of ", strong("monomorphic positions"), "that can be considered) + (number of ", strong("biallelic positions"), "that can be considered)."),
+                    hr(),
+                    h3(a(span(strong("Example", style = "color:green")), href="https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/Lmin.png", target="_blank"))
                )
         ),
         
         column(width = 4,
-               box(
-                   title = h2("Minimum number of sequences"), width = NULL, solidHeader = TRUE, status = "warning", height = 225,
+               #box(title = h2("Minimum number of sequences"), width = NULL, solidHeader = TRUE, status = "warning", height = 225,
+                boxPlus(title = h2("Minimum number of sequences per gene and per population/species"), height = 225, width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                    numericInput("nMin", label = NULL, value = 12)
                ),
                boxPlus(
                    title = h3("nMin"), width = NULL, icon = NULL, solidHeader = TRUE, background = NULL,
                    boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
                    enable_label = TRUE, label_text = "EXPLANATIONS", label_status = "warning",
-                   h3(strong("fastABC"), " starts for each gene by eliminating individual sequences containing too many N ", span(strong("(max_N_tolerated; blue box)", style = "color:blue")), "."),
+                   h3(strong("fastABC"), " starts for each gene by eliminating individual sequences containing too many N and gaps", span(strong("(max_N_tolerated; blue box)", style = "color:blue")), "."),
                    br(),
-                   h3("If for a gene there are fewer ", strong("nMin"), "sequences left, then the gene is not considered in the ", strong("ABC"), "analysis."),
+                   h3("If for a gene and", strong("within a population/species"), "there are fewer ", strong("nMin"), "sequences left, then the gene is not considered in the ", strong("ABC"), "analysis."),
                    br(),
                    h3(strong("If an outgroup is specified:")),
-                   h3(strong("nMin"), " becomes the number of sequences sampled for each species, for each locus, to produce a standardized joint SFS used by ", strong("ABC"), ".")
+                   h3(strong("nMin"), " becomes the number of sequences sampled for each species, for each locus, to produce a standardized joint SFS used by ", strong("ABC"), "."),
+                   hr(),
+                   h3(a(span(strong("Example", style = "color:orange")), href="https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/nMin.png", target="_blank"))
                )
         )
     ),
@@ -256,16 +352,18 @@ filtering <- dashboardBody(
 
 populations <- dashboardBody(
     fluidRow(
-        box(
-            title = h2("Number of populations/species"), width = 4, solidHeader = TRUE, status = "primary", height = 600,
+        #box(title = h2("Number of populations/species"), width = 4, solidHeader = TRUE, status = "primary", height = 600,
+        boxPlus(title = h2("Number of populations/species"), height = NULL, width = 6, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                    
 #            radioButtons("nspecies", label = h3("Number of gene pools"), choices = list("One gene pool" = 1, "Two gene pools" = 2, "Four gene pools" = 4), selected = 2),
             prettyRadioButtons("nspecies", label = h3("Number of gene pools"), shape = "round", status = "primary", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
                                choices = list("One gene pool" = 1, "Two gene pools" = 2, "Four gene pools" = 4), selected = 2),
             uiOutput("input_names_ui")
         ),
         
-        box(
-            title = h2("Outgroup species"), width = 4, solidHeader = TRUE, status = "warning", height = 600,
+        #box(title = h2("Outgroup species"), width = 4, solidHeader = TRUE, status = "warning", height = 600,
+        boxPlus(title = h2("Outgroup species"), height = NULL, width = 6, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                    
 #            radioButtons("presence_outgroup", label = h3("Presence of an outgroup"), choices = list("no" = "no", "yes" = "yes"), selected = "no"),
             prettyRadioButtons("presence_outgroup", label = h3("Presence of an outgroup"), shape = "round", status = "warning", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
                                choices = list("no" = "no", "yes" = "yes"), selected = "no"),
@@ -274,7 +372,7 @@ populations <- dashboardBody(
     ),
 
     fluidRow(
-        box("", width = 8, solidHeader = TRUE, status = "info",
+        box("", width = 12, solidHeader = TRUE, status = "info",
             prettyCheckbox(inputId = "check_populations", shape = "round", value = FALSE,
                            label = strong("Please check/valid your choices"), icon = icon("check"),
                            animation = "tada", status = "success", bigger = TRUE)
@@ -285,10 +383,10 @@ populations <- dashboardBody(
 
 prior <- dashboardBody(
     fluidRow(
-        column(width = 4,
-               box(
-               #    title = strong("Mutation and recombination"), icon = "fas fa-bolt", width = 12, solidHeader = TRUE, gradientColor = "olive", boxToolSize = "lg", footer_padding = TRUE, collapsible = FALSE, collapsed = FALSE, closable = FALSE,
-                   title = h2("Mutation and recombination"), width = NULL, solidHeader = TRUE, status = "primary", height = 250,
+        column(width = 6,
+              #box(title = h2("Mutation and recombination"), width = NULL, solidHeader = TRUE, status = "primary", height = 250,
+              boxPlus(title = h2("Mutation and recombination"), height = NULL, width = NULL, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                    fluidRow(
                         column(width=5, numericInput("mu", label = h5('Mutation rate'), value = 0.000000003)),
                         column(width=5, numericInput("rho_over_theta", label = h5('Ratio r/µ'), value = 0.1))
@@ -307,10 +405,9 @@ prior <- dashboardBody(
                    h3("If the ratio is (unnecessarily) setted to values above 10, simulations will take too long.")
                ),
                
-               box(
-                    #title = strong("Ne (# of diploid individuals)"), icon = "fas fa-users", width = 12, solidHeader = TRUE, gradientColor = "purple", boxToolSize = "lg", footer_padding = TRUE, collapsible = FALSE, collapsed = FALSE, closable = FALSE,
-                   
-                    title = h2("Population sizes"), width = NULL, solidHeader = TRUE, status = "danger", height = 250,
+#               box(title = h2("Population sizes"), width = NULL, solidHeader = TRUE, status = "danger", height = 250,
+               boxPlus(title = h2("Population size"), height = 250, width = NULL, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                     fluidRow(
                         column(width=5, numericInput("N_min", label = h5('min'), value = 100)),
                         column(width=5, numericInput("N_max", label = h5('max'), value = 1000000))
@@ -320,17 +417,18 @@ prior <- dashboardBody(
                boxPlus(
                    title = "", width = NULL, icon = NULL, solidHeader = TRUE, gradientColor = "danger",
                    boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
-                   enable_label = TRUE, label_text = "Informations about population sizes", label_status = "danger",
+                   enable_label = TRUE, label_text = "Informations about population size", label_status = "danger",
                    
-                   h3("The effective population sizes ", em(strong("Ne")), "is the number of diploid individuals within current and ancestral species/populations."),
-                   h3("In the", strong("ABC"), "simulations,", em(strong("Ne")), "is independent between all current and ancestral species/populations.")
+                   h3("The effective population size ", em(strong("Ne")), "is the number of diploid individuals within current and ancestral species/populations."),
+                   hr(),
+                   h3("In the", strong("ABC"), "simulations,", em(strong("Ne")), "will be drawn from the setted prior distribution independently for all current and ancestral species/populations")
                )
         ),
         
-        column(width = 4,
-               box(
-                   #title = strong("Time of split (# of generations)"), icon = "fas fa-history", width = 12, solidHeader = TRUE, gradientColor = "teal", boxToolSize = "lg", footer_padding = TRUE, collapsible = FALSE, collapsed = FALSE, closable = FALSE,
-                   title = h2("Time of split"), width = NULL, solidHeader = TRUE, status = "warning", height = 250,
+        column(width = 6,
+               #box(title = h2("Time of split"), width = NULL, solidHeader = TRUE, status = "warning", height = 250,
+              boxPlus(title = h2("Time of split"), height = NULL, width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                           
                   fluidRow(
                        column(width=5, numericInput("Tsplit_min", label = h5('min'), value = 100)),
                        column(width=5, numericInput("Tsplit_max", label = h5('max'), value = 1000000))
@@ -350,11 +448,11 @@ prior <- dashboardBody(
                    h3("For each simulation in the ", strong("SC"), " and ", strong("AM"), " models, the time of secondary contact between lines", strong(em("(Tsc),")), " or old migration stop times", strong(em("(Tam)")), "are drawn uniformly between", strong(em("Tsplit_min")), "and", strong(em("Tsplit_sampled.")))
                ),
                
-               box(
-                   #title = strong("Migration rate (4.N.m per generation)"), icon = "fas fa-helicopter", width = 12, solidHeader = TRUE, gradientColor = "teal", boxToolSize = "lg", footer_padding = TRUE, collapsible = FALSE, collapsed = FALSE, closable = FALSE,
-                   
-                   title = h2("Migration rates"), icon = NULL, width = NULL, solidHeader = TRUE, status = "success", height = 250,
-                   fluidRow(
+              # box(title = h2("Migration rates"), icon = NULL, width = NULL, solidHeader = TRUE, status = "success", height = 250,
+              #boxPlus(title = h2("Migration rates") %>% helper(type = "inline", title = "Inline Help", content = c("This helpfile is defined entirely in the UI!", "This is on a new line.", "This is some <b>HTML</b>."), size = "s"), height = 250, width = NULL, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+              boxPlus(title = h2("Migration rates"), height = 250, width = NULL, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                      
+                                      fluidRow(
                        column(width=5, numericInput("M_min", label = h5('min'), value = 0.4)),
                        column(width=5, numericInput("M_max", label = h5('max'), value = 20))
                        )
@@ -365,13 +463,13 @@ prior <- dashboardBody(
                   boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
                   enable_label = TRUE, label_text = "Informations about migration rates", label_status = "success",
                   
-                  h3("Migration rates are expressed in", strong(em("4.N.m,")), "where", strong(em("m")), "is the fraction of each subpopulation made up of new migrants each generation.")
+                  h3("Migration rates are expressed in", strong(em("4.Ne.m,")), "where", strong(em("m")), "is the fraction of each subpopulation made up of new migrants each generation.")
               )
         )
     ),
     
     fluidRow(
-        box("", width = 8, solidHeader = TRUE, status = "info",
+        box("", width = 12, solidHeader = TRUE, status = "info",
             prettyCheckbox(inputId = "check_prior", shape = "round", value = FALSE,
                            label = strong("Please check/valid your choices"), icon = icon("check"),
                            animation = "tada", status = "success", bigger = TRUE)
@@ -386,7 +484,7 @@ run_ABC <- dashboardBody(
     fluidRow(
             boxPlus(
 #                shiny::tags$h3("Checked options"),
-                width = 10,
+                width = 12,
                 uiOutput('check_upload_info'),
                 uiOutput('check_filtering_info'),
                 uiOutput('check_populations_info'),
@@ -396,7 +494,7 @@ run_ABC <- dashboardBody(
     
     # PRINT INPUT
     fluidRow(
-        column(width = 10,
+        column(width = 12,
             boxPlus(
                 title = h2("Information summary"), width = NULL, icon = "fa fa-heart", solidHeader = TRUE, gradientColor = "teal",
                 boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
@@ -410,31 +508,68 @@ run_ABC <- dashboardBody(
     uiOutput("run_ABC")
     )
 )
+  
 
-
+informations <- dashboardBody(
+    fluidRow(
+      column(width = 12,
+#        box(title = h2("Citations"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+        boxPlus(title = h2("Citations"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+            h3("Please, in case of publication of a study using fastABC, do not forget to quote the following references:"),
+            h3(code('Csilléry, Katalin, Olivier François, and Michael GB Blum. "abc: an R package for approximate Bayesian computation (ABC)." Methods in ecology and evolution 3.3 (2012): 475-479.')),
+            h3(code('Pudlo, Pierre, Jean-Michel Marin, Arnaud Estoup, Jean-Marie Cornuet, Mathieu Gautier, and Christian P. Robert. "Reliable ABC model choice via random forests." Bioinformatics 32, no. 6 (2015): 859-866.')),
+            h3(code('Roux, Camille, Christelle Fraisse, Jonathan Romiguier, Yoann Anciaux, Nicolas Galtier, and Nicolas Bierne. "Shedding light on the grey zone of speciation along a continuum of genomic divergence." PLoS biology 14, no. 12 (2016): e2000234.'))
+        ),
+        
+#        box(title = h2("Acknowledgment"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+        boxPlus(title = h2("Acknowledgment"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+            h3("Please, if you use this online version of fastABC, do not forget to recognize and acknowledge the free provision of calculation cores by France Bioinformatique"),
+            h3(code("The demographic inferences were conducted on the IFB Core Cluster which is part of the National Network of Compute Resources (NNCR) of the", a(span(strong("Institut Français de Bioinformatique (IFB)."), style = "color:teal"), href="https://www.france-bioinformatique.fr/fr", target="_blank")))
+        ),
+        
+#        box(title = h2("Partners"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+        boxPlus(title = h2("Partners"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+            mainPanel(htmlOutput("logos"))
+        )
+      )
+    )
+)
 
 ui <- dashboardPage(
-    dashboardHeader(title = "fastABC"),
+    dashboardHeader(title = "menu fastABC"
+      ),
     dashboardSidebar(
-        sidebarMenu(
-            style = "position: fixed; overflow: visible;",
-            menuItem(h3("Welcome"), tabName = "welcome", icon = icon("door-open", "fa-2x")),
-            menuItem(h3("Upload data"), tabName = "upload", icon = icon("cloud-upload", "fa-2x")),
-            menuItem(h3("Data filtering"), tabName = "filtering", icon = icon("bath", "fa-2x")),
-            menuItem(h3("Populations/species"), tabName = "populations", icon = icon("users-cog", "fa-2x")),
-            menuItem(h3("Prior distributions"), tabName = "simulations", icon = icon("dice", "fa-2x")),
-            menuItem(h3("Run ABC"), tabName = "run_abc", icon = icon("microchip", "fa-2x")),
-            menuItem(h3("Informations"), tabName = "information", icon = icon("info-circle", "fa-2x"))            
+      tags$head(
+        tags$style(HTML(".main-sidebar { font-size: 40px; }")) #change the font size to 20
+      ),
+      
+      sidebarMenu(
+#            style = "position: fixed; overflow: visible;",
+            menuItem(("Welcome"), tabName = "welcome", icon = icon("door-open")),
+            menuItem(('ABC'), tabName = "ABC", icon = icon("industry"),
+              menuSubItem(("Upload data"), tabName = "upload", icon = icon("cloud-upload")),
+              menuSubItem(("Data filtering"), tabName = "filtering", icon = icon("bath")),
+              menuSubItem(("Populations/species"), tabName = "populations", icon = icon("users-cog")),
+              menuSubItem(("Prior distributions"), tabName = "simulations", icon = icon("dice")),
+              menuSubItem(("Run ABC"), tabName = "run_abc", icon = icon("microchip"))
+            ),
+            menuSubItem(("Results visualization"), tabName = "Results_visualization", icon = icon("chart-pie")),
+            menuSubItem(("Informations"), tabName = "information", icon = icon("info-circle"))
         )
     ),
     
     dashboardBody(
-        shinyDashboardThemes(
-            theme = "grey_light"
+      tags$head(tags$style(
+        HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden;}')
+      )),
+      
+      setShadow(class = "box"),
+      shinyDashboardThemes(
+            theme = "poor_mans_flatly"
         ),
         
         tags$head( 
-            tags$style(HTML(".main-sidebar { font-size: 20px; }")) #change the font size to 20
+            tags$style(HTML(".main-sidebar { font-size: 40px; }")) #change the font size to 20
         ),
         
         tabItems(
@@ -470,7 +605,7 @@ ui <- dashboardPage(
             
             # Informations
             tabItem(tabName = "information",
-                    "coucou"
+                informations
             )
         )
     )
@@ -484,18 +619,48 @@ server <- function(input, output, session = session) {
     output$welcome_picture <-
       renderText({
         c(
-          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/dag_2pops.pdf.png align="middle" height="auto" width="1275" margin="0 auto">'
+          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/dag_2pops.pdf.png align="middle" height="auto" width="100%" margin="0 auto">'
         )
       }
     )
     
-    output$models_2pops <-
+    output$models_picture <-
       renderText({
         c(
-          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/models_2pops.PNG align="middle" height="auto" width="1275" margin="0 auto">'
+          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/models.png align="middle" height="auto" width="100%" margin="0 auto">'
+          )
+        }
+      )
+    
+    output$model_comparisons <-
+      renderText({
+        c(
+          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/model_comparisons.png align="middle" height="auto" width="100%" margin="0 auto">'
         )
       }
-      )
+    )
+    
+    output$homo_hetero <-
+      renderText({
+        c(
+          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/homo_hetero.png align="middle" height="auto" width="100%" margin="0 auto">'
+        )
+      }
+    )
+    
+    
+    ## example of genomic heterogeneity
+    output$genomic_hetero <- renderPlot({
+      par(las=1)
+      y_points = dbeta(0:100/100, input$alpha, input$beta)
+      x_points = 0:100/100 * input$Ne
+      plot(x_points, y_points, type='l', xlab = expression(paste("Genomic distribution of ", italic('Ne'), sep=" ")), ylab='density', main=expression(italic("Example of genomic distributions that fastABC will try to infer")), col="white", cex.main = 1.5, cex.axis = 1.5, cex.lab=1.5, xlim=c(min(c(x_points, input$Ne*1.2)), max(c(x_points, input$Ne*1.2))))
+      
+      x_points = c(0, x_points, max(x_points), 0)
+      y_points = c(0, y_points, 0, 0)
+      polygon(x_points, y_points, border = 'NA', col="#b2df8a")
+      abline(v=input$Ne, lwd=4, col="#fee08b")
+    })
     
     
     #  UPLOAD DATA
@@ -503,21 +668,33 @@ server <- function(input, output, session = session) {
         ## list of species
         list_species = reactive({
             if(is.null(input$infile)){return ()}
-            system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f2 | sort -u", sep=" "), intern = T)
+          withProgress(message = 'Getting the species', detail = NULL, value = 0, {
+            incProgress(1/2)
+            return(system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f2 | sort -u", sep=" "), intern = T))
+            incProgress(1/2)
+          })
         })
         output$list_species <- renderDataTable(data.frame("species" = list_species()))
 
         ## list of individuals
         list_individuals = reactive({
             if(is.null(input$infile)){return ()}
-            system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f3 | sort -u", sep=" "), intern = T)
+          withProgress(message = 'Getting the individuals', detail = NULL, value = 0, {
+            incProgress(1/2)
+            return(system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f3 | sort -u", sep=" "), intern = T))
+            incProgress(1/2)
+          })
         })
         output$list_individuals <- renderDataTable(data.frame("individuals" = list_individuals()))
 
         ## list of loci
         list_loci = reactive({
             if(is.null(input$infile)){return ()}
-            system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f1 | sort -u | cut -d'>' -f2", sep=" "), intern = T)
+          withProgress(message = 'Getting the loci', detail = NULL, value = 0, {
+            incProgress(1/2)
+            return(system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f1 | sort -u | cut -d'>' -f2", sep=" "), intern = T))
+            incProgress(1/2)
+          })
         })
         output$list_loci <- renderDataTable(data.frame("loci" = list_loci()))
 
@@ -528,7 +705,11 @@ server <- function(input, output, session = session) {
         nLoci = reactive({length(system(paste("cat", input$infile$datapath, "| grep '>' | cut -d '|' -f1 | sort -u", sep=" "), intern = T))})
         output$general_informations <- renderTable({
             if(is.null(input$infile)){return ()}
-            data.frame("nSpecies" = length(list_species()), "nIndividuals" = length(list_individuals()), "nLoci" = length(list_loci()))
+          withProgress(message = 'Producing the table of informations', detail = NULL, value = 0, {
+            incProgress(1/2)
+            return(data.frame("nSpecies" = length(list_species()), "nIndividuals" = length(list_individuals()), "nLoci" = length(list_loci())))
+            incProgress(1/2)
+          })
         })
 
         ## MainPanel tabset renderUI code ##
@@ -551,7 +732,7 @@ server <- function(input, output, session = session) {
             shinyjs::disable("number_of_ABC")
         })
         
-
+        
     # POPULATIONS/SPECIES
         output$input_names_ui <- renderUI({
             if(is.null(input$infile)) {return()}
@@ -576,7 +757,7 @@ server <- function(input, output, session = session) {
     output$parameters <- renderTable({
         if(is.null(input$infile)) {return()}
         mail_address = input$mail_address # email address
-        config_yaml = "not to be specified by user" # name of the config_yaml used by snakemake
+        config_yaml = "not to be specified" # name of the config_yaml used by snakemake
         infile = input$infile$name # name of the input fasta file
         region = input$region # coding or noncoding
         nspecies = input$nspecies # number of species to simulate
@@ -627,119 +808,89 @@ server <- function(input, output, session = session) {
     ## only show the action button RUN ABC if a file is uploaded and 4 checkings were made
     output$run_ABC <- renderUI({
     if(is.null(input$infile)==FALSE && input$check_upload == TRUE && input$check_filtering == TRUE && input$check_populations == TRUE && input$check_prior == TRUE){
-        a <-column(width = 10,
+        a <-column(width = 12,
                boxPlus(
                    title = h2("Run ABC"), width = NULL, icon = "fa fa-heart", solidHeader = TRUE, gradientColor = "teal",
                    boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
                    enable_label = TRUE, label_text = "Are you ready?", label_status = "danger",
                    h3("Submission of the ABC workflow"),
                    actionButton("runABC", label = "Run the ABC", size = 'md', width = '100%', fullwidth = TRUE),
-                   h3("Number of submitted analysis"),
-                   verbatimTextOutput('nClicks')
+                   h3("Number of submitted analysis (you can change the studied populations/species and the priors between 2 analysis):"),
+                   verbatimTextOutput('nClicks'),
+                   hr(),
+                   h3("Timestamp of the last submitted analysis:"),
+                   verbatimTextOutput('time_stamp'),
+                   hr(),
+                   h3("Snakemake command line:"),
+                   verbatimTextOutput("snakemake_command")
                )
             )
         }else{return()}
     })
     
+    ## print the number of clicks on the "run the ABC" button
     output$nClicks <- renderText({ input$runABC })
     
     ## removing the "Run the ABC" button after clicking on it
-  #  observeEvent(input$runABC, {
     observeEvent(input$runABC, {if (input$runABC == input$number_of_ABC)  removeUI(selector='#run_ABC', immediate=TRUE)}, autoDestroy=TRUE)
+    
+    ## get a time stamp when clicking on the "Run the ABC" button
+    time_stamp <- reactiveVal(0)
+    observeEvent( input$runABC, {time_stamp(system('echo $(mktemp -d -t XXXXXXXXXX | cut -d"/" -f3)', intern=T))})
+    output$time_stamp <- renderText({time_stamp()})
 
+    ## snakemake command
+    snakemake_command <- reactiveVal(0)
+    observeEvent( input$runABC, {snakemake_command(paste('snakemake -p -j 999 --snakefile ../2pops/Snakefile --configfile config_', time_stamp(), '.yaml --cluster-config ../cluster.json --cluster "sbatch --nodes={cluster.node} --ntasks={cluster.n} --cpus-per-task={cluster.cpusPerTask} --time={cluster.time}"', sep=''))})
+    output$snakemake_command <- renderText({snakemake_command()})
+        
     ## Check upload
     output$check_upload_info <- renderUI({
         if(input$check_upload == FALSE) {
-            a <- infoBox(title= NULL, value = h3("NON CHECKED"), subtitle = NULL, icon = icon("cloud-upload"), color = "red", fill = TRUE, width = 3)
+            a <- infoBox(title= NULL, value = h4("NON CHECKED"), subtitle = NULL, icon = icon("cloud-upload"), color = "red", fill = TRUE, width = 3)
         } else if(input$check_upload == TRUE){
-            a <- infoBox(title= NULL, value = h3("CHECKED"), subtitle = NULL, icon = icon("cloud-upload"), color = "green", fill = TRUE, width = 3)
+            a <- infoBox(title= NULL, value = h4("CHECKED"), subtitle = NULL, icon = icon("cloud-upload"), color = "green", fill = TRUE, width = 3)
         }
     })
     
     ## Check filtering
     output$check_filtering_info <- renderUI({
         if(input$check_filtering == FALSE) {
-            a <- infoBox(title= NULL, value = h3("NON CHECKED"), subtitle = NULL, icon = icon("bath"), color = "red", fill = TRUE, width = 3)
+            a <- infoBox(title= NULL, value = h4("NON CHECKED"), subtitle = NULL, icon = icon("bath"), color = "red", fill = TRUE, width = 3)
         } else if(input$check_filtering == TRUE){
-            a <- infoBox(title= NULL, value = h3("CHECKED"), subtitle = NULL, icon = icon("bath"), color = "green", fill = TRUE, width = 3)
+            a <- infoBox(title= NULL, value = h4("CHECKED"), subtitle = NULL, icon = icon("bath"), color = "green", fill = TRUE, width = 3)
         }
     })
     
     ## Check populations
     output$check_populations_info <- renderUI({
         if(input$check_populations == FALSE) {
-            a <- infoBox(title= NULL, value = h3("NON CHECKED"), subtitle = NULL, icon = icon("users-cog"), color = "red", fill = TRUE, width = 3)
+            a <- infoBox(title= NULL, value = h4("NON CHECKED"), subtitle = NULL, icon = icon("users-cog"), color = "red", fill = TRUE, width = 3)
         } else if(input$check_populations == TRUE){
-            a <- infoBox(title= NULL, value = h3("CHECKED"), subtitle = NULL, icon = icon("users-cog"), color = "green", fill = TRUE, width = 3)
+            a <- infoBox(title= NULL, value = h4("CHECKED"), subtitle = NULL, icon = icon("users-cog"), color = "green", fill = TRUE, width = 3)
         }
     })
     
     ## Check prior
     output$check_prior_info <- renderUI({
         if(input$check_prior == FALSE) {
-            a <- infoBox(title= NULL, value = h3("NON CHECKED"), subtitle = NULL, icon = icon("dice"), color = "red", fill = TRUE, width = 3)
+            a <- infoBox(title= NULL, value = h4("NON CHECKED"), subtitle = NULL, icon = icon("dice"), color = "red", fill = TRUE, width = 3)
         } else if(input$check_prior == TRUE){
-            a <- infoBox(title= NULL, value = h3("CHECKED"), subtitle = NULL, icon = icon("dice"), color = "green", fill = TRUE, width = 3)
+            a <- infoBox(title= NULL, value = h4("CHECKED"), subtitle = NULL, icon = icon("dice"), color = "green", fill = TRUE, width = 3)
         }
     })
+    
+    ## INFORMATIONS
+    ### LOGOS
+    output$logos <-
+      renderText({
+        c(
+          '<img src=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/logos.png align="middle" height="auto" width="100%" margin="0 auto">'
+        )
+      }
+      )
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
 
-
-##### STORAGE
-#if (interactive()) {
-#    
-#    library("shiny")
-#    library("shinyWidgets")
-#    
-#    
-#    ui <- fluidPage(
-#        tags$h1("Confirm sweet alert"),
-#        actionButton(
-#            inputId = "launch",
-#            label = "Launch confirmation dialog"
-#        ),
-#        verbatimTextOutput(outputId = "res"),
-#        uiOutput(outputId = "count")
-#    )
-#    
-#    server <- function(input, output, session) {
-#        # Launch sweet alert confirmation
-#        observeEvent(input$launch, {
-#            confirmSweetAlert(
-#                session = session,
-#                inputId = "myconfirmation",
-#                type = "warning",
-#                title = "Want to confirm ?",
-#                danger_mode = TRUE
-#            )
-#        })
-#        
-#        # raw output
-#        output$res <- renderPrint(input$myconfirmation)
-#        
-#        # count click
-#        true <- reactiveVal(0)
-#        false <- reactiveVal(0)
-#        observeEvent(input$myconfirmation, {
-#            if (isTRUE(input$myconfirmation)) {
-#                x <- true() + 1
-#                true(x)
-#            } else {
-#                x <- false() + 1
-#                false(x)
-#            }
-#        }, ignoreNULL = TRUE)
-#        output$count <- renderUI({
-#            tags$span(
-#                "Confirm:", tags$b(true()),
-#                tags$br(),
-#                "Cancel:", tags$b(false())
-#            )
-#        })
-#    }
-#    
-# shinyApp(ui, server)
-    
