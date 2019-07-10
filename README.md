@@ -156,7 +156,7 @@ M_max: 10
   
 # 7 - workflow  
 ## two populations  
-![DAG (directed acyclic graph)](https://github.com/popgenomics/ABConline/blob/master/dag_2pops.pdf.png)  
+![DAG (directed acyclic graph)](https://www.google.com/url?q=https://raw.githubusercontent.com/popgenomics/ABConline/master/webinterface/pictures_folder/dag_2pops.pdf.png&sa=D&source=hangouts&ust=1562848374446000&usg=AFQjCNHH8lI3qJ2Blzg1UZ51ZTjNXzfcRQ)  
   
 # 8 - example
 ![grey zone](https://raw.githubusercontent.com/popgenomics/ABConline/master/figure_greyzone.html)  
