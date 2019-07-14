@@ -126,7 +126,7 @@ upload_data <- dashboardBody(
         tags$head(tags$style(HTML("a {color: black}"))),
         fluidRow(
          #   box(title = h2("Number of ABC analysis to run"), height = 250, width = 6, solidHeader = TRUE, background = NULL, status = "primary",
-            boxPlus(title = h2("Number of ABC analysis to run"), height = 250, width = 6, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+            boxPlus(title = h2("Number of ABC analysis to run"), width = 6, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
                 shinyjs::useShinyjs(),
                 #numericInput(inputId = "number_of_ABC", label = NULL,  value = 1, min = 1, max = 5, step = 1),
                 selectInput("number_of_ABC", label = h4("1 to 5 ABC analyses can be performed from the same input file"), choices = list("1" = 1, "2" = 2, "3" = 3, "4" = 4, "5" = 5), selected = 1)
@@ -135,8 +135,12 @@ upload_data <- dashboardBody(
             ),
             
         #    box(title = h2("Email address"), height = 250,  width = 6, solidHeader = TRUE, status = "primary",
-            boxPlus(title = h2("Email address"), height = 250, width = 6, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-                textInput("mail_address", label = h4("address to receive the download link of the results"), value = "user@gmail.com")
+            boxPlus(title = h2("Email address"), width = 6, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+                textInput("mail_address", label = h4("address to receive the download link of the results"), value = "user@gmail.com"),
+                hr(),
+                h4("This address will only be used for 2 things:"),
+                h4(strong("1)"), "send the results of fastABC to the user"),
+                h4(strong("2)"), "contact users on the day when a collaborative meta-analysis will be considered")
             )
         ),
 
@@ -172,7 +176,7 @@ upload_data <- dashboardBody(
             ),
             
             #box(title = h2("Informations about the uploaded file"),  width = 6, solidHeader = TRUE, status = "success",
-            boxPlus(title = h2("Informations about the uploaded file"), width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = TRUE, collapsed = FALSE,
+            boxPlus(title = h2("Informations about the uploaded file"), width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
                 uiOutput("upload")
                 
             )
@@ -358,8 +362,15 @@ populations <- dashboardBody(
         boxPlus(title = h2("Number of populations/species"), height = NULL, width = 6, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
                     
 #            radioButtons("nspecies", label = h3("Number of gene pools"), choices = list("One gene pool" = 1, "Two gene pools" = 2, "Four gene pools" = 4), selected = 2),
+
+#           ### FOR THE MOMENT : ONLY ONE POSSIBLE CHOICE --> 2 POPULATIONS SPECIES.
+#           ### UNCOMMENT THE NEXT TWO LINES WHEN THE ANALYSES FOR 1 OR 4 POPULATIONS WILL BE READY
+         #   prettyRadioButtons("nspecies", label = h3("Number of gene pools"), shape = "round", status = "primary", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
+          #                     choices = list("One gene pool" = 1, "Two gene pools" = 2, "Four gene pools" = 4), selected = 2),
+
             prettyRadioButtons("nspecies", label = h3("Number of gene pools"), shape = "round", status = "primary", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
-                               choices = list("One gene pool" = 1, "Two gene pools" = 2, "Four gene pools" = 4), selected = 2),
+                   choices = list("Two gene pools" = 2), selected = 2),
+            em(strong(h4('Analysis for 1 or 4 populations/species will be soon available'))),
             uiOutput("input_names_ui")
         ),
         
@@ -517,43 +528,19 @@ upload_results <- dashboardBody(
       boxPlus(title = h2("Results to upload (i.e, fastABC's archived output)"), height = 200,  width = 12, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
       fileInput("results", label = NULL)
     )
-  )
+  ),
+  uiOutput("observed_columns_to_display"),
+  uiOutput("display_uploaded_results")
 )
 
 
-distribution_statistics <- dashboardBody(
-#  boxPlus(title = h2("Distribution of observed statistics"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = FALSE,
-          
-#    fluidRow(
-#      # Sidebar panel for inputs
-#      column(width=3,
- #     # Input: Slider for the number of bins
-  #    #sliderInput(inputId = "nObsStats", label = h3("Number of observed statistics to plot:"), min = 1, max = 13, value = 1, step=1)
-   #   selectInput("obs_stat_to_plot", label = h3("Statistics to plot"), choices = list("Summary of the SFS" = 1, "Diversity" = 2, "Tajima's D" = 3, "Differentiation and divergence" = 4), selected = 1)
-    #  ),
-            
-#    # Main panel for displaying outputs
- #   column(width=9,
-  #  # Output: density
-
-   # plotlyOutput("plot_obs_stats")
-    #)
- # )
-#))
-  tags$head(
-    tags$style(type='text/css', 
-               ".nav-tabs {font-size: 18px} ")),    
-  
-  tabsetPanel(type = "tabs",
-              tabPanel("Summarized jSFS", plotlyOutput("plot_obs_stats_sites")),
-              tabPanel("Polymorphism", plotlyOutput("plot_obs_stats_diversity")),
-              tabPanel("Tajima's D", plotlyOutput("plot_obs_stats_tajima")),
-              tabPanel("Differentiation and divergence", plotlyOutput("plot_obs_stats_divergence"))
-  )
+user_dataset <- dashboardBody(
+#  uiOutput("user_dataset_tabset")
+  uiOutput("visualization_data")
 )
 
 
-continuum_divergence <- dashboardBody(
+collaborative <- dashboardBody(
   tags$head(tags$script('
                         var dimension = [0, 0];
                         $(document).on("shiny:connected", function(e) {
@@ -579,72 +566,63 @@ continuum_divergence <- dashboardBody(
 
 
 informations <- dashboardBody(
-    fluidRow(
-      column(width = 12,
-#        box(title = h2("Citations"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-        boxPlus(title = h2("Citations"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-            h3("Please, in case of publication of a study using fastABC, do not forget to quote the following references:"),
-            h3(code('Csilléry, Katalin, Olivier François, and Michael GB Blum. "abc: an R package for approximate Bayesian computation (ABC)." Methods in ecology and evolution 3.3 (2012): 475-479.')),
-            h3(code('Pudlo, Pierre, Jean-Michel Marin, Arnaud Estoup, Jean-Marie Cornuet, Mathieu Gautier, and Christian P. Robert. "Reliable ABC model choice via random forests." Bioinformatics 32, no. 6 (2015): 859-866.')),
-            h3(code('Roux, Camille, Christelle Fraisse, Jonathan Romiguier, Yoann Anciaux, Nicolas Galtier, and Nicolas Bierne. "Shedding light on the grey zone of speciation along a continuum of genomic divergence." PLoS biology 14, no. 12 (2016): e2000234.'))
-        ),
-        
-#        box(title = h2("Acknowledgment"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-        boxPlus(title = h2("Acknowledgment"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-            h3("Please, if you use this online version of fastABC, do not forget to recognize and acknowledge the free provision of calculation cores by France Bioinformatique"),
-            h3(code("The demographic inferences were conducted on the IFB Core Cluster which is part of the National Network of Compute Resources (NNCR) of the", a(span(strong("Institut Français de Bioinformatique (IFB)."), style = "color:teal"), href="https://www.france-bioinformatique.fr/fr", target="_blank")))
-        ),
-        
-#        box(title = h2("Partners"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-        boxPlus(title = h2("Partners"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-            mainPanel(htmlOutput("logos"))
-        )
-      )
-    )
+	fluidRow(
+		column(width = 12,
+			#box(title = h2("Citations"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+			boxPlus(title = h2("Citations"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+				h3("Please, in case of publication of a study using fastABC, do not forget to quote the following references:"),
+				h3(code('Csilléry, Katalin, Olivier François, and Michael GB Blum. "abc: an R package for approximate Bayesian computation (ABC)." Methods in ecology and evolution 3.3 (2012): 475-479.')),
+				h3(code('Pudlo, Pierre, Jean-Michel Marin, Arnaud Estoup, Jean-Marie Cornuet, Mathieu Gautier, and Christian P. Robert. "Reliable ABC model choice via random forests." Bioinformatics 32, no. 6 (2015): 859-866.')),
+				h3(code('Roux, Camille, Christelle Fraisse, Jonathan Romiguier, Yoann Anciaux, Nicolas Galtier, and Nicolas Bierne. "Shedding light on the grey zone of speciation along a continuum of genomic divergence." PLoS biology 14, no. 12 (2016): e2000234.'))
+			),
+			
+			#box(title = h2("Acknowledgment"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+			boxPlus(title = h2("Acknowledgment"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+				h3("Please, if you use this online version of fastABC, do not forget to recognize and acknowledge the free provision of calculation cores by France Bioinformatique"),
+				h3(code("The demographic inferences were conducted on the IFB Core Cluster which is part of the National Network of Compute Resources (NNCR) of the", a(span(strong("Institut Français de Bioinformatique (IFB)."), style = "color:teal"), href="https://www.france-bioinformatique.fr/fr", target="_blank")))
+			),
+			
+			#box(title = h2("Partners"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
+			boxPlus(title = h2("Partners"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+				mainPanel(htmlOutput("logos"))
+			)
+		)
+	)
 )
 
 ui <- dashboardPage(
-    dashboardHeader(title = "menu fastABC"
-      ),
-    dashboardSidebar(
-      tags$head(
-        tags$style(HTML(".main-sidebar { font-size: 40px; }")) #change the font size to 20
-      ),
-      
-      sidebarMenu(
-#            style = "position: fixed; overflow: visible;",
-            menuItem(("Welcome"), tabName = "welcome", icon = icon("door-open")),
-            menuItem(('ABC'), tabName = "ABC", icon = icon("industry"),
-              menuSubItem(("Upload data"), tabName = "upload", icon = icon("cloud-upload")),
-              menuSubItem(("Data filtering"), tabName = "filtering", icon = icon("bath")),
-              menuSubItem(("Populations/species"), tabName = "populations", icon = icon("users-cog")),
-              menuSubItem(("Prior distributions"), tabName = "simulations", icon = icon("dice")),
-              menuSubItem(("Run ABC"), tabName = "run_abc", icon = icon("microchip"))
-            ),
-            menuItem(("Results visualization"), tabName = "Results_visualization", icon = icon("chart-pie"),
-                     menuSubItem(("Upload results"), tabName = "upload_results", icon = icon("cloud-upload")),
-                     menuSubItem(("Distribution of statistics"), tabName = "distribution_statistics", icon = icon("chart-bar")),
-                     menuSubItem(("Continuum of divergence"), tabName = "continuum_divergence", icon = icon("arrow-alt-circle-right"))
-            ),
-            menuSubItem(("Informations"), tabName = "information", icon = icon("info-circle"))
-        )
-    ),
+	dashboardHeader(title = "menu fastABC"),
+
+	dashboardSidebar(
+		sidebarMenu(
+			# style = "position: fixed; overflow: visible;",
+			menuItem(("Welcome"), tabName = "welcome", icon = icon("door-open")),
+
+			menuItem(('ABC'), tabName = "ABC", icon = icon("industry"),
+				menuSubItem(("Upload data"), tabName = "upload", icon = icon("cloud-upload")),
+				menuSubItem(("Data filtering"), tabName = "filtering", icon = icon("bath")),
+				menuSubItem(("Populations/species"), tabName = "populations", icon = icon("users-cog")),
+				menuSubItem(("Prior distributions"), tabName = "simulations", icon = icon("dice")),
+				menuSubItem(("Run ABC"), tabName = "run_abc", icon = icon("microchip"))
+			),
+
+			menuItem(("Results visualization"), tabName = "Results_visualization", icon = icon("chart-pie"),
+				menuSubItem(("Upload results"), tabName = "upload_results", icon = icon("cloud-upload")),
+				menuSubItem(("User's dataset"), tabName = "user_dataset", icon = icon("lock")),
+				menuSubItem(("Collaborative science"), tabName = "collaborative", icon = icon("lock-open"))
+			),
+			
+			menuItem(("Informations"), tabName = "information", icon = icon("info-circle"))
+		)
+	),
     
-    dashboardBody(
-      tags$head(tags$style(
-        HTML('.wrapper {height: auto !important; position:relative; overflow-x:hidden; overflow-y:hidden;}')
-      )),
-      
-      setShadow(class = "box"),
-      shinyDashboardThemes(
-            theme = "poor_mans_flatly"
-        ),
+	dashboardBody(
+		setShadow(class = "box"),
+#		shinyDashboardThemes(
+#			theme = "boe_website"
+#		),
         
-        tags$head( 
-            tags$style(HTML(".main-sidebar { font-size: 40px; }")) #change the font size to 20
-        ),
-        
-        tabItems(
+	tabItems(
             # Welcome
             tabItem(tabName = "welcome",
                 welcome_page
@@ -681,13 +659,13 @@ ui <- dashboardPage(
             ),
             
             # Plot the distributions of statistics
-            tabItem(tabName = "distribution_statistics",
-                distribution_statistics
+            tabItem(tabName = "user_dataset",
+                user_dataset
             ),
             
             # Plot the distributions of statistics
-            tabItem(tabName = "continuum_divergence",
-                    continuum_divergence
+            tabItem(tabName = "collaborative",
+                    collaborative
             ),
             
             # Informations
@@ -829,6 +807,8 @@ server <- function(input, output, session = session) {
             })
         })
         
+
+        
         output$input_names_outgroup_ui <- renderUI({
             if(is.null(input$infile)) {return()}
             presence_outgroup = input$presence_outgroup
@@ -967,7 +947,95 @@ server <- function(input, output, session = session) {
         }
     })
     
+    
     ## RESULT VISUALIZATION
+    output$visualization_data <- renderUI({
+      if(is.null(input$results) == FALSE){
+        tags$head(
+          tags$style(type='text/css', 
+                     ".nav-tabs {font-size: 18px} "))
+      
+      tabsetPanel(
+                    type = "tabs",
+                    tabPanel("Observed summary statistics", uiOutput("user_dataset_tabset")),
+                    tabPanel("Demographic inferences", uiOutput("user_inferences"))
+        )
+      }else{
+          return()
+        }
+    })
+
+    output$user_dataset_tabset <- renderUI({
+      if(is.null(input$results) == FALSE){
+        tags$head(
+          tags$style(type='text/css', 
+                     ".nav-tabs {font-size: 18px} "))    
+        
+        tabsetPanel(id = "observed_dataset",
+                    type = "tabs",
+                    tabPanel("Summarized jSFS", plotlyOutput("plot_obs_stats_sites")),
+                    tabPanel("Polymorphism", plotlyOutput("plot_obs_stats_diversity")),
+                    tabPanel("Tajima's D", plotlyOutput("plot_obs_stats_tajima")),
+                    tabPanel("Differentiation and divergence", plotlyOutput("plot_obs_stats_divergence"))
+        )
+      }else{
+        return()
+      }
+    })
+    
+    output$user_inferences <- renderUI({
+      if(is.null(input$results) == FALSE){
+        tags$head(
+          tags$style(type='text/css', 
+                     ".nav-tabs {font-size: 18px} "))    
+        
+        tabsetPanel(id = "inferences",
+                    type = "tabs",
+                    tabPanel("Goodness-of-fit test", uiOutput("display_gof_table")),
+                    tabPanel("Locus specific model comparison", numericInput("threshold_locus_specific_model_comp", label = h3("Posterior probability threshold value below which an inference is considered ambiguous"), width = (0.25*as.numeric(input$dimension[1])), value = 0.9, min = 0, max = 1, step = 0.005), hr(), plotlyOutput("locus_specific_model_comparison", height = 'auto', width = 'auto'))
+        )
+      }else{
+        return()
+      }
+    })
+    
+    
+	## READ THE GOODNESS OF FIT TEST (GOF)
+	gof_table <- reactive({
+	fileName = input$results
+	if (is.null(fileName)){
+		return(NULL)
+	}else{
+		untar(fileName$datapath, exdir = getwd())
+		rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+      
+		gof_table_name = paste(rootName, "/gof/goodness_of_fit_test.txt", sep='')
+		#read.table("/home/croux/Documents/ABConline/data_visualization/oKybz73JWT/gof/goodness_of_fit_test.txt", header = TRUE)
+		x = read.table(gof_table_name, h=T)
+		system(paste('rm -rf ', rootName, sep=''))
+		return(x)
+		}
+	})
+    
+	output$gof_table = DT::renderDataTable(
+		if(is.null(input$results)){
+			return(NULL)
+		}
+		else{
+			datatable(gof_table(), options = list(pageLength = 40)) %>% formatStyle('pvals_fdr_corrected', target = 'row', backgroundColor = styleInterval(cuts=c(0.01, 0.05), values=c("#ef3b2c", "#fee0d2", "#99d8c9")))
+		}
+	)
+   
+	# display the gof table 
+	output$display_gof_table <- renderUI({
+	if(is.null(input$results)){
+		return(NULL)
+	}else{
+		DT::dataTableOutput("gof_table")
+		}
+	})
+    
+    ## READ THE TABLE WITH SUMMARY STATISTICS AND DEMOGRAPHICS INFERENCES
     locus_spe <- reactive({
       fileName = input$results
       
@@ -979,7 +1047,7 @@ server <- function(input, output, session = session) {
       rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
       
       locus_spe_name = paste(rootName, "/modelComp/locus_specific_modelComp.txt", sep='')
-      print(locus_spe_name)
+  
       #read the table
       locus_spe = read.table(locus_spe_name, h=T)
       
@@ -989,7 +1057,32 @@ server <- function(input, output, session = session) {
       # return the read object
       return(locus_spe)
     })
+   
+ 
+    output$locus_spe_table <- DT::renderDataTable(
+      if(is.null(input$results)) {return(loadingState())}
+      else{
+        columns = names(locus_spe())
+        if (!is.null(input$selected_obs_statistics_to_display)){
+          columns = input$selected_obs_statistics_to_display
+        }
+        return(locus_spe()[,columns,drop=FALSE])
+      }
+    )
     
+    output$observed_columns_to_display <- renderUI({
+      if(is.null(input$results)) {return()}
+      else
+        selectInput("selected_obs_statistics_to_display", "Select columns to display", names(locus_spe()), multiple = TRUE)
+    })
+
+    output$display_uploaded_results <- renderUI({
+      if(is.null(input$results)) {return(loadingState())}
+      else
+        DT::dataTableOutput("locus_spe_table")
+    })
+    
+ 
     # GRAPH SITES
     output$plot_obs_stats_sites <- renderPlotly({
       # number of loci
@@ -1011,10 +1104,11 @@ server <- function(input, output, session = session) {
       )
       
       statistics_obs_sites = c(locus_spe()$sf_avg, locus_spe()$sxA_avg, locus_spe()$sxB_avg, locus_spe()$ss_avg)
-      statistics_names_sites = rep(c("proportion of\nfixed differences\nbetween A and B", "proportion of\npolymorphic sites\nexclusive to A", "proportion of\npolymorphic sites\nexclusive to B", "proportion of\nshared polymorphic sites\nbetween A and B"), each = nLoci)
-      data_obs_sites = data.frame(statistics_obs_sites, statistics_names_sites)
-      head(data_obs_sites)
-      graph_sites = plot_ly(data_obs_sites, y=~statistics_obs_sites, x=~statistics_names_sites, color=~statistics_names_sites, type="violin", box = list( visible = T ), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(4)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)))     
+      statistics_names_sites = rep(c("Sf", "Sx sp.A", "Sx sp.B", "Ss"), each = nLoci)
+      locus_names_sites = rep(locus_spe()$dataset, 4)
+      
+      data_obs_sites = data.frame(statistics_obs_sites, statistics_names_sites, locus_names_sites)
+      graph_sites = plot_ly(data_obs_sites, y=~statistics_obs_sites, x=~statistics_names_sites, color=~statistics_names_sites, type="box", boxpoints="all", text = ~paste0("locus: ", locus_names_sites, "<br>", statistics_obs_sites), hoverinfo="text", width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(4)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)), hoverlabel = list(font=list(size=20)) )     
       return(graph_sites)
     })
     
@@ -1038,10 +1132,12 @@ server <- function(input, output, session = session) {
         tickfont = list(size = 20)
       )
       statistics_obs_diversity = c(locus_spe()$piA_avg, locus_spe()$piB_avg, locus_spe()$thetaA_avg, locus_spe()$thetaB_avg)
-      statistics_names_diversity = rep(c("diversity in sp. A\n(measured by pi)", "diversity in sp. B\n(measured by pi)", "diversity in sp. A\n(measured by Watterson's theta)", "diversity in sp. B\n(measured by Watterson's theta)"), each = nLoci)
-      data_obs_diversity = data.frame(statistics_obs_diversity, statistics_names_diversity)
+      statistics_names_diversity = rep(c("pi sp.A", "pi sp.B", "Watterson's theta sp.A", "Watterson's theta sp.B"), each = nLoci)
+      locus_names_diversity = rep(locus_spe()$dataset, 4)
       
-      graph_diversity = plot_ly(data_obs_diversity, y=~statistics_obs_diversity, x=~statistics_names_diversity, color=~statistics_names_diversity, type="violin", box = list( visible = T ), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(4)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)))
+      data_obs_diversity = data.frame(statistics_obs_diversity, statistics_names_diversity, locus_names_diversity)
+      
+      graph_diversity = plot_ly(data_obs_diversity, y=~statistics_obs_diversity, x=~statistics_names_diversity, color=~statistics_names_diversity, type="box", boxpoints="all", text = ~paste0("locus: ", locus_names_diversity, "<br>", statistics_obs_diversity), hoverinfo="text", width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(4)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)), hoverlabel = list(font=list(size=20)) )
       return(graph_diversity)
     })
     
@@ -1065,11 +1161,14 @@ server <- function(input, output, session = session) {
         tickfont = list(size = 20)
       )
       statistics_obs_tajima = c(locus_spe()$DtajA_avg, locus_spe()$DtajB_avg)
-      statistics_names_tajima = rep(c("Tajima's D in sp. A", "Tajima's D in sp. B"), each = nLoci)
-      data_obs_tajima = data.frame(statistics_obs_tajima, statistics_names_tajima)
+      statistics_names_tajima = rep(c("Tajima's D sp. A", "Tajima's D sp. B"), each = nLoci)
+      locus_names_tajima = rep(locus_spe()$dataset, 2)
+      data_obs_tajima = data.frame(statistics_obs_tajima, statistics_names_tajima, locus_names_tajima)
       
-      graph_tajima = plot_ly(data_obs_tajima, y=~statistics_obs_tajima, x=~statistics_names_tajima, color=~statistics_names_tajima, type="violin", box = list( visible = T ), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(2)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)))
-      return(graph_tajima)
+#      graph_tajima = plot_ly(data_obs_tajima, y=~statistics_obs_tajima, x=~statistics_names_tajima, color=~statistics_names_tajima, type="box", boxpoints="all", width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(2)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)))
+      graph_tajima = plot_ly(data_obs_tajima, y=~statistics_obs_tajima, x=~statistics_names_tajima, color=~statistics_names_tajima, type="box", boxpoints="all", text = ~paste0("locus: ", locus_names_tajima, "<br>", statistics_obs_tajima), hoverinfo="text", width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(2)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)), hoverlabel = list(font=list(size=20)) )
+      
+    return(graph_tajima)
     })
     
     
@@ -1093,13 +1192,91 @@ server <- function(input, output, session = session) {
       )
       
       statistics_obs_divergence = c(locus_spe()$divAB_avg, locus_spe()$netdivAB_avg, locus_spe()$FST_avg)
-      statistics_names_divergence = rep(c("raw divergence between\nsp. A and sp. B", "net divergence between\nsp. A and sp. B", "Fst between\nsp. A and sp. B"), each = nLoci)
-      data_obs_divergence = data.frame(statistics_obs_divergence, statistics_names_divergence)
+      statistics_names_divergence = rep(c("raw divergence", "net divergence", "Fst"), each = nLoci)
+      locus_names_divergence = rep(locus_spe()$dataset, 3)
+      data_obs_divergence = data.frame(statistics_obs_divergence, statistics_names_divergence, locus_names_divergence)
       
-      graph_divergence = plot_ly(data_obs_divergence, y=~statistics_obs_divergence, x=~statistics_names_divergence, color=~statistics_names_divergence, type="violin", box = list( visible = T ), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(3)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)) )
+      #graph_divergence = plot_ly(data_obs_divergence, y=~statistics_obs_divergence, x=~statistics_names_divergence, color=~statistics_names_divergence, type="box", boxpoints="all", width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(3)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)) )
+     graph_divergence = plot_ly(data_obs_divergence, y=~statistics_obs_divergence, x=~statistics_names_divergence, color=~statistics_names_divergence, type="box", boxpoints="all", text = ~paste0("locus: ", locus_names_divergence, "<br>", statistics_obs_divergence), hoverinfo="text", width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(3)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)), hoverlabel = list(font=list(size=20)) )
+      
       return(graph_divergence)
     })
     
+    
+    # LOCUS SPECIFIC MODEL COMPARISON
+    output$locus_specific_model_comparison <- renderPlotly({
+      f=list(
+        family = "Arial",
+        size = 26,
+        color = "black"
+      )
+      
+      f2=list(
+        family = "Arial",
+        size = 20,
+        color = "black"
+      )
+      
+      f3=list(
+        family = "Arial",
+        size = 14,
+        color = "grey17"
+      )
+      
+      f_legend=list(
+        family = "Arial",
+        size = 20,
+        color = "black",
+        color = "#000"
+      )
+      
+      xlab = list(title='FST',
+                  titlefont=f,
+                  tickfont=f2
+      )
+      
+      ylab_divergence = list(title='net divergence',
+                  titlefont=f,
+                  tickfont=f2
+      )
+
+      ylab_diversity = list(title='average pi',
+                             titlefont=f,
+                             tickfont=f2
+      )
+      
+      lab_piA = list(title='piA',
+                            titlefont=f,
+                            tickfont=f2
+      )
+      
+      lab_piB = list(title='piB',
+                     titlefont=f,
+                     tickfont=f2
+      )
+      
+      threshold = input$threshold_locus_specific_model_comp
+      
+      allocation = as.vector(locus_spe()$allocation)
+      allocation[which(locus_spe()$post_proba<threshold)] = 'ambiguous'
+      y = data.frame(netdivAB=locus_spe()$netdivAB_avg, pi=(locus_spe()$piA_avg+locus_spe()$piB_avg)/2, FST=locus_spe()$FST_avg, allocation=allocation, post_prob=locus_spe()$post_prob, dataset=locus_spe()$dataset, piA=locus_spe()$piA_avg, piB=locus_spe()$piB_avg)
+      
+      plot_locus_modComp_2species_divergence <- y %>% plot_ly(x =~FST, y =~netdivAB, color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), marker= list(size=18, opacity=0.75), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), '<br>piA: ', round(piA, 5), '<br>piB: ', round(piB, 5)),
+                                                        hoverinfo='text', width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>% layout(xaxis = xlab, yaxis = ylab_divergence, legend=list(orientation = 'h', y=1.05, font = list(size = 25), hoverlabel = list(font=list(size=20))))
+
+      plot_locus_modComp_2species_pi_AB <- y %>% plot_ly(x =~FST, y =~pi, color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE, marker= list(size=18, opacity=0.75), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), '<br>piA: ', round(piA, 5), '<br>piB: ', round(piB, 5)),
+                                                hoverinfo='text') %>% layout(xaxis = xlab, yaxis = ylab_diversity)
+
+      plot_locus_modComp_2species_piA_piB <- y %>% plot_ly(x =~piA, y =~piB, color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE, marker= list(size=12, opacity=0.65), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), '<br>piA: ', round(piA, 5), '<br>piB: ', round(piB, 5)),
+                                                         hoverinfo='text') %>% layout(xaxis = lab_piA, yaxis = lab_piB)
+      
+      barplot_locus_modComp_2species <- y %>% plot_ly(x = ~allocation, color = ~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE) %>% layout(hoverlabel = list(font=list(size=20)), yaxis= list(titlefont=f, tickfont=f2), xaxis = list(titlefont=f, tickfont=f2))
+      # width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])
+
+      figure = subplot( plot_locus_modComp_2species_divergence, barplot_locus_modComp_2species, plot_locus_modComp_2species_pi_AB, plot_locus_modComp_2species_piA_piB, nrows = 2, widths=c(3/4, 1/4), shareX = FALSE, titleX = TRUE, titleY = TRUE)
+      
+      return(figure)
+    })    
     
     output$plot_greyzone <- renderPlotly({
       x = read.table("popPhyl.txt", h=T)
@@ -1166,7 +1343,7 @@ server <- function(input, output, session = session) {
       )
       
       #p=plot_ly(data=res, x=~divergence, y=~proba_migration, color=~status, colors=col, marker=list(size=20), text = ~paste("species A: ", species_A, '<br>species B: ', species_B, "<br>net neutral divergence: ", round(10**divergence, 5), "<br>Probability of migration: ", round(proba_migration, 3), '<br>piA: ', piA, '<br>piB: ', piB, '<br><br>author: ', author), hoverinfo='text') %>% layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend))
-      p=plot_ly(data=res, x=~divergence, y=~proba_migration, color=~status, colors=col, marker=list(size=20), text = ~paste("species A: ", species_A, '<br>species B: ', species_B, "<br>net neutral divergence: ", round(10**divergence, 5), "<br>Probability of migration: ", round(proba_migration, 3), '<br>piA: ', piA, '<br>piB: ', piB, '<br><br>author: ', author), hoverinfo='text', width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>% layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend))
+      p=plot_ly(data=res, x=~divergence, y=~proba_migration, color=~status, colors=col, marker=list(size=20), text = ~paste("species A: ", species_A, '<br>species B: ', species_B, "<br>net neutral divergence: ", round(10**divergence, 5), "<br>Probability of migration: ", round(proba_migration, 3), '<br>piA: ', piA, '<br>piB: ', piB, '<br><br>author: ', author), hoverinfo='text', width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>% layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend), hoverlabel = list(font=list(size=20)))
       #htmlwidgets::saveWidget(p, "figure_greyzone.html") # HTML
       #webshot::webshot("figure_greyzone.html", "figure_greyzone.pdf") # PDF -> Margin problem (cut!)
       return(p)
