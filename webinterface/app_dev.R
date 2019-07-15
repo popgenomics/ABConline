@@ -22,14 +22,13 @@ library(viridis)
 # welcome
 welcome_page <- fluidPage(
 	fluidRow(
-	 #	box(title = h2("Overview"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-		boxPlus(title = h2("Overview"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+		boxPlus(title = h2("Overview"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = FALSE,
 			h3(strong("fastABC"), "is a DNA sequence analysis workflow to study the demographic history of sampled populations or species by using Approximate Bayesian Computations."),
 			h3("From a single uploaded input file containing sequenced genes or DNA fragments,", strong("fastABC"), "will:"),
 			h3(strong("1."), "simulate different models/scenarios."),
 			h3(strong("2."), "select the best model using an ABC approach based on", a(span(strong("random forests."), style = "color:teal"), href="https://cran.r-project.org/web/packages/abcrf/index.html", target="_blank")),
 			h3(strong("3."), "estimate the parameters of the best model using a", a(span(strong("neural network"), style = "color:teal"), href="https://cran.r-project.org/web/packages/abc/index.html", target="_blank"), "approach."),
-			h3(strong("4."), "measure the robustness of the analyses.", strong("fastABC"), "is transparent on the ability of its inferences to reproduce the observed data."),
+			h3(strong("4."), "measure the robustness of the analyses.", strong("fastABC"), "is transparent on the ability of its inferences to reproduce the observed data or not."),
 			hr(),
 			h3("The first goal of", strong("fastABC"), "is to distinguish between isolation versus migration models for sister gene pools."),
 			h3("Its ultimate goal is to produce for each studied gene the probability of being associated with a species barrier.")
@@ -517,6 +516,8 @@ collaborative <- fluidPage(
 	#oxPlus(title = h2("Speciation along a continuum of divergence"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
 	#plotlyOutput("plot_greyzone")
 	# align="middle" height="auto" width="100%" margin="0 auto
+	h3(''),
+	hr(),
 	htmltools::div(style = "display:inline-block", plotlyOutput("plot_greyzone", width = "auto"))
 )
 
@@ -547,13 +548,13 @@ informations <- fluidPage(
 )
 
 ui <- dashboardPage(
-	skin = "black",
+	#skin = "black",
 	dashboardHeader(title = "menu fastABC"),
 
 	dashboardSidebar(
 		sidebarMenu(
-			# style = "position: fixed; overflow: visible;",
-			menuItem(("Welcome"), tabName = "welcome", icon = icon("door-open")),
+#			style = "position: fixed; overflow: visible; width: auto",
+			menuItem(("Welcome"), tabName = "welcome", icon = icon("door-open", class="door-open")),
 
 			menuItem(('ABC'), tabName = "ABC", icon = icon("industry"),
 				menuSubItem(("Upload data"), tabName = "upload", icon = icon("cloud-upload")),
@@ -574,9 +575,57 @@ ui <- dashboardPage(
 	),
 	
 	dashboardBody(
+		# tags
+		## bar du menu sur le cote
+		## items du menu quand on passe dessus a la souris
+		## background du body
+		## background du text du menu quand on passe dssus à la souris
+		tags$head(tags$style(HTML('
+			/* HEADER */
+			/* fond derriere le nom du header;  nom du header */
+			.skin-blue .main-header .logo { background-color: #1e2b37; color: #ffffff; font-size: 24px}
+
+			/* couleur de fond du header sous la souris */
+			.skin-blue .main-header .logo:hover { background-color: #1e2b37; }
+
+			/* toute la partie droite de la barre du header */
+			.skin-blue .main-header .navbar { background-color: #1e2b37; }
+
+			/* bouton menu dans le header: background et petits traits	*/
+			.skin-blue .main-header .navbar .sidebar-toggle{ background-color: #1e2b37; color: #ffffff; }
+	
+			/* bouton menu sous la souris dans le header: background et petits traits */	
+			.skin-blue .main-header .navbar .sidebar-toggle:hover{ background-color: #556270 ;color: #C7F464; }
+			
+			/* SIDEBAR */
+			/* taille de la police */
+			.main-sidebar { font-size: 18px; }
+			
+			/* couleur du fond du menu */
+			.skin-blue .main-sidebar { background-color: #556270;font-size: 18px; }
+			
+			/* couleur des elements du menu sous la souris */
+			.skin-blue .sidebar-menu>li.active>a, .skin-blue .sidebar-menu>li:hover>a { background-color: #1e2b37;font-size: 18px; }
+			
+			/* couleur du texte du menu quand on passe la souris dessus */	
+			.skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{ color: #C7F464;font-size: 18px; }
+			
+			/* elements du menu selectionnes */
+			.skin-blue .main-sidebar .sidebar .sidebar-menu .active a{ background-color: #1e2b37; color: #C7F464;font-size: 18px; }
+		
+			/* other links in the sidebarmenu */
+			.skin-blue .main-sidebar .sidebar .sidebar-menu a{color: #ffffff;font-size: 18px;}
+	
+			/* BODY */
+			/* couleur du background du body */
+			.content-wrapper, .right-side { background-color: #ffffff; }
+			
+		'))),
+		
 		setShadow(class = "box"),
 #		shinyDashboardThemes(
-#			theme = "boe_website"
+			#theme = "boe_website"
+#			theme = "poor_mans_flatly"
 #		),
 	
 		tabItems(
@@ -753,7 +802,7 @@ server <- function(input, output, session = session) {
 	## Number of ABC analysis to perform
 	#	observeEvent(input$number_of_ABC_validation, {
 	observe(if(input$check_upload){
-	shinyjs::disable("number_of_ABC")
+		shinyjs::disable("number_of_ABC")
 	})
 	
 	# POPULATIONS/SPECIES
@@ -1233,8 +1282,8 @@ server <- function(input, output, session = session) {
 	})
 	
 	output$plot_greyzone <- renderPlotly({
+		# GREYZONE PART
 		x = read.table("popPhyl.txt", h=T)
-		col = c(grey(0.25), 'turquoise', 'purple', 'red')
 		pmig_HH = x$Pongoing_migration_Mhetero_Nhetero 
 		proba_migration = pmig_HH
 		seuil1 = 0.6419199
@@ -1261,6 +1310,47 @@ server <- function(input, output, session = session) {
 		species_B = x$spB
 		
 		author = rep('camille.roux@univ-lille.fr', length(species_A))
+
+		# USER'S PART
+		fileName = input$results
+		if (is.null(fileName)){
+			col = c(grey(0.25), 'turquoise', 'purple', 'red')
+		}else{
+			col = c(grey(0.25), 'turquoise', 'purple', 'red', '#fdae61')
+			untar(fileName$datapath, exdir = getwd())
+			
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+			ABCstat = read.table(paste(rootName, "/ABCstat_global.txt", sep=''), h=T)
+				
+			divergence_user = log10(ABCstat$netdivAB_avg)
+			model_user = system(paste("grep best ", rootName, "/modelComp/report_*.txt | head -n1 | cut -d ' ' -f3", sep=''), intern=T)
+			status_user = "user's point"
+			
+			P = as.numeric(system(paste("grep proba ", rootName, "/modelComp/report_*.txt | head -n1 | cut -d ' ' -f4", sep=''), intern=T))
+			if(model_user == 'migration'){
+				proba_migration_user = P
+			}else{
+				proba_migration_user = 1-P
+			}
+			species_A_user = "flo"
+			species_B_user = "txn"
+			piA_user = ABCstat$piA_avg
+			piB_user = ABCstat$piB_avg
+			author_user = "camille.roux.1983@gmail.com"
+		
+			divergence = c(divergence, divergence_user)
+			model = c(model, model_user)
+			status = c(status, "user's point")
+			proba_migration = c(proba_migration, proba_migration_user)
+			species_A = c(as.character(species_A), species_A_user)
+			species_B = c(as.character(species_B), species_B_user)
+			piA = c(piA, piA_user)
+			piB = c(piB, piB_user)
+			author = c(author, author_user)
+			
+			system(paste('rm -rf ', rootName, sep=''))
+		}
+	
 		res = data.frame(divergence, model, status, proba_migration, species_A, species_B, piA, piB, author)
 		
 		f=list(
