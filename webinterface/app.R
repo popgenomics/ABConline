@@ -20,16 +20,15 @@ library(plotly)
 library(viridis)
 
 # welcome
-welcome_page <- dashboardBody(
+welcome_page <- fluidPage(
 	fluidRow(
-	 #	box(title = h2("Overview"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
-		boxPlus(title = h2("Overview"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+		boxPlus(title = h2("Overview"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = FALSE,
 			h3(strong("fastABC"), "is a DNA sequence analysis workflow to study the demographic history of sampled populations or species by using Approximate Bayesian Computations."),
 			h3("From a single uploaded input file containing sequenced genes or DNA fragments,", strong("fastABC"), "will:"),
 			h3(strong("1."), "simulate different models/scenarios."),
 			h3(strong("2."), "select the best model using an ABC approach based on", a(span(strong("random forests."), style = "color:teal"), href="https://cran.r-project.org/web/packages/abcrf/index.html", target="_blank")),
 			h3(strong("3."), "estimate the parameters of the best model using a", a(span(strong("neural network"), style = "color:teal"), href="https://cran.r-project.org/web/packages/abc/index.html", target="_blank"), "approach."),
-			h3(strong("4."), "measure the robustness of the analyses.", strong("fastABC"), "is transparent on the ability of its inferences to reproduce the observed data."),
+			h3(strong("4."), "measure the robustness of the analyses.", strong("fastABC"), "is transparent on the ability of its inferences to reproduce the observed data or not."),
 			hr(),
 			h3("The first goal of", strong("fastABC"), "is to distinguish between isolation versus migration models for sister gene pools."),
 			h3("Its ultimate goal is to produce for each studied gene the probability of being associated with a species barrier.")
@@ -116,7 +115,7 @@ welcome_page <- dashboardBody(
 )
 
 # upload
-upload_data <- dashboardBody(
+upload_data <- fluidPage(
 	tags$head(tags$style(HTML("a {color: black}"))),
 	fluidRow(
 		boxPlus(title = h2("Number of ABC analysis to run"), width = 6, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
@@ -135,7 +134,8 @@ upload_data <- dashboardBody(
 
 	fluidRow(NULL, soldHeader = TRUE, status ="danger",
 		boxPlus(title = h2("Sequence Alignment Upload"), height = 200,	width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-		fileInput("infile", label = NULL)
+		fileInput("infile", label = NULL),
+		tags$style(".progress-bar {background-color: #1e2b37;}")
 		),
 	
 		boxPlus(title = h2("Genomic regions"), height = 200,	width = 6, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
@@ -158,7 +158,7 @@ upload_data <- dashboardBody(
 			br()
 		),
 		
-		boxPlus(title = h2("Informations about the uploaded file"), width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+		boxPlus(title = h2("Informations about the uploaded file"), width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = TRUE, collapsed = FALSE,
 			uiOutput("upload")
 		)
 	),
@@ -256,7 +256,7 @@ upload_data <- dashboardBody(
 )
 
 
-filtering <- dashboardBody(
+filtering <- fluidPage(
 	fluidRow(
 		column(width = 4,
 			boxPlus(title = h2("Maximum proportion of missing data (N, gaps, ...)"), height = 225, width = NULL, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
@@ -331,7 +331,7 @@ filtering <- dashboardBody(
 )
 
 
-populations <- dashboardBody(
+populations <- fluidPage(
 	fluidRow(
 		boxPlus(title = h2("Number of populations/species"), height = NULL, width = 6, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
 		#	### FOR THE MOMENT : ONLY ONE POSSIBLE CHOICE --> 2 POPULATIONS SPECIES.
@@ -362,7 +362,7 @@ populations <- dashboardBody(
 )
 
 
-prior <- dashboardBody(
+prior <- fluidPage(
 	fluidRow(
 		column(width = 6,
 			#box(title = h2("Mutation and recombination"), width = NULL, solidHeader = TRUE, status = "primary", height = 250,
@@ -452,7 +452,7 @@ prior <- dashboardBody(
 
 
 
-run_ABC <- dashboardBody(
+run_ABC <- fluidPage(
 	# PRINT INFOX BOXES OF CHECKING
 	fluidRow(
 		boxPlus(
@@ -482,11 +482,12 @@ run_ABC <- dashboardBody(
 )
 
 
-upload_results <- dashboardBody(
+upload_results <- fluidPage(
 	# upload results
 	fluidRow(NULL, soldHeader = TRUE, status ="danger",
 		boxPlus(title = h2("Results to upload (i.e, fastABC's archived output)"), height = 200,	width = 12, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-			fileInput("results", label = NULL)
+			fileInput("results", label = NULL),
+			tags$style(".progress-bar {background-color: #1e2b37;}")
 		)
 	),
 	uiOutput("observed_columns_to_display"),
@@ -494,12 +495,12 @@ upload_results <- dashboardBody(
 )
 
 
-user_dataset <- dashboardBody(
+user_dataset <- fluidPage(
 	uiOutput("visualization_data")
 )
 
 
-collaborative <- dashboardBody(
+collaborative <- fluidPage(
 	tags$head(tags$script('
 		var dimension = [0, 0];
 		$(document).on("shiny:connected", function(e) {
@@ -517,11 +518,13 @@ collaborative <- dashboardBody(
 	#oxPlus(title = h2("Speciation along a continuum of divergence"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
 	#plotlyOutput("plot_greyzone")
 	# align="middle" height="auto" width="100%" margin="0 auto
+	h3(''),
+	hr(),
 	htmltools::div(style = "display:inline-block", plotlyOutput("plot_greyzone", width = "auto"))
 )
 
 
-informations <- dashboardBody(
+informations <- fluidPage(
 	fluidRow(
 		column(width = 12,
 			#box(title = h2("Citations"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
@@ -547,12 +550,14 @@ informations <- dashboardBody(
 )
 
 ui <- dashboardPage(
+	
+	#skin = "black",
 	dashboardHeader(title = "menu fastABC"),
 
 	dashboardSidebar(
 		sidebarMenu(
-			# style = "position: fixed; overflow: visible;",
-			menuItem(("Welcome"), tabName = "welcome", icon = icon("door-open")),
+#			style = "position: fixed; overflow: visible; width: auto",
+			menuItem(("Welcome"), tabName = "welcome", icon = icon("door-open", class="door-open")),
 
 			menuItem(('ABC'), tabName = "ABC", icon = icon("industry"),
 				menuSubItem(("Upload data"), tabName = "upload", icon = icon("cloud-upload")),
@@ -573,9 +578,66 @@ ui <- dashboardPage(
 	),
 	
 	dashboardBody(
+		# tags
+		## bar du menu sur le cote
+		## items du menu quand on passe dessus a la souris
+		## background du body
+		## background du text du menu quand on passe dssus à la souris
+		tags$head(tags$style(HTML('
+			/* HEADER */
+			/* fond derriere le nom du header;  nom du header */
+			.skin-blue .main-header .logo { background-color: #1e2b37; color: #ffffff; font-size: 24px}
+
+			/* couleur de fond du header sous la souris */
+			.skin-blue .main-header .logo:hover { background-color: #1e2b37; }
+
+			/* toute la partie droite de la barre du header */
+			.skin-blue .main-header .navbar { background-color: #1e2b37; }
+
+			/* bouton menu dans le header: background et petits traits	*/
+			.skin-blue .main-header .navbar .sidebar-toggle{ background-color: #1e2b37; color: #ffffff; }
+	
+			/* bouton menu sous la souris dans le header: background et petits traits */	
+			.skin-blue .main-header .navbar .sidebar-toggle:hover{ background-color: #556270 ;color: #C7F464; }
+			
+			/* SIDEBAR */
+			/* taille de la police */
+			.main-sidebar { font-size: 18px; }
+			
+			/* couleur du fond du menu */
+			.skin-blue .main-sidebar { background-color: #556270;font-size: 18px; }
+			
+			/* couleur des elements du menu sous la souris */
+			.skin-blue .sidebar-menu>li.active>a, .skin-blue .sidebar-menu>li:hover>a { background-color: #1e2b37;font-size: 18px; }
+			
+			/* couleur du texte du menu quand on passe la souris dessus */	
+			.skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{ color: #C7F464;font-size: 18px; }
+			
+			/* elements du menu selectionnes */
+			.skin-blue .main-sidebar .sidebar .sidebar-menu .active a{ background-color: #1e2b37; color: #C7F464;font-size: 18px; }
+		
+			/* other links in the sidebarmenu */
+			.skin-blue .main-sidebar .sidebar .sidebar-menu a{color: #ffffff;font-size: 18px;}
+	
+			/* BODY */
+			/* couleur du background du body */
+			.content-wrapper, .right-side { background-color: ghost-white; }
+			
+			/* TABSET */
+			.tabbable > .nav > li > a {background-color: #ffffff; color:#556270;font-size: 18px;}
+			.tabbable > .nav > li[class=active] > a {background-color: #556270; color:#C7F464;font-size: 18px;}
+			
+			/* FILEINPUT */
+			.btn-file { background-color:#556270; border-color: color:#C7F464; color:#C7F464; font-size: 18px; }
+			/*.btn-file { background-color:#556270; border-color: color:#C7F464; color:#C7F464;}*/
+
+			/* BUTTONS */
+		'))),
+		
 		setShadow(class = "box"),
 #		shinyDashboardThemes(
-#			theme = "boe_website"
+			#theme = "boe_website"
+#			theme = "poor_mans_flatly"
 #		),
 	
 		tabItems(
@@ -609,6 +671,10 @@ ui <- dashboardPage(
 				run_ABC
 			),
 			
+			# Upload the fastABC's results
+			tabItem(tabName = "Results_visualization",
+				informations
+			),
 			# Upload the fastABC's results
 			tabItem(tabName = "upload_results",
 				upload_results
@@ -752,7 +818,7 @@ server <- function(input, output, session = session) {
 	## Number of ABC analysis to perform
 	#	observeEvent(input$number_of_ABC_validation, {
 	observe(if(input$check_upload){
-	shinyjs::disable("number_of_ABC")
+		shinyjs::disable("number_of_ABC")
 	})
 	
 	# POPULATIONS/SPECIES
@@ -903,13 +969,10 @@ server <- function(input, output, session = session) {
 	})
 	
 	
+	#tag$style(type = 'text/css', '.tab-panel{ background-color: red; color: white}')
 	## RESULT VISUALIZATION
 	output$visualization_data <- renderUI({
 		if(is.null(input$results) == FALSE){
-			tags$head(
-			tags$style(type='text/css', 
-			".nav-tabs {font-size: 18px} "))
-			
 			tabsetPanel(
 				type = "tabs",
 				tabPanel("Observed summary statistics", uiOutput("user_dataset_tabset")),
@@ -922,10 +985,6 @@ server <- function(input, output, session = session) {
 
 	output$user_dataset_tabset <- renderUI({
 		if(is.null(input$results) == FALSE){
-			tags$head(
-			tags$style(type='text/css', 
-			".nav-tabs {font-size: 18px} "))	
-			
 			tabsetPanel(id = "observed_dataset",
 			type = "tabs",
 			tabPanel("Summarized jSFS", plotlyOutput("plot_obs_stats_sites")),
@@ -940,10 +999,6 @@ server <- function(input, output, session = session) {
 	
 	output$user_inferences <- renderUI({
 		if(is.null(input$results) == FALSE){
-			tags$head(
-			tags$style(type='text/css', 
-			".nav-tabs {font-size: 18px} "))
-			
 			tabsetPanel(id = "inferences",
 			type = "tabs",
 			tabPanel("Goodness-of-fit test", uiOutput("display_gof_table")),
@@ -976,7 +1031,7 @@ server <- function(input, output, session = session) {
 			return(NULL)
 		}
 		else{
-			datatable(gof_table(), options = list(pageLength = 40)) %>% formatStyle('pvals_fdr_corrected', target = 'row', backgroundColor = styleInterval(cuts=c(0.01, 0.05), values=c("#ef3b2c", "#fee0d2", "#99d8c9")))
+			datatable(gof_table(), options = list(pageLength = 40)) %>% formatStyle('pvals_fdr_corrected', target = 'row', backgroundColor = styleInterval(cuts=c(0.01, 0.05), values=c("#fc9272", "#fee0d2", "#99d8c9")))
 		}
 	)
 	
@@ -1214,13 +1269,13 @@ server <- function(input, output, session = session) {
 		allocation[which(locus_spe()$post_proba<threshold)] = 'ambiguous'
 		y = data.frame(netdivAB=locus_spe()$netdivAB_avg, pi=(locus_spe()$piA_avg+locus_spe()$piB_avg)/2, FST=locus_spe()$FST_avg, allocation=allocation, post_prob=locus_spe()$post_prob, dataset=locus_spe()$dataset, piA=locus_spe()$piA_avg, piB=locus_spe()$piB_avg)
 		
-		plot_locus_modComp_2species_divergence <- y %>% plot_ly(x =~FST, y =~netdivAB, color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), marker= list(size=18, opacity=0.75), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), '<br>piA: ', round(piA, 5), '<br>piB: ', round(piB, 5)),
+		plot_locus_modComp_2species_divergence <- y %>% plot_ly(x =~FST, y =~netdivAB, type = 'scatter', color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), marker= list(size=18, opacity=0.75), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), '<br>piA: ', round(piA, 5), '<br>piB: ', round(piB, 5)),
 		hoverinfo='text', width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>% layout(xaxis = xlab, yaxis = ylab_divergence, legend=list(orientation = 'h', y=1.05, font = list(size = 25), hoverlabel = list(font=list(size=20))))
 
-		plot_locus_modComp_2species_pi_AB <- y %>% plot_ly(x =~FST, y =~pi, color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE, marker= list(size=18, opacity=0.75), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), '<br>piA: ', round(piA, 5), '<br>piB: ', round(piB, 5)),
+		plot_locus_modComp_2species_pi_AB <- y %>% plot_ly(x =~FST, y =~pi, type = 'scatter', color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE, marker= list(size=18, opacity=0.75), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), '<br>piA: ', round(piA, 5), '<br>piB: ', round(piB, 5)),
 		hoverinfo='text') %>% layout(xaxis = xlab, yaxis = ylab_diversity)
 
-		plot_locus_modComp_2species_piA_piB <- y %>% plot_ly(x =~piA, y =~piB, color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE, marker= list(size=12, opacity=0.65), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), '<br>piA: ', round(piA, 5), '<br>piB: ', round(piB, 5)),
+		plot_locus_modComp_2species_piA_piB <- y %>% plot_ly(x =~piA, y =~piB, type = 'scatter', color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE, marker= list(size=12, opacity=0.65), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), '<br>piA: ', round(piA, 5), '<br>piB: ', round(piB, 5)),
 		hoverinfo='text') %>% layout(xaxis = lab_piA, yaxis = lab_piB)
 		
 		barplot_locus_modComp_2species <- y %>% plot_ly(x = ~allocation, color = ~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE) %>% layout(hoverlabel = list(font=list(size=20)), yaxis= list(titlefont=f, tickfont=f2), xaxis = list(titlefont=f, tickfont=f2))
@@ -1232,8 +1287,8 @@ server <- function(input, output, session = session) {
 	})
 	
 	output$plot_greyzone <- renderPlotly({
+		# GREYZONE PART
 		x = read.table("popPhyl.txt", h=T)
-		col = c(grey(0.25), 'turquoise', 'purple', 'red')
 		pmig_HH = x$Pongoing_migration_Mhetero_Nhetero 
 		proba_migration = pmig_HH
 		seuil1 = 0.6419199
@@ -1260,6 +1315,47 @@ server <- function(input, output, session = session) {
 		species_B = x$spB
 		
 		author = rep('camille.roux@univ-lille.fr', length(species_A))
+
+		# USER'S PART
+		fileName = input$results
+		if (is.null(fileName)){
+			col = c(grey(0.25), 'turquoise', 'purple', 'red')
+		}else{
+			col = c(grey(0.25), 'turquoise', 'purple', 'red', '#fdae61')
+			untar(fileName$datapath, exdir = getwd())
+			
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+			ABCstat = read.table(paste(rootName, "/ABCstat_global.txt", sep=''), h=T)
+				
+			divergence_user = log10(ABCstat$netdivAB_avg)
+			model_user = system(paste("grep best ", rootName, "/modelComp/report_*.txt | head -n1 | cut -d ' ' -f3", sep=''), intern=T)
+			status_user = "user's point"
+			
+			P = as.numeric(system(paste("grep proba ", rootName, "/modelComp/report_*.txt | head -n1 | cut -d ' ' -f4", sep=''), intern=T))
+			if(model_user == 'migration'){
+				proba_migration_user = P
+			}else{
+				proba_migration_user = 1-P
+			}
+			species_A_user = "flo"
+			species_B_user = "txn"
+			piA_user = ABCstat$piA_avg
+			piB_user = ABCstat$piB_avg
+			author_user = "camille.roux.1983@gmail.com"
+		
+			divergence = c(divergence, divergence_user)
+			model = c(model, model_user)
+			status = c(status, "user's point")
+			proba_migration = c(proba_migration, proba_migration_user)
+			species_A = c(as.character(species_A), species_A_user)
+			species_B = c(as.character(species_B), species_B_user)
+			piA = c(piA, piA_user)
+			piB = c(piB, piB_user)
+			author = c(author, author_user)
+			
+			system(paste('rm -rf ', rootName, sep=''))
+		}
+	
 		res = data.frame(divergence, model, status, proba_migration, species_A, species_B, piA, piB, author)
 		
 		f=list(
@@ -1295,7 +1391,7 @@ server <- function(input, output, session = session) {
 			tickfont=f2
 		)
 		
-		p=plot_ly(data=res, x=~divergence, y=~proba_migration, color=~status, colors=col, marker=list(size=20), text = ~paste("species A: ", species_A, '<br>species B: ', species_B, "<br>net neutral divergence: ", round(10**divergence, 5), "<br>Probability of migration: ", round(proba_migration, 3), '<br>piA: ', piA, '<br>piB: ', piB, '<br><br>author: ', author), hoverinfo='text', width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>% layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend), hoverlabel = list(font=list(size=20)))
+		p=plot_ly(data=res, x=~divergence, y=~proba_migration, type='scatter', color=~status, colors=col, marker=list(size=20), text = ~paste("species A: ", species_A, '<br>species B: ', species_B, "<br>net neutral divergence: ", round(10**divergence, 5), "<br>Probability of migration: ", round(proba_migration, 3), '<br>piA: ', piA, '<br>piB: ', piB, '<br><br>author: ', author), hoverinfo='text', width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>% layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend), hoverlabel = list(font=list(size=20)))
 		#htmlwidgets::saveWidget(p, "figure_greyzone.html") # HTML
 		#webshot::webshot("figure_greyzone.html", "figure_greyzone.pdf") # PDF -> Margin problem (cut!)
 	return(p)

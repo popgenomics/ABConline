@@ -44,6 +44,7 @@ rule targets:
 		expand("{timeStamp}/results_recombination.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/modelComp/report_{nameA}_{nameB}.txt", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
 		expand("{timeStamp}/modelComp/best_model.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/modelComp/hierarchical_models.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/modelComp/locus_specific_modelComp.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/best_model/report_{nameA}_{nameB}.txt", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
 		expand("{timeStamp}/best_model/posterior_bestModel.txt", timeStamp=timeStamp),
@@ -128,7 +129,8 @@ rule simulationsModelComp:
 	threads: 1
 	shell:
 		"""
-		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
+		#submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
+		submit_simulations_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
 		"""
 
 rule simulationsEstim:
@@ -144,7 +146,8 @@ rule simulationsEstim:
 	threads: 1
 	shell:
 		"""
-		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
+		#submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
+		submit_simulations_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
 		"""
 
 
@@ -160,6 +163,7 @@ rule modelComparison:
 		expand("{timeStamp}/modelComp/report_{nameA}_{nameB}.txt", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
 		expand("{timeStamp}/modelComp/locus_specific_modelComp.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/modelComp/best_model.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/modelComp/hierarchical_models.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/sfs_plot.pdf", timeStamp=timeStamp),
 		expand("{timeStamp}/sfs_table.txt", timeStamp=timeStamp)
 	threads: nCPU_R
@@ -203,7 +207,8 @@ rule simulation_best_model:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
+		#submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
+		submit_simulations_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
 		"""
 
 
@@ -235,7 +240,8 @@ rule simulation_gof:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		submit_simulations_gof_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp}
+		#submit_simulations_gof_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp}
+		submit_simulations_gof_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp} {config_yaml}
 		"""
 
 

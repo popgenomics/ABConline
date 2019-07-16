@@ -104,6 +104,9 @@ for(m in models){
 ss_2_remove = unique(ss_2_remove)
 
 
+summary_modelComp = NULL # ex: c('migration_vs_isolation', 'IM_vs_AM', 'Mhomo_vs_Mhetero', 'Nhomo_vs_Nhetero')
+summary_bestModel = NULL # ex: c('migration', 'IM', 'Mhetero', 'Nhetero')
+summary_proba = NULL # ex: c(0.9, 0.6, 0.8, 0.7)
 
 # model comparison #1 --> two models: isolation versus migration
 modIndexes = NULL
@@ -121,6 +124,10 @@ write(paste('\n#best model: ', predicted_model_iso_mig$allocation, sep=''), outf
 write(paste('#proba best model: ', predicted_model_iso_mig$post.prob, sep=''), outfile, append=T)
 write('\n#votes:', outfile, append=T)
 write.table(t(as.matrix(predicted_model_iso_mig$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
+
+summary_modelComp = c(summary_modelComp, 'migration versus isolation')
+summary_bestModel = c(summary_bestModel, predicted_model_iso_mig$allocation)
+summary_proba = c(summary_proba, predicted_model_iso_mig$post.prob)
 
 
 
@@ -153,6 +160,10 @@ if(predicted_model_iso_mig$allocation=='migration'){
 
 	write(paste(predicted_model$allocation, '\n', sep=''), outfile_best, append=F)
 	
+	summary_modelComp = c(summary_modelComp, 'IM versus SC')
+	summary_bestModel = c(summary_bestModel, predicted_model$allocation)
+	summary_proba = c(summary_proba, predicted_model$post.prob)
+
 	
 	# model comparison #3 --> Nhomo versus Nhetero
 	Nhomo = NULL
@@ -178,6 +189,10 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	write('\n#votes:', outfile, append=T)
 	write.table(t(as.matrix(predicted_model_Nhomo_Nhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
+	summary_modelComp = c(summary_modelComp, 'N-homo versus N-hetero')
+	summary_bestModel = c(summary_bestModel, predicted_model_Nhomo_Nhetero$allocation)
+	summary_proba = c(summary_proba, predicted_model_Nhomo_Nhetero$post.prob)
+
 
 	# model comparison #4 --> two models: mig homo versus mig hetero
 	Mhomo = NULL
@@ -202,6 +217,10 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	write('\n#votes:', outfile, append=T)
 	write.table(t(as.matrix(predicted_model_Mhomo_Mhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 	
+	summary_modelComp = c(summary_modelComp, 'M-homo versus M-hetero')
+	summary_bestModel = c(summary_bestModel, predicted_model_Mhomo_Mhetero$allocation)
+	summary_proba = c(summary_proba, predicted_model_Mhomo_Mhetero$post.prob)
+
 	
 	# model comparison #5 --> within demographic scenario
 	if( predicted_model$allocation == 'IM' ){
@@ -265,6 +284,9 @@ if(predicted_model_iso_mig$allocation=='isolation'){
 	write('\n#votes:', outfile, append=T)
 	write.table(t(as.matrix(predicted_model$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
+	summary_modelComp = c(summary_modelComp, 'AM versus SI')
+	summary_bestModel = c(summary_bestModel, predicted_model$allocation)
+	summary_proba = c(summary_proba, predicted_model$post.prob)
 	
 	
 	# model comparison #3 --> Nhomo versus Nhetero
@@ -290,6 +312,10 @@ if(predicted_model_iso_mig$allocation=='isolation'){
 	write(paste('#proba best model: ', predicted_model_Nhomo_Nhetero$post.prob, sep=''), outfile, append=T)
 	write('\n#votes:', outfile, append=T)
 	write.table(t(as.matrix(predicted_model_Nhomo_Nhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
+	
+	summary_modelComp = c(summary_modelComp, 'N-homo versus N-hetero')
+	summary_bestModel = c(summary_bestModel, predicted_model_Nhomo_Nhetero$allocation)
+	summary_proba = c(summary_proba, predicted_model_Nhomo_Nhetero$post.prob)
 	
 	
 	# model comparison #4 --> within demographic scenario
@@ -322,6 +348,11 @@ if(predicted_model_iso_mig$allocation=='isolation'){
 	write(paste(predicted_best$allocation, '\n', sep=''), outfile_best, append=F)
 }
 
+# summarized output
+summary_outfile = paste(timeStamp, '/', sub_dir_sim, '/hierarchical_models.txt', sep='')
+write(paste(c(summary_modelComp, '\n'), collapse='\t'), summary_outfile, append=F)
+write(paste(c(summary_bestModel, '\n'), collapse='\t'), summary_outfile, append=F)
+write(paste(c(summary_proba, '\n'), collapse='\t'), summary_outfile, append=F)
 
 
 ### LOCUS SPECIFIC MODEL COMPARISON

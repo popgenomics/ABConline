@@ -19,6 +19,15 @@ library(shinyhelper)
 library(plotly)
 library(viridis)
 
+convertMenuItem <- function(mi,tabName) {
+	mi$children[[1]]$attribs['data-toggle']="tab"
+	mi$children[[1]]$attribs['data-value'] = tabName
+	if(length(mi$attribs$class)>0 && mi$attribs$class=="treeview"){
+		mi$attribs$class=NULL
+	}
+	mi
+}
+
 # welcome
 welcome_page <- fluidPage(
 	fluidRow(
@@ -114,6 +123,29 @@ welcome_page <- fluidPage(
 	)
 )
 
+# ABC tuto
+ABC_tuto <- fluidPage(
+	box(title = h2("ABC"), width = NULL, status = "primary", solidHeader = TRUE,
+		fluidRow(
+			column(width=12,
+				h3("The ABC section is organized in 5 steps:"),
+				h3("4 configuration."),
+				infoBox("Upload data", "pouet", icon = icon("cloud-upload"), color='navy'),
+				infoBox("Data filtering", "pouet", icon = icon("bath"), color='navy'),
+				infoBox("Populations/species", "pouet", icon = icon("users-cog"), color='navy'),
+				infoBox("Prior distributions", "pouet", icon = icon("dice"), color='navy')
+			)
+		),
+		hr(),
+		fluidRow(
+			column(width=12,
+				h3("1 of execution."),
+				infoBox("Run ABC", "pouet", icon = icon("microchip"), color='navy') # #556270
+			)
+		)
+	)
+)
+
 # upload
 upload_data <- fluidPage(
 	tags$head(tags$style(HTML("a {color: black}"))),
@@ -134,7 +166,8 @@ upload_data <- fluidPage(
 
 	fluidRow(NULL, soldHeader = TRUE, status ="danger",
 		boxPlus(title = h2("Sequence Alignment Upload"), height = 200,	width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-		fileInput("infile", label = NULL)
+		fileInput("infile", label = NULL),
+		tags$style(".progress-bar {background-color: #1e2b37;}")
 		),
 	
 		boxPlus(title = h2("Genomic regions"), height = 200,	width = 6, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
@@ -157,7 +190,7 @@ upload_data <- fluidPage(
 			br()
 		),
 		
-		boxPlus(title = h2("Informations about the uploaded file"), width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
+		boxPlus(title = h2("Informations about the uploaded file"), width = 6, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = TRUE, collapsed = FALSE,
 			uiOutput("upload")
 		)
 	),
@@ -332,7 +365,7 @@ filtering <- fluidPage(
 
 populations <- fluidPage(
 	fluidRow(
-		boxPlus(title = h2("Number of populations/species"), height = NULL, width = 6, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+		boxPlus(title = h2("Number of populations/species"), height = NULL, width = 4, closable = FALSE, status = "primary", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
 		#	### FOR THE MOMENT : ONLY ONE POSSIBLE CHOICE --> 2 POPULATIONS SPECIES.
 		#	### UNCOMMENT THE NEXT TWO LINES WHEN THE ANALYSES FOR 1 OR 4 POPULATIONS WILL BE READY
 			#	prettyRadioButtons("nspecies", label = h3("Number of gene pools"), shape = "round", status = "primary", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
@@ -344,10 +377,18 @@ populations <- fluidPage(
 			uiOutput("input_names_ui")
 		),
 		
-		boxPlus(title = h2("Outgroup species"), height = NULL, width = 6, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+		boxPlus(title = h2("Outgroup species"), height = NULL, width = 4, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
 			prettyRadioButtons("presence_outgroup", label = h3("Presence of an outgroup"), shape = "round", status = "warning", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
 			choices = list("no" = "no", "yes" = "yes"), selected = "no"),
 			uiOutput("input_names_outgroup_ui")
+		),
+		
+		boxPlus(title = h2("Size change over time"), height = NULL, width = 4, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+			prettyRadioButtons("population_growth", label = h3("Constant or variable population sizes"), shape = "round", status = "danger", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
+			choices = list("constant" = "constant", "variable" = "variable"), selected = "constant"),
+			em(strong(h4('If setted to constant: the sizes of the daughter populations differ from the ancestral population from the split, and remain constant.'))),
+			em(strong(h4('If setted to variable: the sizes of the daughter populations are equal to that of the ancestral population at the time of the split, then increase (or decrease) exponentially according to N_current = N_ancestral x exp(-alpha x Tsplit), where N_current is the current number of effective individuals, N_ancestral the ancestral population size, alpha the population growth rate (positive/null/negative for growth/constant/decline), and Tsplit the number of generations since the time of split')))
+
 		)
 	),
 
@@ -485,7 +526,8 @@ upload_results <- fluidPage(
 	# upload results
 	fluidRow(NULL, soldHeader = TRUE, status ="danger",
 		boxPlus(title = h2("Results to upload (i.e, fastABC's archived output)"), height = 200,	width = 12, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-			fileInput("results", label = NULL)
+			fileInput("results", label = NULL),
+			tags$style(".progress-bar {background-color: #1e2b37;}")
 		)
 	),
 	uiOutput("observed_columns_to_display"),
@@ -548,8 +590,11 @@ informations <- fluidPage(
 )
 
 ui <- dashboardPage(
+	
 	#skin = "black",
-	dashboardHeader(title = "menu fastABC"),
+	dashboardHeader(title = "menu fastABC",
+		tags$li(class = "dropdown", socialButton(url = "https://github.com/popgenomics/ABConline", type = "github"), tags$img(height = "auto"))
+	),
 
 	dashboardSidebar(
 		sidebarMenu(
@@ -561,8 +606,7 @@ ui <- dashboardPage(
 				menuSubItem(("Data filtering"), tabName = "filtering", icon = icon("bath")),
 				menuSubItem(("Populations/species"), tabName = "populations", icon = icon("users-cog")),
 				menuSubItem(("Prior distributions"), tabName = "simulations", icon = icon("dice")),
-				menuSubItem(("Run ABC"), tabName = "run_abc", icon = icon("microchip"))
-			),
+				menuSubItem(("Run ABC"), tabName = "run_abc", icon = icon("microchip"))),
 
 			menuItem(("Results visualization"), tabName = "Results_visualization", icon = icon("chart-pie"),
 				menuSubItem(("Upload results"), tabName = "upload_results", icon = icon("cloud-upload")),
@@ -583,13 +627,13 @@ ui <- dashboardPage(
 		tags$head(tags$style(HTML('
 			/* HEADER */
 			/* fond derriere le nom du header;  nom du header */
-			.skin-blue .main-header .logo { background-color: #1e2b37; color: #ffffff; font-size: 24px}
+			.skin-blue .main-header .logo { background-color: #1e2b37; color: #ffffff; font-size: 24px; height: 50px;}
 
 			/* couleur de fond du header sous la souris */
 			.skin-blue .main-header .logo:hover { background-color: #1e2b37; }
 
 			/* toute la partie droite de la barre du header */
-			.skin-blue .main-header .navbar { background-color: #1e2b37; }
+			.skin-blue .main-header .navbar { background-color: #1e2b37; height: 40px;}
 
 			/* bouton menu dans le header: background et petits traits	*/
 			.skin-blue .main-header .navbar .sidebar-toggle{ background-color: #1e2b37; color: #ffffff; }
@@ -618,8 +662,22 @@ ui <- dashboardPage(
 	
 			/* BODY */
 			/* couleur du background du body */
-			.content-wrapper, .right-side { background-color: #ffffff; }
+			.content-wrapper, .right-side { background-color: ghost-white; }
 			
+			/* TABSET */
+			.tabbable > .nav > li > a {background-color: #ffffff; color:#556270;font-size: 18px;}
+			.tabbable > .nav > li[class=active] > a {background-color: #556270; color:#C7F464;font-size: 18px;}
+			
+			/* FILEINPUT */
+			.btn-file { background-color:#556270; border-color: color:#C7F464; color:#C7F464; font-size: 18px; }
+			/*.btn-file { background-color:#556270; border-color: color:#C7F464; color:#C7F464;}*/
+
+			/* BUTTONS */
+			
+			/* BOX */
+			.box.box-solid.box-primary>.box-header { color:#fff; background:#556270; font-size: 0px; }
+			.box.box-solid.box-primary{border-bottom-color:#556270; border-left-color:#556270; border-right-color:#556270; border-top-color:#556270;}
+
 		'))),
 		
 		setShadow(class = "box"),
@@ -634,6 +692,10 @@ ui <- dashboardPage(
 				welcome_page
 			),
 			
+			tabItem(tabName = "ABC",
+				ABC_tuto
+			),
+	
 			# Upload data
 			tabItem(tabName = "upload",
 				upload_data
@@ -867,10 +929,11 @@ server <- function(input, output, session = session) {
 		Tsplit_max = input$Tsplit_max
 		M_min = input$M_min
 		M_max = input$M_max
+		population_growth = input$population_growth
 		
-		res = matrix(c(mail_address, config_yaml, infile, region, nspecies, species_names, nameOutgroup, Lmin, nMin, mu, rho_over_theta, N_min, N_max, Tsplit_min, Tsplit_max, M_min, M_max), ncol = 1)
+		res = matrix(c(mail_address, config_yaml, infile, region, nspecies, species_names, nameOutgroup, Lmin, nMin, mu, rho_over_theta, N_min, N_max, Tsplit_min, Tsplit_max, M_min, M_max, population_growth), ncol = 1)
 		
-		row.names(res) = c("user's email address", "config_yaml", "infile", "region", "nspecies", species_names_row, "nameOutgroup", "Lmin", "nMin", "mu", "rho_over_theta", "N_min", "N_max", "Tsplit_min", "Tsplit_max", "M_min", "M_max")
+		row.names(res) = c("user's email address", "config_yaml", "infile", "region", "nspecies", species_names_row, "nameOutgroup", "Lmin", "nMin", "mu", "rho_over_theta", "N_min", "N_max", "Tsplit_min", "Tsplit_max", "M_min", "M_max", "population_growth")
 		colnames(res) = c("entries")
 		
 		res	
@@ -953,13 +1016,10 @@ server <- function(input, output, session = session) {
 	})
 	
 	
+	#tag$style(type = 'text/css', '.tab-panel{ background-color: red; color: white}')
 	## RESULT VISUALIZATION
 	output$visualization_data <- renderUI({
 		if(is.null(input$results) == FALSE){
-			tags$head(
-			tags$style(type='text/css', 
-			".nav-tabs {font-size: 18px} "))
-			
 			tabsetPanel(
 				type = "tabs",
 				tabPanel("Observed summary statistics", uiOutput("user_dataset_tabset")),
@@ -972,10 +1032,6 @@ server <- function(input, output, session = session) {
 
 	output$user_dataset_tabset <- renderUI({
 		if(is.null(input$results) == FALSE){
-			tags$head(
-			tags$style(type='text/css', 
-			".nav-tabs {font-size: 18px} "))	
-			
 			tabsetPanel(id = "observed_dataset",
 			type = "tabs",
 			tabPanel("Summarized jSFS", plotlyOutput("plot_obs_stats_sites")),
@@ -990,10 +1046,6 @@ server <- function(input, output, session = session) {
 	
 	output$user_inferences <- renderUI({
 		if(is.null(input$results) == FALSE){
-			tags$head(
-			tags$style(type='text/css', 
-			".nav-tabs {font-size: 18px} "))
-			
 			tabsetPanel(id = "inferences",
 			type = "tabs",
 			tabPanel("Goodness-of-fit test", uiOutput("display_gof_table")),
@@ -1026,7 +1078,7 @@ server <- function(input, output, session = session) {
 			return(NULL)
 		}
 		else{
-			datatable(gof_table(), options = list(pageLength = 40)) %>% formatStyle('pvals_fdr_corrected', target = 'row', backgroundColor = styleInterval(cuts=c(0.01, 0.05), values=c("#ef3b2c", "#fee0d2", "#99d8c9")))
+			datatable(gof_table(), options = list(pageLength = 40)) %>% formatStyle('pvals_fdr_corrected', target = 'row', backgroundColor = styleInterval(cuts=c(0.01, 0.05), values=c("#fc9272", "#fee0d2", "#99d8c9")))
 		}
 	)
 	

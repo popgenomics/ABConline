@@ -17,3 +17,4 @@ Tsplit_min: 0
 Tsplit_max: 200000
 M_min: 0
 M_max: 10
+population_growth: variable
