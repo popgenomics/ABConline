@@ -3,6 +3,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from numpy import log
 from numpy.random import randint
 from numpy.random import uniform
 from numpy.random import binomial
@@ -65,7 +66,7 @@ used_posterior = randint(cnt, size=nMultilocus)
 # read the yaml
 config_yaml = open(sys.argv[4], 'r')
 for i in config_yaml:
-	i = i.strip().split(':')
+	i = i.strip().split(': ')
 	if(i[0] == 'population_growth'): # =='constant' or 'variable'
 		pop_growth = i[1]
 config_yaml.close()
@@ -73,7 +74,7 @@ config_yaml.close()
 
 def alpha(Npresent, Nancestral, Tsplit, pop_growth):
 	# return alpha, the population growth rate used in N(t) = N0.exp(-alpha x t)
-	if pop_growth == 'variable'
+	if pop_growth == 'variable':
 		num = log(Npresent/(1.0*Nancestral))
 		denom = -1.0*Tsplit
 		return(num/denom)

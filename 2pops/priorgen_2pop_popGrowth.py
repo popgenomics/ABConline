@@ -3,6 +3,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from numpy import log
 from numpy.random import uniform
 from numpy.random import binomial
 from numpy.random import beta
@@ -29,7 +30,7 @@ T_bound = [0, 0] # number of generations
 M_bound = [0, 0] # 4.N.m , so the number of diploid migrant copies is 2.N.m
 config_yaml = open(sys.argv[3], 'r')
 for i in config_yaml:
-	i = i.strip().split(':')
+	i = i.strip().split(': ')
 	if(i[0] == 'N_min'):
 		N_bound[0] = float(i[1])
 	if(i[0] == 'N_max'):
@@ -53,6 +54,9 @@ N_bound[1] /= Nref
 T_bound[0] /= (4*Nref)
 T_bound[1] /= (4*Nref)
 
+max_Tsc = 0.1
+min_Tam = 0.9
+
 # read bpfile
 infile = open("bpfile", "r")
 tmp = infile.readline()
@@ -72,7 +76,7 @@ nsam_tot = [ int(nsamA[i]) + int(nsamB[i]) for i in range(nLoci) ]
 
 def alpha(Npresent, Nancestral, Tsplit, pop_growth):
 	# return alpha, the population growth rate used in N(t) = N0.exp(-alpha x t)
-	if pop_growth == 'variable'
+	if pop_growth == 'variable':
 		num = log(Npresent/(1.0*Nancestral))
 		denom = -1.0*Tsplit
 		return(num/denom)
@@ -98,7 +102,7 @@ if sys.argv[1] == "SC_1M_1N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tsc = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tsc = [ uniform(low = 0, high = max_Tsc*Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## alpha
 	alpha_1 = [ alpha(N1[i], Na[i], Tsplit[i], pop_growth) for i in range(nMultilocus) ]
@@ -131,7 +135,7 @@ if sys.argv[1] == "SC_1M_2N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tsc = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tsc = [ uniform(low = 0, high = max_Tsc*Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## alpha
 	alpha_1 = [ alpha(N1[i], Na[i], Tsplit[i], pop_growth) for i in range(nMultilocus) ]
@@ -179,7 +183,7 @@ if sys.argv[1] == "SC_2M_1N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tsc = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tsc = [ uniform(low = 0, high = max_Tsc*Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## alpha
 	alpha_1 = [ alpha(N1[i], Na[i], Tsplit[i], pop_growth) for i in range(nMultilocus) ]
@@ -224,7 +228,7 @@ if sys.argv[1] == "SC_2M_2N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tsc = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tsc = [ uniform(low = 0, high = max_Tsc*Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## alpha
 	alpha_1 = [ alpha(N1[i], Na[i], Tsplit[i], pop_growth) for i in range(nMultilocus) ]
@@ -273,7 +277,7 @@ if sys.argv[1] == "AM_1M_1N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tam = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tam = [ uniform(low = min_Tam*Tsplit[i], high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## alpha
 	alpha_1 = [ alpha(N1[i], Na[i], Tsplit[i], pop_growth) for i in range(nMultilocus) ]
@@ -307,7 +311,7 @@ if sys.argv[1] == "AM_1M_2N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tam = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tam = [ uniform(low = min_Tam*Tsplit[i], high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## alpha
 	alpha_1 = [ alpha(N1[i], Na[i], Tsplit[i], pop_growth) for i in range(nMultilocus) ]
@@ -328,7 +332,7 @@ if sys.argv[1] == "AM_1M_2N":
                 Na_vec = [ Na[sim]*i for i in scalar_N ]
 		
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tam[sim], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], Tam[sim], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus], alpha_1[sim], alpha_2[sim]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -350,7 +354,7 @@ if sys.argv[1] == "AM_2M_1N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tam = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tam = [ uniform(low = min_Tam*Tsplit[i], high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## alpha
 	alpha_1 = [ alpha(N1[i], Na[i], Tsplit[i], pop_growth) for i in range(nMultilocus) ]
@@ -400,7 +404,7 @@ if sys.argv[1] == "AM_2M_2N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tam = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tam = [ uniform(low = min_Tam*Tsplit[i], high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## alpha
 	alpha_1 = [ alpha(N1[i], Na[i], Tsplit[i], pop_growth) for i in range(nMultilocus) ]

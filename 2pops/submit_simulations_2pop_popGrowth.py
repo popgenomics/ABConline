@@ -40,7 +40,7 @@ mscommand = ""
 if "SI" in model:
 	mscommand = "-t tbs -r tbs tbs -I 2 tbs tbs 0  -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs"
 if "AM" in model:
-	mscommand = "-t tbs -r tbs tbs -I 2 tbs tbs 0 tbs -ema tbs 2 0 tbs tbs 0 -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs"
+	mscommand = "-t tbs -r tbs tbs -I 2 tbs tbs 0 -ema tbs 2 0 tbs tbs 0 -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs"
 if "SC" in model:
 	mscommand = "-t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -eM tbs 0 -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs"
 if "IM" in model:
