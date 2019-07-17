@@ -53,6 +53,9 @@ N_bound[1] /= Nref
 T_bound[0] /= (4*Nref)
 T_bound[1] /= (4*Nref)
 
+max_Tsc = 0.25
+min_Tam = 0.75
+
 # read bpfile
 infile = open("bpfile", "r")
 tmp = infile.readline()
@@ -89,7 +92,7 @@ if sys.argv[1] == "SC_1M_1N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tsc = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tsc = [ uniform(low = 0, high = max_Tsc * Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tTsplit\tTsc\tM12\tM21\n"
@@ -119,7 +122,7 @@ if sys.argv[1] == "SC_1M_2N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tsc = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tsc = [ uniform(low = 0, high = max_Tsc * Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
@@ -162,7 +165,7 @@ if sys.argv[1] == "SC_2M_1N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tsc = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tsc = [ uniform(low = 0, high = max_Tsc * Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 	
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
@@ -203,7 +206,7 @@ if sys.argv[1] == "SC_2M_2N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tsc = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tsc = [ uniform(low = 0, high = max_Tsc * Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## bf = factor of local reduction in Ne. Model of "background selection"
         shape_N_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
@@ -249,7 +252,7 @@ if sys.argv[1] == "AM_1M_1N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tam = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tam = [ uniform(low = min_Tam*Tsplit[i], high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tTsplit\tTam\tM12\tM21\n"
@@ -279,7 +282,7 @@ if sys.argv[1] == "AM_1M_2N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tam = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tam = [ uniform(low = min_Tam*Tsplit[i], high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## number of neutral loci
         shape_N_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
@@ -318,7 +321,7 @@ if sys.argv[1] == "AM_2M_1N":
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-	Tam = [ uniform(low = 0, high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
+	Tam = [ uniform(low = min_Tam*Tsplit[i], high = Tsplit[i], size = 1)[0] for i in range(nMultilocus) ]
 
 	## number of neutral loci
         shape_M12_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
