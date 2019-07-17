@@ -8,7 +8,7 @@ import time
 #    for model in SI; do for N in 1N 2N; do ./submit.py 100000 10 ${model}_${N}; done; done
 
 
-if len(sys.argv) != 10:
+if len(sys.argv) != 11:
 	print("\n\tsubmit_simulations_gof_2pop.py [nmultilocus] [iteration] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB] [sub_dir_sim] [sub_dir_model] [posterior_file]")
 	print("\n\tex: submit_simulations_gof_2pop.py 1000 2 SI_1N flo mal sim_SI_1N SI_1N posterior_IM_1M_2N.txt\n\tto simulate 1000 multilocus simulations at the second iteration, in the folder sim_SI_1N") 
 	sys.exit(0)
