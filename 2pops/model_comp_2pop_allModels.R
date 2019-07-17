@@ -126,7 +126,7 @@ write('\n#votes:', outfile, append=T)
 write.table(t(as.matrix(predicted_model_iso_mig$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
 summary_modelComp = c(summary_modelComp, 'migration versus isolation')
-summary_bestModel = c(summary_bestModel, as.character(predicted_model_iso_mig$allocation))
+summary_bestModel = c(summary_bestModel, predicted_model_iso_mig$allocation)
 summary_proba = c(summary_proba, predicted_model_iso_mig$post.prob)
 
 
@@ -161,7 +161,7 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	write(paste(predicted_model$allocation, '\n', sep=''), outfile_best, append=F)
 	
 	summary_modelComp = c(summary_modelComp, 'IM versus SC')
-	summary_bestModel = c(summary_bestModel, as.character(predicted_model$allocation))
+	summary_bestModel = c(summary_bestModel, predicted_model$allocation)
 	summary_proba = c(summary_proba, predicted_model$post.prob)
 
 	
@@ -190,7 +190,7 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	write.table(t(as.matrix(predicted_model_Nhomo_Nhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
 	summary_modelComp = c(summary_modelComp, 'N-homo versus N-hetero')
-	summary_bestModel = c(summary_bestModel, as.character(predicted_model_Nhomo_Nhetero$allocation))
+	summary_bestModel = c(summary_bestModel, predicted_model_Nhomo_Nhetero$allocation)
 	summary_proba = c(summary_proba, predicted_model_Nhomo_Nhetero$post.prob)
 
 
@@ -218,7 +218,7 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	write.table(t(as.matrix(predicted_model_Mhomo_Mhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 	
 	summary_modelComp = c(summary_modelComp, 'M-homo versus M-hetero')
-	summary_bestModel = c(summary_bestModel, as.character(predicted_model_Mhomo_Mhetero$allocation))
+	summary_bestModel = c(summary_bestModel, predicted_model_Mhomo_Mhetero$allocation)
 	summary_proba = c(summary_proba, predicted_model_Mhomo_Mhetero$post.prob)
 
 	
@@ -285,7 +285,7 @@ if(predicted_model_iso_mig$allocation=='isolation'){
 	write.table(t(as.matrix(predicted_model$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
 	summary_modelComp = c(summary_modelComp, 'AM versus SI')
-	summary_bestModel = c(summary_bestModel, as.character(predicted_model$allocation))
+	summary_bestModel = c(summary_bestModel, predicted_model$allocation)
 	summary_proba = c(summary_proba, predicted_model$post.prob)
 	
 	
@@ -314,7 +314,7 @@ if(predicted_model_iso_mig$allocation=='isolation'){
 	write.table(t(as.matrix(predicted_model_Nhomo_Nhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 	
 	summary_modelComp = c(summary_modelComp, 'N-homo versus N-hetero')
-	summary_bestModel = c(summary_bestModel, as.character(predicted_model_Nhomo_Nhetero$allocation))
+	summary_bestModel = c(summary_bestModel, predicted_model_Nhomo_Nhetero$allocation)
 	summary_proba = c(summary_proba, predicted_model_Nhomo_Nhetero$post.prob)
 	
 	
@@ -350,9 +350,9 @@ if(predicted_model_iso_mig$allocation=='isolation'){
 
 # summarized output
 summary_outfile = paste(timeStamp, '/', sub_dir_sim, '/hierarchical_models.txt', sep='')
-write(paste(summary_modelComp, collapse='\t'), summary_outfile, append=F)
-write(paste(summary_bestModel, collapse='\t'), summary_outfile, append=T)
-write(paste(summary_proba, collapse='\t'), summary_outfile, append=T)
+write(paste(c(summary_modelComp, '\n'), collapse='\t'), summary_outfile, append=F)
+write(paste(c(summary_bestModel, '\n'), collapse='\t'), summary_outfile, append=F)
+write(paste(c(summary_proba, '\n'), collapse='\t'), summary_outfile, append=F)
 
 
 ### LOCUS SPECIFIC MODEL COMPARISON
@@ -459,11 +459,17 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	}else{ # if migration but homogeneous
 		# change directory
 		setwd(paste(timeStamp, '/modelComp', sep=''))
-		write("no locus specific model comparison since gene flow is supported as being homogeneous among loci", outfile, append=F)
+		allocation = rep('migration', nrow(obs_loci))
+		post_proba = rep('1', nrow(obs_loci))
+		res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)
+		write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
 	}
 }else{
 	# change directory
 	setwd(paste(timeStamp, '/modelComp', sep=''))
-	write("no locus specific model comparison since there is no support for ongoing gene flow", outfile, append=F)
+	allocation = rep('isolation', nrow(obs_loci))
+	post_proba = rep('1', nrow(obs_loci))
+	res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)
+	write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
 }
 
