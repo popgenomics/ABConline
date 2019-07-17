@@ -593,7 +593,9 @@ ui <- dashboardPage(
 	
 	#skin = "black",
 	dashboardHeader(title = "menu fastABC",
-		tags$li(class = "dropdown", socialButton(url = "https://github.com/popgenomics/ABConline", type = "github"), tags$img(height = "auto"))
+#		tags$li(class = "dropdown", socialButton(url = "https://github.com/popgenomics/ABConline", type = "github"), tags$img(height = "auto"))
+		tags$li(class="dropdown", tags$a(href="https://github.com/popgenomics/ABConline", icon("github"), "Source Code", target="_blank"))
+
 	),
 
 	dashboardSidebar(
@@ -630,16 +632,19 @@ ui <- dashboardPage(
 			.skin-blue .main-header .logo { background-color: #1e2b37; color: #ffffff; font-size: 24px; height: 50px;}
 
 			/* couleur de fond du header sous la souris */
-			.skin-blue .main-header .logo:hover { background-color: #1e2b37; }
+			.skin-blue .main-header .logo:hover { background-color: #1e2b37; height: 50px;}
 
 			/* toute la partie droite de la barre du header */
-			.skin-blue .main-header .navbar { background-color: #1e2b37; height: 40px;}
+			.skin-blue .main-header .navbar { background-color: #1e2b37; height: 40px; font-size: 20px}
 
+			/* toute la partie droite de la barre du header sous la souris*/
+			.skin-blue .main-header .navbar:hover{ background-color: #1e2b37; font-color: #C7F464; height: 40px; font-size: 20px}
+			
 			/* bouton menu dans le header: background et petits traits	*/
-			.skin-blue .main-header .navbar .sidebar-toggle{ background-color: #1e2b37; color: #ffffff; }
+			.skin-blue .main-header .navbar .sidebar-toggle{ background-color: #1e2b37; color: #ffffff; height: 40px; }
 	
 			/* bouton menu sous la souris dans le header: background et petits traits */	
-			.skin-blue .main-header .navbar .sidebar-toggle:hover{ background-color: #556270 ;color: #C7F464; }
+			.skin-blue .main-header .navbar .sidebar-toggle:hover{ background-color: #1e2b37 ;color: #C7F464; height: 40px; }
 			
 			/* SIDEBAR */
 			/* taille de la police */
@@ -673,10 +678,11 @@ ui <- dashboardPage(
 			/*.btn-file { background-color:#556270; border-color: color:#C7F464; color:#C7F464;}*/
 
 			/* BUTTONS */
+/*			.btn .btn-social-icon .btn-github a{color:#fff; background:#556270; height: 100px; font-size: 30px;}*/
 			
 			/* BOX */
-			.box.box-solid.box-primary>.box-header { color:#fff; background:#556270; font-size: 0px; }
-			.box.box-solid.box-primary{border-bottom-color:#556270; border-left-color:#556270; border-right-color:#556270; border-top-color:#556270;}
+/*			.box.box-solid.box-primary>.box-header { color:#fff; background:#556270; font-size: 0px; } */
+/*			.box.box-solid.box-primary{border-bottom-color:#556270; border-left-color:#556270; border-right-color:#556270; border-top-color:#556270;} */
 
 		'))),
 		
@@ -1048,13 +1054,55 @@ server <- function(input, output, session = session) {
 		if(is.null(input$results) == FALSE){
 			tabsetPanel(id = "inferences",
 			type = "tabs",
-			tabPanel("Goodness-of-fit test", uiOutput("display_gof_table")),
-			tabPanel("Locus specific model comparison", numericInput("threshold_locus_specific_model_comp", label = h3("Posterior probability threshold value below which an inference is considered ambiguous"), width = (0.25*as.numeric(input$dimension[1])), value = 0.9, min = 0, max = 1, step = 0.005), hr(), plotlyOutput("locus_specific_model_comparison", height = 'auto', width = 'auto'))
+			tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
+			tabPanel("Locus specific model comparison", numericInput("threshold_locus_specific_model_comp", label = h3("Posterior probability threshold value below which an inference is considered ambiguous"), width = (0.25*as.numeric(input$dimension[1])), value = 0.9, min = 0, max = 1, step = 0.005), hr(), plotlyOutput("locus_specific_model_comparison", height = 'auto', width = 'auto')),
+			tabPanel("Goodness-of-fit test", uiOutput("display_gof_table"))
 			)
 		}else{
 			return()
 		}
 	})
+
+	## READ THE RESULTS OF THE MODEL COMPARISON
+	modComp_table <- reactive({
+	fileName = input$results
+	if (is.null(fileName)){
+		return(NULL)
+	}else{
+		untar(fileName$datapath, exdir = getwd())
+		rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+	
+		table_name = paste(rootName, "/modelComp/hierarchical_models.txt", sep='')
+		#read.table("/home/croux/Documents/ABConline/data_visualization/oKybz73JWT/gof/goodness_of_fit_test.txt", header = TRUE)
+		x = read.table(table_name, h=F, sep='\t')
+		system(paste('rm -rf ', rootName, sep=''))
+		return(x)
+		}
+	})
+	
+	# Display the model comparisons	
+	output$display_modComp <- renderUI({
+		if(is.null(modComp_table())){
+			return(NULL)
+		}else if(modComp_table()[2,1] == 'isolation'){
+			fluidPage(
+				hr(),
+				infoBox("Migration versus isolation", paste('best model = ', as.matrix(modComp_table()[2,])[1], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[1], sep=''), icon = icon("check"), color='navy'),
+				infoBox("AM versus SI", paste('best model = ', as.matrix(modComp_table()[2,])[2], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[2], sep=''), icon = icon("check"), color='navy'),
+				infoBox("N-homo versus N-hetero", paste('best model = ', as.matrix(modComp_table()[2,])[3], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[3], sep=''), icon = icon("check"), color='navy')
+			)
+		}else if(modComp_table()[2,1] == 'migration'){
+			fluidPage(
+				hr(),
+				infoBox("Migration versus isolation", paste('best model = ', as.matrix(modComp_table()[2,])[1], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[1], sep=''), icon = icon("check"), color='navy'),
+				infoBox("IM versus SC", paste('best model = ', as.matrix(modComp_table()[2,])[2], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[2], sep=''), icon = icon("check"), color='navy'),
+				infoBox("N-homo versus N-hetero", paste('best model = ', as.matrix(modComp_table()[2,])[3], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[3], sep=''), icon = icon("check"), color='navy'),
+				infoBox("M-homo versus M-hetero", paste('best model = ', as.matrix(modComp_table()[2,])[4], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[4], sep=''), icon = icon("check"), color='navy')
+			)
+		}
+	})
+	
+
 	
 	## READ THE GOODNESS OF FIT TEST (GOF)
 	gof_table <- reactive({
