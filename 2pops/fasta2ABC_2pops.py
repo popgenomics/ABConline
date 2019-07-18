@@ -790,10 +790,10 @@ else: # if there is an outgroup
 
 # compute the summary statistics for ABC
 if nameOut == 'NA':
-	use_sfs = 0
+	outgroup_present = 0
 else:
-	use_sfs = 1
-commande = 'cat {0}/{1}_{2}.ms | mscalc_2pop_observedDataset.py {0} {3}'.format(timeStamp, nameA, nameB, use_sfs)
+	outgroup_present = 1
+commande = 'cat {0}/{1}_{2}.ms | mscalc_2pop_observedDataset.py {0} {3}'.format(timeStamp, nameA, nameB, outgroup_present)
 #print(commande)
 os.system(commande)
 
