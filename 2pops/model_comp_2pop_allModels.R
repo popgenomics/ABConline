@@ -1,6 +1,7 @@
 #!/shared/home/croux/.conda/envs/R_env/bin/Rscript
 # #!/usr/bin/Rscript
 library('abcrf')
+library('viridis')
 # model_comp_2pop.R nameA=txn nameB=ama nSubdir=20  ntree=1000 
 for(i in commandArgs()){
 	tmp = strsplit(i, '=')
@@ -34,22 +35,19 @@ obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 
 obs_loci = read.table(paste(timeStamp, '/ABCstat_loci.txt', sep=''), h=T) # individual statistics for each locus
 
-if( outgroup == 1 ){
-	obs_sfs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)
-	ss_obs = cbind(obs_ss, obs_sfs)
-	
-	sfs=matrix(as.numeric(obs_sfs), byrow=T, ncol=nMin+1)
-	colnames(sfs) = paste('f', nameB, 0:nMin, sep='_')
-	rownames(sfs) = paste('f', nameA, 0:nMin, sep='_')
-	write.table(sfs, paste(timeStamp, '/sfs_table.txt', sep=''), col.names=T, row.names=T, sep='\t', quote=F)
-	
-	sfs[1,2]=0; sfs[2,1]=0 # remove the singletons, ONLY FOR THE REPRESENTATION
-	pdf(paste(timeStamp, '/sfs_plot.pdf', sep=''), bg="white")
-	image(log10(sfs), col=coul(100), xlab = paste('frequency in ', nameA, sep=''), ylab = paste('frequency in ', nameB, sep=''), cex=1.5, cex.axis=1.5, cex.lab=1.5)
-	dev.off()
-}else{
-	ss_obs = obs_ss
-}
+obs_sfs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)
+ss_obs = cbind(obs_ss, obs_sfs)
+
+sfs=matrix(as.numeric(obs_sfs), byrow=T, ncol=nMin+1)
+colnames(sfs) = paste('f', nameB, 0:nMin, sep='_')
+rownames(sfs) = paste('f', nameA, 0:nMin, sep='_')
+write.table(sfs, paste(timeStamp, '/sfs_table.txt', sep=''), col.names=T, row.names=T, sep='\t', quote=F)
+
+sfs[1,2]=0; sfs[2,1]=0 # remove the singletons, ONLY FOR THE REPRESENTATION
+pdf(paste(timeStamp, '/sfs_plot.pdf', sep=''), bg="white")
+image(log10(sfs), col=rev(viridis(100)), xlab = paste('frequency in ', nameA, sep=''), ylab = paste('frequency in ', nameB, sep=''), cex=1.5, cex.axis=1.5, cex.lab=1.5)
+dev.off()
+ss_obs = obs_ss
 
 
 # simulated data
@@ -71,12 +69,9 @@ for(m in models){
 			tmp_ss = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/ABCstat.txt', sep=''), h=T)
 			tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
 			tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
-			if( outgroup == 1 ){ tmp_sfs = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/ABCjsfs.txt', sep=''), h=T)
-				tmp = cbind(tmp_ss, tmp_sfs)
-				ss_sim_tmp = rbind(ss_sim_tmp, tmp)
-			}else{
-				ss_sim_tmp = rbind(ss_sim_tmp, tmp_ss)
-			}
+
+			tmp = cbind(tmp_ss, tmp_sfs)
+			ss_sim_tmp = rbind(ss_sim_tmp, tmp)
 			
 			# params
 			tmp_params = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/priorfile.txt', sep=''), h=T)
