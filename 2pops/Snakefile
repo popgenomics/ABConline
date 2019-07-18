@@ -14,11 +14,10 @@ ITERATIONS_ESTIMATES = range(nIterations_estim)
 ITERATIONS_GOF = range(nIterations_gof)
 
 
-nspecies = config['nspecies']
-config_yaml = config['config_yaml']
+mail_address = config['mail_address']
 infile = config['infile']
-timeStamp = config['timeStamp']
 region = config['region']
+nspecies = config['nspecies']
 nameA = config['nameA']
 nameB = config['nameB']
 nameOutgroup = config['nameOutgroup']
@@ -26,6 +25,8 @@ if nameOutgroup=='NA':
 	outgroup=0
 else:
 	outgroup=1
+config_yaml = config['config_yaml']
+timeStamp = config['timeStamp']
 max_N_tolerated = config['max_N_tolerated']
 Lmin = config['Lmin']
 nMin = config['nMin']
@@ -36,6 +37,7 @@ rho_over_theta = config['rho_over_theta']
 
 rule targets:
 	input:
+		expand("{timeStamp}/general_infos.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/{nameA}_{nameB}_infos.txt", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
 		expand("{timeStamp}/ABCstat_global.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/ABCstat_loci.txt", timeStamp=timeStamp),
@@ -76,6 +78,7 @@ rule fasta2ABC_2pops:
 	input:
 		expand("{infile}", infile=infile)
 	output:
+		expand("{timeStamp}/general_infos.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/ABCstat_global.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/ABCstat_loci.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/bpfile", timeStamp=timeStamp),
@@ -90,7 +93,12 @@ rule fasta2ABC_2pops:
 #		module load python/2.7;
 #		source activate R_env;
 #		module load pandoc/2.7.2;
+		x=$(date)
 		fasta2ABC_2pops.py {infile} {timeStamp} {params.nameA} {params.nameB} {params.nameOutgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}
+		echo "nameA="{nameA}>{timeStamp}/general_infos.txt
+		echo "nameB="{nameB}>>{timeStamp}/general_infos.txt
+		echo "mail="{mail_address}>>{timeStamp}/general_infos.txt
+		echo "date="${{x}}>>{timeStamp}/general_infos.txt
 		"""
 
 
@@ -129,8 +137,8 @@ rule simulationsModelComp:
 	threads: 1
 	shell:
 		"""
-		#submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
-		submit_simulations_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
+		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
+#		submit_simulations_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
 		"""
 
 rule simulationsEstim:
@@ -146,8 +154,8 @@ rule simulationsEstim:
 	threads: 1
 	shell:
 		"""
-		#submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
-		submit_simulations_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
+		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
+#		submit_simulations_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
 		"""
 
 
@@ -207,8 +215,8 @@ rule simulation_best_model:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		#submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
-		submit_simulations_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
+		submit_simulations_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
+#		submit_simulations_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
 		"""
 
 
@@ -240,8 +248,8 @@ rule simulation_gof:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		#submit_simulations_gof_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp}
-		submit_simulations_gof_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp} {config_yaml}
+		submit_simulations_gof_2pop.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp}
+#		submit_simulations_gof_2pop_popGrowth.py {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp} {config_yaml}
 		"""
 
 
