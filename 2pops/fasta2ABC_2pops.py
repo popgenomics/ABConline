@@ -793,7 +793,8 @@ if nameOut == 'NA':
 	outgroup_present = 0
 else:
 	outgroup_present = 1
-commande = 'cat {0}/{1}_{2}.ms | mscalc_2pop_observedDataset.py {0} {3}'.format(timeStamp, nameA, nameB, outgroup_present)
+#commande = 'cat {0}/{1}_{2}.ms | mscalc_2pop_observedDataset.py {0} {3}'.format(timeStamp, nameA, nameB, outgroup_present)
+commande = 'cat {0}/{1}_{2}.ms | mscalc_2pop_observedDataset_SFS.py {0} {3}'.format(timeStamp, nameA, nameB, outgroup_present)
 #print(commande)
 os.system(commande)
 

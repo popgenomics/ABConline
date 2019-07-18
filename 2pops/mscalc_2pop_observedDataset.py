@@ -448,10 +448,12 @@ for line in sys.stdin: # read the ms's output from the stdin
 					# Fst
 					# vector of piT over segsites
 					piT = piTot(tmpA['nDer'], tmpB['nDer'], nSamA[nLoci_cnt - 1], nSamB[nLoci_cnt - 1], segsites)
-					for SNPi in range(len(tmpA['nDer'])):
-						sfs[int(tmpA['nDer'][SNPi])][int(tmpB['nDer'][SNPi])] += 1
 					# mean Fst
 					FST.append(Fst(sum(tmpA['pi_SNPs']), sum(tmpB['pi_SNPs']), sum(piT), segsites))
+					
+					# SFS
+					for SNPi in range(len(tmpA['nDer'])):
+						sfs[int(tmpA['nDer'][SNPi])][int(tmpB['nDer'][SNPi])] += 1
 					
 	# compute average and std over of statistics over loci
 	if nLoci_cnt != 0 and len(ss) == nLoci:

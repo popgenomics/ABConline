@@ -15,11 +15,6 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'ntree'){ ntree = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'outgroup'){ outgroup = as.integer(tmp[[1]][2]) } # 0: no outgroup, no SFS used. 1: outgroup, SFS used
 }
-#nameA = 'txn'
-#nameB = 'ama'
-#ntree = 1000
-#nSubdir = 6
-nsims_monolocus = 10000 # number of monolocus simulations
 
 outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
 outfile_best = paste(timeStamp, '/', sub_dir_sim, '/best_model.txt', sep='')
@@ -34,8 +29,8 @@ obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
 obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 
 obs_loci = read.table(paste(timeStamp, '/ABCstat_loci.txt', sep=''), h=T) # individual statistics for each locus
-
 obs_sfs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)
+
 ss_obs = cbind(obs_ss, obs_sfs)
 
 sfs=matrix(as.numeric(obs_sfs), byrow=T, ncol=nMin+1)
@@ -47,7 +42,6 @@ sfs[1,2]=0; sfs[2,1]=0 # remove the singletons, ONLY FOR THE REPRESENTATION
 pdf(paste(timeStamp, '/sfs_plot.pdf', sep=''), bg="white")
 image(log10(sfs), col=rev(viridis(100)), xlab = paste('frequency in ', nameA, sep=''), ylab = paste('frequency in ', nameB, sep=''), cex=1.5, cex.axis=1.5, cex.lab=1.5)
 dev.off()
-ss_obs = obs_ss
 
 
 # simulated data
@@ -69,8 +63,10 @@ for(m in models){
 			tmp_ss = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/ABCstat.txt', sep=''), h=T)
 			tmp_ss = tmp_ss[, -grep('min', colnames(tmp_ss))]
 			tmp_ss = tmp_ss[, -grep('max', colnames(tmp_ss))]
-
+			
+			tmp_sfs = read.table(paste(timeStamp, '/', sub_dir_sim, '/', m, '_', rep, '/ABCjsfs.txt', sep=''), h=T)
 			tmp = cbind(tmp_ss, tmp_sfs)
+			
 			ss_sim_tmp = rbind(ss_sim_tmp, tmp)
 			
 			# params
@@ -89,13 +85,12 @@ for(m in models){
 
 # remove uninformative statistics: those with no variation
 ss_2_remove = c(1)
-for(m in models){
-	for(i in 2:ncol(ss_obs)){
-		if( sd(ss_sim[[m]][, i])<1e-4 ){
-			ss_2_remove = c(ss_2_remove, i)
-		}
+for(i in 2:ncol(all_models_sim)){
+	if( sd(all_models_sim[, i] )<1e-4 ){
+		ss_2_remove = c(ss_2_remove, i)
 	}
 }
+
 ss_2_remove = unique(ss_2_remove)
 
 
@@ -346,8 +341,8 @@ if(predicted_model_iso_mig$allocation=='isolation'){
 # summarized output
 summary_outfile = paste(timeStamp, '/', sub_dir_sim, '/hierarchical_models.txt', sep='')
 write(paste(c(summary_modelComp, '\n'), collapse='\t'), summary_outfile, append=F)
-write(paste(c(summary_bestModel, '\n'), collapse='\t'), summary_outfile, append=F)
-write(paste(c(summary_proba, '\n'), collapse='\t'), summary_outfile, append=F)
+write(paste(c(summary_bestModel, '\n'), collapse='\t'), summary_outfile, append=T)
+write(paste(c(summary_proba, '\n'), collapse='\t'), summary_outfile, append=T)
 
 
 ### LOCUS SPECIFIC MODEL COMPARISON
