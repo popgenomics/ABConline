@@ -41,6 +41,7 @@ rule targets:
 		expand("{timeStamp}/{nameA}_{nameB}_infos.txt", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
 		expand("{timeStamp}/ABCstat_global.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/ABCstat_loci.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/ABCjsfs.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/sfs_plot.pdf", timeStamp=timeStamp),
 		expand("{timeStamp}/sfs_table.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/results_recombination.txt", timeStamp=timeStamp),
@@ -54,7 +55,8 @@ rule targets:
 		expand("{timeStamp}/estim/report_{nameA}_{nameB}.txt", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
 		expand("{timeStamp}/estim/posterior_IM_2M_2N.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/estim/posterior_IM_2M_2N.pdf", timeStamp=timeStamp),
-		expand("{timeStamp}/gof/goodness_of_fit_test.txt", timeStamp=timeStamp)
+		expand("{timeStamp}/gof/goodness_of_fit_test.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/gof/gof_sfs.txt", timeStamp=timeStamp)
 	shell:
 		"""
 		tar -zcvf {timeStamp}.tar.gz {input}
@@ -79,6 +81,7 @@ rule fasta2ABC_2pops:
 		expand("{infile}", infile=infile)
 	output:
 		expand("{timeStamp}/general_infos.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/ABCjsfs.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/ABCstat_global.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/ABCstat_loci.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/bpfile", timeStamp=timeStamp),
@@ -95,10 +98,12 @@ rule fasta2ABC_2pops:
 #		module load pandoc/2.7.2;
 		x=$(date)
 		fasta2ABC_2pops.py {infile} {timeStamp} {params.nameA} {params.nameB} {params.nameOutgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}
-		echo "nameA="{nameA}>{timeStamp}/general_infos.txt
-		echo "nameB="{nameB}>>{timeStamp}/general_infos.txt
-		echo "mail="{mail_address}>>{timeStamp}/general_infos.txt
-		echo "date="${{x}}>>{timeStamp}/general_infos.txt
+		echo "nameA,"{nameA}>{timeStamp}/general_infos.txt
+		echo "nameB,"{nameB}>>{timeStamp}/general_infos.txt
+		y=$( cat {timeStamp}/nLoci.txt )
+		echo "nLoci,"${{y}}>>{timeStamp}/general_infos.txt
+		echo "mail,"{mail_address}>>{timeStamp}/general_infos.txt
+		echo "date,"${{x}}>>{timeStamp}/general_infos.txt
 		"""
 
 
@@ -246,14 +251,20 @@ rule simulation_gof:
 
 rule gof:
 	input:
+		expand("{timeStamp}/ABCstat_global.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/ABCjsfs.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/gof/gof_{i}/ABCstat.txt", timeStamp=timeStamp, i=ITERATIONS_GOF)
 	output:
-		"{timeStamp}/gof/goodness_of_fit_test.txt"
+		"{timeStamp}/gof/goodness_of_fit_test.txt",
+		"{timeStamp}/gof/gof_sfs.txt"
 	shell:
 		"""
 		head -n1 {timeStamp}/gof/gof_0/ABCstat.txt > {timeStamp}/gof/simulations.txt
 		cat {timeStamp}/gof/gof*/ABCstat.txt | grep -v avg >> {timeStamp}/gof/simulations.txt
+		
+		head -n1 {timeStamp}/gof/gof_0/ABCjsfs.txt > {timeStamp}/gof/simulations_jsfs.txt
+		cat {timeStamp}/gof/gof*/ABCjsfs.txt | grep -v fA >> {timeStamp}/gof/simulations_jsfs.txt
+		
 		gof_2pop.R timeStamp={timeStamp}
 		"""
-
 
