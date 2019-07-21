@@ -18,6 +18,107 @@ library(dashboardthemes) # library(devtools); install_github("nik01010/dashboard
 library(shinyhelper)
 library(plotly)
 library(viridis)
+library(RColorBrewer)
+
+pvalue = function(distribution, obs){
+	obs = as.numeric(obs)
+	distribution = as.numeric(distribution)
+	median_x = median(distribution)
+	if(obs==0 && median_x==0){
+		return(NA)
+	}else{
+		if(obs==median_x){
+			pval=0.5
+		}else if(as.numeric(obs)>median_x){
+			pval = length(which(distribution>as.numeric(obs)))/length(distribution)
+		}else{
+			pval = length(which(distribution<as.numeric(obs)))/length(distribution)
+		}
+	}
+	return(pval)
+}
+
+plot3var = function (x, y, z, xlab = "", ylab = "", zlab = "", main = "", cex.lab = 1, couleurs = c("#ffffd9", "#edf8b1", "#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"), zlim = NULL, watermark = F, nlevels = 10, FUN="median"){
+	median_z = c()
+	mat = matrix(NA, length(table(y)), length(table(x)))
+	colnames(mat) = names(table(x))
+	rownames(mat) = names(table(y))
+	ligne = 0
+	colonne = 0
+	for (x_i in as.numeric(names(table(x)))) {
+		colonne = colonne + 1
+		ligne = 0
+		for (y_i in as.numeric(names(table(y)))) {
+			ligne = ligne + 1
+			if(FUN=='median'){
+				mat[ligne, colonne] = median(z[which(x == x_i & y == y_i)])
+				}
+			if(FUN=='mean'){
+				mat[ligne, colonne] = mean(z[which(x == x_i & y == y_i)])
+			}
+			if(FUN=='max'){
+				mat[ligne, colonne] = max(z[which(x == x_i & y == y_i)])
+			}
+			if(FUN=='min'){
+				mat[ligne, colonne] = min(z[which(x == x_i & y == y_i)])
+			}
+			if(FUN=='sd'){
+				mat[ligne, colonne] = sd(z[which(x == x_i & y == y_i)])
+			}
+			median_z = c(median_z, mat[ligne, colonne])
+		}
+	}
+	min_arr = which(mat == min(mat), arr.ind = T)
+	max_arr = which(mat == max(mat), arr.ind = T)
+	min_x = min_arr[, 2]
+	max_x = max_arr[, 2]
+	min_y = min_arr[, 1]
+	max_y = max_arr[, 1]
+	min_z = min(mat)
+	max_z = max(mat)
+	gradient = colorRampPalette(couleurs)
+	dev.new(width = 8, height = 7)
+	layout(matrix(c(1, 2), byrow = T, ncol = 2), width = c(4/5, 1/5))
+	par(mar = c(4.5, 4, 4, 1), las = 1)
+	if (is.null(zlim)) {
+		zlim = range(mat)
+	}
+
+	if(length(min_x) == 1 && length(max_x) == 1){
+		image(t(mat), xlab = "", ylab = "", col = gradient(nlevels), 
+		cex.axis = cex.lab, axes = F, zlim = zlim)
+		mtext(side = 3, text = main, line = 0.75, cex = cex.lab)
+	}else{
+		image(t(mat), xlab = "", ylab = "", col = gradient(nlevels), 
+		cex.axis = cex.lab, axes = F, zlim = zlim)
+		mtext(side = 3, text = main, line = 0.75, cex = cex.lab)
+	}
+
+	if (is.null(colnames(mat))) {
+		mtext(side = 1, text = xlab, line = 2.5, cex = cex.lab)
+		par(las = 3)
+		mtext(side = 2, text = ylab, line = 2.75, cex = cex.lab)
+	}
+	else {
+		migRates = rownames(mat)
+		posX = c((seq(1, length(migRates), 2)), length(migRates))
+		axis(1, at = 0:(length(table(x)) - 1)/(length(table(x)) - 1), labels = names(table(x)))
+		mtext(xlab, 1, line = 2.5, cex = cex.lab)
+		extRates = colnames(mat)
+		posY = c((seq(1, length(extRates), 2)), length(extRates))
+		axis(2, at = 0:(length(table(y)) - 1)/(length(table(y)) - 1), labels = names(table(y)))
+		par(las = 0)
+		mtext(ylab, 2, line = 2.75, cex = cex.lab)
+	}
+	if (watermark) {
+		watermark()
+	}
+	par(las = 1)
+	image.scale(mat, horiz = F, col = gradient(nlevels), xlab = "", ylab = "", cex.lab = cex.lab, cex.axis = cex.lab, zlim = zlim)
+	par(las = 3)
+	mtext(side = 2, text = zlab, line = 2.5, cex = cex.lab)
+}
+
 
 convertMenuItem <- function(mi,tabName) {
 	mi$children[[1]]$attribs['data-toggle']="tab"
@@ -1056,7 +1157,8 @@ server <- function(input, output, session = session) {
 			type = "tabs",
 			tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
 			tabPanel("Locus specific model comparison", numericInput("threshold_locus_specific_model_comp", label = h3("Posterior probability threshold value below which an inference is considered ambiguous"), width = (0.25*as.numeric(input$dimension[1])), value = 0.9, min = 0, max = 1, step = 0.005), hr(), plotlyOutput("locus_specific_model_comparison", height = 'auto', width = 'auto')),
-			tabPanel("Goodness-of-fit test", uiOutput("display_gof_table"))
+			tabPanel("Goodness-of-fit test : summary statistics", uiOutput("display_gof_table")),
+			tabPanel("Goodness-of-fit test : jSFS", uiOutput("display_sfs_table"))
 			)
 		}else{
 			return()
@@ -1102,7 +1204,6 @@ server <- function(input, output, session = session) {
 		}
 	})
 	
-
 	
 	## READ THE GOODNESS OF FIT TEST (GOF)
 	gof_table <- reactive({
@@ -1136,6 +1237,244 @@ server <- function(input, output, session = session) {
 		return(NULL)
 	}else{
 		DT::dataTableOutput("gof_table")
+		}
+	})
+
+
+	## plot the SFS : get the table
+	table_sfs <- reactive({
+		fileName = input$results
+		if(is.null(fileName)){
+			return (NULL)
+		}else{
+		# expected SFS
+		exp_sfs = read.table("/home/croux/Documents/ABConline/2pops/dev/test/exp_jsfs.txt", h=T) # distribution
+		exp_sfs_2 = apply(exp_sfs, MARGIN=2, FUN="median") # median of distribution 
+
+		# observed SFS
+		obs_sfs = read.table("/home/croux/Documents/ABConline/2pops/dev/test/ABCjsfs.txt", h=T)
+
+		# compute the pvalue
+		tested_sfs = NULL
+		for(i in 1:length(exp_sfs)){
+			tested_sfs = c(tested_sfs, pvalue(exp_sfs[,i], obs_sfs[i]))
+		}
+		tested_sfs = round(p.adjust(tested_sfs, "fdr"), 5)
+
+		# all matrixes
+		## obs | exp | exp-obs | p-values
+		sfs = rbind(obs_sfs, exp_sfs_2, exp_sfs_2-obs_sfs, tested_sfs)
+		}
+	})
+	
+	## plot the SFS : display the matrix
+	output$sfs_observed <- renderPlotly({
+		if( is.null(input$results)){
+			return(NULL)
+		}else{
+			f=list(
+				family = "Arial",
+				size = 20,
+				color = "black"
+			)
+
+			f2=list(
+				family = "Arial",
+				size = 16,
+				color = "black"
+			)
+
+			f_legend=list(
+				family = "Arial",
+				size = 16,
+				color = "black",
+				color = "#000"
+			)
+
+			xlab = list(
+				title='species A',
+				titlefont=f,
+				tickfont=f2
+			)
+
+			ylab = list(
+				title='species B',
+				titlefont=f,
+				tickfont=f2
+			)
+
+			nsamA = length(grep('fA0', names(table_sfs())))
+			sfs_mat = matrix(as.numeric(table_sfs()[1,]), byrow=F, ncol=nsamA)
+			sfs_mat_log10 = log10(sfs_mat)
+			sfs_mat_log10[sfs_mat_log10==-Inf]=NA
+			sfs_mat_log10[1,2]=NA;sfs_mat_log10[2,1]=NA
+			plot_obs = plot_ly(z=sfs_mat_log10, type = "heatmap", colors=rev(viridis_pal(option='D')(100)), width = 0.75*as.numeric(input$dimension[1])/2, height = 0.42*as.numeric(input$dimension[2])) %>% layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend), hoverlabel = list(font=list(size=20)), annotations = list( text = 'observed jSFS (log10(nSNPs))', font=list(size=22), xanchor = "center", yanchor="bottom", xref="paper", yref="paper", align="center", showarrow=FALSE, x=0.5, y=1), autosize = T, margin = list(l=50, r=50, b=80, t=40, pad=2))
+			return(plot_obs)
+		}
+	})
+
+	## plot the SFS : display the matrix
+	output$sfs_expected <- renderPlotly({
+		if( is.null(input$results)){
+			return(NULL)
+		}else{
+			f=list(
+				family = "Arial",
+				size = 20,
+				color = "black"
+			)
+
+			f2=list(
+				family = "Arial",
+				size = 16,
+				color = "black"
+			)
+
+			f_legend=list(
+				family = "Arial",
+				size = 16,
+				color = "black",
+				color = "#000"
+			)
+
+			xlab = list(
+				title='species A',
+				titlefont=f,
+				tickfont=f2
+			)
+
+			ylab = list(
+				title='species B',
+				titlefont=f,
+				tickfont=f2
+			)
+			
+			nsamA = length(grep('fA0', names(table_sfs())))
+			sfs_mat = matrix(as.numeric(table_sfs()[2,]), byrow=F, ncol=nsamA)
+			sfs_mat_log10 = log10(sfs_mat)
+			sfs_mat_log10[sfs_mat_log10==-Inf]=NA
+			sfs_mat_log10[1,2]=NA;sfs_mat_log10[2,1]=NA
+			plot_exp = plot_ly(z=sfs_mat_log10, type = "heatmap", colors=rev(viridis_pal(option='D')(100)), width = 0.75*as.numeric(input$dimension[1])/2, height = 0.42*as.numeric(input$dimension[2])) %>% layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend), hoverlabel = list(font=list(size=20)), annotations = list( text = 'expected jSFS (log10(nSNPs))', font=list(size=22), xanchor = "center", yanchor="bottom", xref="paper", yref="paper", align="center", showarrow=FALSE, x=0.5, y=1), autosize = T, margin = list(l=50, r=50, b=80, t=40, pad=2))
+		}
+	})
+	
+	## plot the SFS : display the matrix
+	output$sfs_diff <- renderPlotly({
+		if( is.null(input$results)){
+			return(NULL)
+		}else{
+			f=list(
+				family = "Arial",
+				size = 20,
+				color = "black"
+			)
+
+			f2=list(
+				family = "Arial",
+				size = 16,
+				color = "black"
+			)
+
+			f_legend=list(
+				family = "Arial",
+				size = 16,
+				color = "black",
+				color = "#000"
+			)
+
+			xlab = list(
+				title='species A',
+				titlefont=f,
+				tickfont=f2
+			)
+
+			ylab = list(
+				title='species B',
+				titlefont=f,
+				tickfont=f2
+			)
+			
+			nsamA = length(grep('fA0', names(table_sfs())))
+			tmp = as.numeric(table_sfs()[3,])
+			tmp[which(is.na(table_sfs()[4,]))]=NA
+			sfs_mat = matrix(tmp, byrow=F, ncol=nsamA)
+			sfs_mat[1,1]=NA
+			sfs_mat[2,1]=NA
+			sfs_mat[1,2]=NA
+			plot_diff = plot_ly(z=sfs_mat, type = "heatmap", colors=rev(viridis_pal(option='D')(100)), width = 0.75*as.numeric(input$dimension[1])/2, height = 0.42*as.numeric(input$dimension[2])) %>% layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend), hoverlabel = list(font=list(size=20)), annotations = list( text = 'expected - observed (nSNPs)', font=list(size=22), xanchor = "center", yanchor="bottom", xref="paper", yref="paper", align="center", showarrow=FALSE, x=0.5, y=1), autosize = T, margin = list(l=50, r=50, b=80, t=40, pad=2))
+		}
+	})
+	
+	## plot the SFS : display the matrix
+	output$sfs_pval <- renderPlotly({
+		if( is.null(input$results)){
+			return(NULL)
+		}else{
+			f=list(
+				family = "Arial",
+				size = 20,
+				color = "black"
+			)
+
+			f2=list(
+				family = "Arial",
+				size = 16,
+				color = "black"
+			)
+
+			f_legend=list(
+				family = "Arial",
+				size = 16,
+				color = "black",
+				color = "#000"
+			)
+
+			xlab = list(
+				title='species A',
+				titlefont=f,
+				tickfont=f2
+			)
+
+			ylab = list(
+				title='species B',
+				titlefont=f,
+				tickfont=f2
+			)
+			
+			nsamA = length(grep('fA0', names(table_sfs())))
+			tmp = as.numeric(table_sfs()[4,])
+			sfs_mat = matrix(tmp, byrow=F, ncol=nsamA)
+			plot_pval = plot_ly(z=sfs_mat, type = "heatmap", colors=rev(viridis_pal(option='D')(100)), width = 0.75*as.numeric(input$dimension[1])/2, height = 0.42*as.numeric(input$dimension[2])) %>% layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend), hoverlabel = list(font=list(size=20)), annotations = list( text = 'p-Values', font=list(size=22), xanchor = "center", yanchor="bottom", xref="paper", yref="paper", align="center", showarrow=FALSE, x=0.5, y=1), autosize = T, margin = list(l=50, r=50, b=80, t=40, pad=2))
+		}
+	})
+	
+	output$display_sfs_table <- renderUI({
+		if(is.null(table_sfs())){
+			return(NULL)
+		}else{
+			fluidPage(
+				hr(),
+				
+				fluidRow(
+					width = 12,
+					column(width=6, offset = 0, style='padding:30px;',
+						plotlyOutput(outputId = "sfs_observed")
+					),
+					column(width=6, offset = 0, style='padding:30px;',
+						plotlyOutput(outputId = "sfs_expected")
+					)
+				),
+				
+				fluidRow(
+					width = 12,
+					column(width=6, offset = 0, style='padding:30px;',
+						plotlyOutput(outputId = "sfs_diff")
+					),
+					column(width=6, offset = 0, style='padding:30px;',
+						plotlyOutput(outputId = "sfs_pval")
+					)
+				)
+			)
 		}
 	})
 	
