@@ -53,8 +53,8 @@ N_bound[1] /= Nref
 T_bound[0] /= (4*Nref)
 T_bound[1] /= (4*Nref)
 
-max_Tsc = 0.25
-min_Tam = 0.75
+max_Tsc = 0.2
+min_Tam = 0.8
 
 # read bpfile
 infile = open("bpfile", "r")
