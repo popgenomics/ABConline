@@ -15,9 +15,9 @@ help += "\t\033[1;32;40m#SI\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tb
 help += "\t\033[1;32;40m#AM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -ema tbs 2 0 tbs tbs 0 -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs\n"
 help += "\t\033[1;32;40m#IM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs\n"
 help += "\t\033[1;32;40m#SC\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -eM tbs 0 -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs\n"
-help += "\t\033[1;32;40mExample: ./priorgen_gof_2pop_popGrowth.py SC_2M_2N 1000 posterior_file config_yaml\033[0m\n"
+help += "\t\033[1;32;40mExample: ./priorgen_gof_2pop_popGrowth.py SC_2M_2N 1000 posterior_file\033[0m\n"
 
-if len(sys.argv) != 5:
+if len(sys.argv) != 4:
 	print(help)
 	sys.exit()
 
@@ -61,14 +61,6 @@ infile.close()
 
 # get the lines of the posterior used for the simulations: vector of length nMultilocus
 used_posterior = randint(cnt, size=nMultilocus)
-
-# read the yaml
-config_yaml = open(sys.argv[4], 'r')
-for i in config_yaml:
-	i = i.strip().split(':')
-	if(i[0] == 'population_growth'): # =='constant' or 'variable'
-		pop_growth = i[1]
-config_yaml.close()
 
 
 if sys.argv[1] == "SC_1M_1N":

@@ -91,6 +91,14 @@ for(i in 2:ncol(all_models_sim)){
 	}
 }
 
+for(m in names(ss_sim)){
+	for(i in 2:ncol(ss_sim[[m]])){
+		if( sd(ss_sim[[m]][,i] ) <1e-4 ){
+			ss_2_remove = c(ss_2_remove, i)
+		}
+	}
+}
+
 ss_2_remove = unique(ss_2_remove)
 
 
@@ -449,6 +457,7 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	}else{ # if migration but homogeneous
 		# change directory
 		setwd(paste(timeStamp, '/modelComp', sep=''))
+		stats_obs = c(3:15, 20:24)
 		allocation = rep('migration', nrow(obs_loci))
 		post_proba = rep('1', nrow(obs_loci))
 		res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)
@@ -457,6 +466,7 @@ if(predicted_model_iso_mig$allocation=='migration'){
 }else{
 	# change directory
 	setwd(paste(timeStamp, '/modelComp', sep=''))
+	stats_obs = c(3:15, 20:24)
 	allocation = rep('isolation', nrow(obs_loci))
 	post_proba = rep('1', nrow(obs_loci))
 	res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)

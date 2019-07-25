@@ -9,7 +9,7 @@ import time
 
 
 if len(sys.argv) != 11:
-	print("\n\tsubmit_simulations_2pop.py [outgroup} [nmultilocus] [iteration] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB] [sub_dir_sim] [sub_dir_model] [config_yaml] [project's directory name, i.e, timeStamp]")
+	print("\n\tsubmit_simulations_2pop.py [outgroup] [nmultilocus] [iteration] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB] [sub_dir_sim] [sub_dir_model] [config_yaml] [project's directory name, i.e, timeStamp]")
 	print("\n\tex: submit_simulations_2pop.py 1 1000 2 SI_1N flo mal sim_SI_1N SI_1N config.yaml Ng4PymB1dy\n\tto simulate 1000 multilocus simulations at the second iteration, in the folder sim_SI_1N, with outgroup") 
 	sys.exit(0)
 
