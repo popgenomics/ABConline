@@ -1302,13 +1302,13 @@ server <- function(input, output, session = session) {
 			)
 
 			xlab = list(
-				title=users_infos()[1,2],
+				title=users_infos()[2,2],
 				titlefont=f,
 				tickfont=f2
 			)
 
 			ylab = list(
-				title=users_infos()[2,2],
+				title=users_infos()[3,2],
 				titlefont=f,
 				tickfont=f2
 			)
@@ -1348,13 +1348,13 @@ server <- function(input, output, session = session) {
 			)
 
 			xlab = list(
-				title=users_infos()[1,2],
+				title=users_infos()[2,2],
 				titlefont=f,
 				tickfont=f2
 			)
 
 			ylab = list(
-				title=users_infos()[2,2],
+				title=users_infos()[3,2],
 				titlefont=f,
 				tickfont=f2
 			)
@@ -1393,13 +1393,13 @@ server <- function(input, output, session = session) {
 			)
 
 			xlab = list(
-				title=users_infos()[1,2],
+				title=users_infos()[2,2],
 				titlefont=f,
 				tickfont=f2
 			)
 
 			ylab = list(
-				title=users_infos()[2,2],
+				title=users_infos()[3,2],
 				titlefont=f,
 				tickfont=f2
 			)
@@ -1440,13 +1440,13 @@ server <- function(input, output, session = session) {
 			)
 
 			xlab = list(
-				title=users_infos()[1,2],
+				title=users_infos()[2,2],
 				titlefont=f,
 				tickfont=f2
 			)
 
 			ylab = list(
-				title=users_infos()[2,2],
+				title=users_infos()[3,2],
 				titlefont=f,
 				tickfont=f2
 			)
@@ -1557,7 +1557,7 @@ server <- function(input, output, session = session) {
 		)
 		
 		statistics_obs_sites = c(locus_spe()$sf_avg, locus_spe()$sxA_avg, locus_spe()$sxB_avg, locus_spe()$ss_avg)
-		statistics_names_sites = rep(c("Sf", paste("Sx", users_infos()[1,2], sep=' '), paste("Sx", users_infos()[2,2], sep= ' '), "Ss"), each = nLoci)
+		statistics_names_sites = rep(c("Sf", paste("Sx", users_infos()[2,2], sep=' '), paste("Sx", users_infos()[3,2], sep= ' '), "Ss"), each = nLoci)
 		locus_names_sites = rep(locus_spe()$dataset, 4)
 		
 		data_obs_sites = data.frame(statistics_obs_sites, statistics_names_sites, locus_names_sites)
@@ -1585,7 +1585,7 @@ server <- function(input, output, session = session) {
 		tickfont = list(size = 20)
 		)
 		statistics_obs_diversity = c(locus_spe()$piA_avg, locus_spe()$piB_avg, locus_spe()$thetaA_avg, locus_spe()$thetaB_avg)
-		statistics_names_diversity = rep(c(paste("pi", users_infos()[1,2], sep=' '), paste("pi", users_infos()[2,2], sep=' '), paste("Watterson's theta", users_infos()[1,2], sep= ' '), paste("Watterson's theta", users_infos()[2,2], sep= ' ')), each = nLoci)
+		statistics_names_diversity = rep(c(paste("pi", users_infos()[2,2], sep=' '), paste("pi", users_infos()[3,2], sep=' '), paste("Watterson's theta", users_infos()[2,2], sep= ' '), paste("Watterson's theta", users_infos()[3,2], sep= ' ')), each = nLoci)
 		locus_names_diversity = rep(locus_spe()$dataset, 4)
 		
 		data_obs_diversity = data.frame(statistics_obs_diversity, statistics_names_diversity, locus_names_diversity)
@@ -1614,7 +1614,7 @@ server <- function(input, output, session = session) {
 			tickfont = list(size = 20)
 		)
 		statistics_obs_tajima = c(locus_spe()$DtajA_avg, locus_spe()$DtajB_avg)
-		statistics_names_tajima = rep(c(paste("Tajima's D", users_infos()[1,2], sep=' '), paste("Tajima's D", users_infos()[2,2], sep=' ')), each = nLoci)
+		statistics_names_tajima = rep(c(paste("Tajima's D", users_infos()[2,2], sep=' '), paste("Tajima's D", users_infos()[3,2], sep=' ')), each = nLoci)
 		locus_names_tajima = rep(locus_spe()$dataset, 2)
 		data_obs_tajima = data.frame(statistics_obs_tajima, statistics_names_tajima, locus_names_tajima)
 		
@@ -1697,12 +1697,12 @@ server <- function(input, output, session = session) {
 			tickfont=f2
 		)
 		
-		lab_piA = list(title=paste('pi', users_infos()[1,2], sep=' '),
+		lab_piA = list(title=paste('pi', users_infos()[2,2], sep=' '),
 			titlefont=f,
 			tickfont=f2
 		)
 		
-		lab_piB = list(title=paste('pi', users_infos()[2,2], sep=' '),
+		lab_piB = list(title=paste('pi', users_infos()[3,2], sep=' '),
 			titlefont=f,
 			tickfont=f2
 		)
@@ -1713,13 +1713,13 @@ server <- function(input, output, session = session) {
 		allocation[which(locus_spe()$post_proba<threshold)] = 'ambiguous'
 		y = data.frame(netdivAB=locus_spe()$netdivAB_avg, pi=(locus_spe()$piA_avg+locus_spe()$piB_avg)/2, FST=locus_spe()$FST_avg, allocation=allocation, post_prob=locus_spe()$post_prob, dataset=locus_spe()$dataset, piA=locus_spe()$piA_avg, piB=locus_spe()$piB_avg)
 		
-		plot_locus_modComp_2species_divergence <- y %>% plot_ly(x =~FST, y =~netdivAB, type = 'scatter', color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), marker= list(size=18, opacity=0.75), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), paste('<br>pi', as.character(users_infos()[1,2]), ':', sep=' '), round(piA, 5), paste('<br>pi', as.character(users_infos()[2,2]), ':', sep=' '), round(piB, 5)),
+		plot_locus_modComp_2species_divergence <- y %>% plot_ly(x =~FST, y =~netdivAB, type = 'scatter', color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), marker= list(size=18, opacity=0.75), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), paste('<br>pi', as.character(users_infos()[2,2]), ':', sep=' '), round(piA, 5), paste('<br>pi', as.character(users_infos()[3,2]), ':', sep=' '), round(piB, 5)),
 		hoverinfo='text', width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>% layout(xaxis = xlab, yaxis = ylab_divergence, legend=list(orientation = 'h', y=1.05, font = list(size = 25), hoverlabel = list(font=list(size=20))))
 
-		plot_locus_modComp_2species_pi_AB <- y %>% plot_ly(x =~FST, y =~pi, type = 'scatter', color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE, marker= list(size=18, opacity=0.75), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), paste('<br>pi', as.character(users_infos()[1,2]), ':', sep=' '), round(piA, 5), paste('<br>pi', as.character(users_infos()[2,2]), ':', sep=' '), round(piB, 5)),
+		plot_locus_modComp_2species_pi_AB <- y %>% plot_ly(x =~FST, y =~pi, type = 'scatter', color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE, marker= list(size=18, opacity=0.75), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), paste('<br>pi', as.character(users_infos()[2,2]), ':', sep=' '), round(piA, 5), paste('<br>pi', as.character(users_infos()[3,2]), ':', sep=' '), round(piB, 5)),
 		hoverinfo='text') %>% layout(xaxis = xlab, yaxis = ylab_diversity)
 
-		plot_locus_modComp_2species_piA_piB <- y %>% plot_ly(x =~piA, y =~piB, type = 'scatter', color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE, marker= list(size=12, opacity=0.65), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), paste('<br>pi', as.character(users_infos()[1,2]), ':', sep=' '), round(piA, 5), paste('<br>pi', as.character(users_infos()[2,2]), ':', sep=' '), round(piB, 5)),
+		plot_locus_modComp_2species_piA_piB <- y %>% plot_ly(x =~piA, y =~piB, type = 'scatter', color =~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE, marker= list(size=12, opacity=0.65), text = ~paste("Locus: ", dataset, '<br>Status: ', allocation, '<br>Posterior probability: ', round(post_prob, 5), '<br>Fst: ', round(FST, 5), '<br>net divergence: ', round(netdivAB, 5), paste('<br>pi', as.character(users_infos()[2,2]), ':', sep=' '), round(piA, 5), paste('<br>pi', as.character(users_infos()[3,2]), ':', sep=' '), round(piB, 5)),
 		hoverinfo='text') %>% layout(xaxis = lab_piA, yaxis = lab_piB)
 		
 		barplot_locus_modComp_2species <- y %>% plot_ly(x = ~allocation, color = ~allocation, legendgroup = ~allocation, colors = viridis_pal(option = "D")(3), showlegend=FALSE) %>% layout(hoverlabel = list(font=list(size=20)), yaxis= list(titlefont=f, tickfont=f2), xaxis = list(titlefont=f, tickfont=f2))
@@ -1781,11 +1781,11 @@ server <- function(input, output, session = session) {
 			}else{
 				proba_migration_user = 1-P
 			}
-			species_A_user = as.character(users_infos()[1,2])
-			species_B_user = as.character(users_infos()[2,2])
+			species_A_user = as.character(users_infos()[2,2])
+			species_B_user = as.character(users_infos()[3,2])
 			piA_user = ABCstat$piA_avg
 			piB_user = ABCstat$piB_avg
-			author_user = as.character(users_infos()[4,2])
+			author_user = as.character(users_infos()[5,2])
 		
 			divergence = c(divergence, divergence_user)
 			model = c(model, model_user)
