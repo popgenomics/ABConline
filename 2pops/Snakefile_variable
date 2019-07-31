@@ -3,7 +3,7 @@ nIterations_model_comp = 10 # number of subdirectories for the simulations used 
 nIterations_estim = 2000 # number of subdirectories for the simulations used in the nnet param estimates (2000)
 nIterations_gof = 200 # number of subdirectories for the simulations used in the nnet param estimates (200)
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
-ntree = 5000 # number of tree for the random forest (RF) model comparison
+ntree = 2000 # number of tree for the random forest (RF) model comparison
 
 
 MODELS_COMP = ['SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N', 'AM_1M_1N', 'AM_1M_2N', 'AM_2M_1N', 'AM_2M_2N', 'IM_1M_1N', 'IM_1M_2N', 'IM_2M_1N', 'IM_2M_2N', 'SI_1N', 'SI_2N']
@@ -105,7 +105,8 @@ rule fasta2ABC_2pops:
 #		module load pandoc/2.7.2;
 		x=$(date)
 		fasta2ABC_2pops.py {infile} {timeStamp} {params.nameA} {params.nameB} {params.nameOutgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}
-		echo "nameA,"{nameA}>{timeStamp}/general_infos.txt
+		echo "nSpecies,"{nspecies}>{timeStamp}/general_infos.txt
+		echo "nameA,"{nameA}>>{timeStamp}/general_infos.txt
 		echo "nameB,"{nameB}>>{timeStamp}/general_infos.txt
 		y=$( cat {timeStamp}/nLoci.txt )
 		echo "nLoci,"${{y}}>>{timeStamp}/general_infos.txt

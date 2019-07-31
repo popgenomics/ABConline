@@ -6,7 +6,7 @@
         "n" : 1,
 	"cpusPerTask" : 1,
 	"memPerCpu" : 2500,
-	"time" : "00:20:00"
+	"time" : "00:30:00"
     },
     "fasta2ABC_2pops" :
     {
@@ -18,18 +18,18 @@
     {
 	"cpusPerTask" : 8,
 	"time" : "03:00:00",
-	"memPerCpu" : 2500
+	"memPerCpu" : 5000
     },
     "estimation" :
     {
 	"cpusPerTask" : 8,
 	"time" : "03:00:00",
-	"memPerCpu" : 2500
+	"memPerCpu" : 5000
     },
     "estimation_best_model" :
     {
 	"cpusPerTask" : 8,
 	"time" : "03:00:00",
-	"memPerCpu" : 2500
+	"memPerCpu" : 5000
     }
 }

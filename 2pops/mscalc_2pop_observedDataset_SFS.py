@@ -462,26 +462,50 @@ for line in sys.stdin: # read the ms's output from the stdin
 					FST.append(Fst(sum(tmpA['pi_SNPs']), sum(tmpB['pi_SNPs']), sum(piT), segsites))
 					
 					#SFS
-					for SNPi in range(len(tmpA['nDer'])):
-						nDerA = int(tmpA['nDer'][SNPi]) # number of copies of the derived allele in pop A
-						nDerB = int(tmpB['nDer'][SNPi]) # number of copies of the derived allele in pop B
-						nAncA = nSamA[nLoci_cnt - 1] - nDerA # number of copies of the ancestral allele in pop A
-						nAncB = nSamB[nLoci_cnt - 1] - nDerB # number of copies of the ancestral allele in pop B
-						if outgroup == 1:
-							# unfolded sfs
-							sfs[nDerA][nDerB] += 1 # can use the orientation
-						else:
-							# folded sfs : use the minor allele frequency
-							nDerTot = nDerA + nDerB
-							nAncTot = nAncA + nAncB
-							if nDerTot < nAncTot: # if the allele labeled 0 is the major one
-								sfs[nDerA][nDerB] += 1.0 # can use the orientation
+					if nLoci < threshold_sim:
+						for SNPi in range(len(tmpA['nDer'])):
+							nDerA = int(tmpA['nDer'][SNPi]) # number of copies of the derived allele in pop A
+							nDerB = int(tmpB['nDer'][SNPi]) # number of copies of the derived allele in pop B
+							nAncA = nSamA[nLoci_cnt - 1] - nDerA # number of copies of the ancestral allele in pop A
+							nAncB = nSamB[nLoci_cnt - 1] - nDerB # number of copies of the ancestral allele in pop B
+							if outgroup == 1:
+								# unfolded sfs
+								sfs[nDerA][nDerB] += 1 # can use the orientation
 							else:
-								if nDerTot > nAncTot: # if the allele labeled 0 is the minor one
-									sfs[nAncA][nAncB] += 1.0
-								else: # if equal frequencies between alleles 0 and 1
-									sfs[nAncA][nAncB] += 0.5 
-									sfs[nDerA][nDerB] += 0.5
+								# folded sfs : use the minor allele frequency
+								nDerTot = nDerA + nDerB
+								nAncTot = nAncA + nAncB
+								if nDerTot < nAncTot: # if the allele labeled 0 is the major one
+									sfs[nDerA][nDerB] += 1.0 # can use the orientation
+								else:
+									if nDerTot > nAncTot: # if the allele labeled 0 is the minor one
+										sfs[nAncA][nAncB] += 1.0
+									else: # if equal frequencies between alleles 0 and 1
+										sfs[nAncA][nAncB] += 0.5 
+										sfs[nDerA][nDerB] += 0.5
+					else:
+						if (nLoci_cnt - 1) in sampled_loci:
+							for SNPi in range(len(tmpA['nDer'])):
+								nDerA = int(tmpA['nDer'][SNPi]) # number of copies of the derived allele in pop A
+								nDerB = int(tmpB['nDer'][SNPi]) # number of copies of the derived allele in pop B
+								nAncA = nSamA[nLoci_cnt - 1] - nDerA # number of copies of the ancestral allele in pop A
+								nAncB = nSamB[nLoci_cnt - 1] - nDerB # number of copies of the ancestral allele in pop B
+								if outgroup == 1:
+									# unfolded sfs
+									sfs[nDerA][nDerB] += 1 # can use the orientation
+								else:
+									# folded sfs : use the minor allele frequency
+									nDerTot = nDerA + nDerB
+									nAncTot = nAncA + nAncB
+									if nDerTot < nAncTot: # if the allele labeled 0 is the major one
+										sfs[nDerA][nDerB] += 1.0 # can use the orientation
+									else:
+										if nDerTot > nAncTot: # if the allele labeled 0 is the minor one
+											sfs[nAncA][nAncB] += 1.0
+										else: # if equal frequencies between alleles 0 and 1
+											sfs[nAncA][nAncB] += 0.5 
+											sfs[nDerA][nDerB] += 0.5
+
 					
 	# compute average and std over of statistics over loci
 	if nLoci_cnt != 0 and len(ss) == nLoci:
