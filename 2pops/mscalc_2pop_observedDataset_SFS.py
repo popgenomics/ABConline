@@ -2,6 +2,7 @@
 # #!/usr/local/bin/pypy
 import os
 import sys
+from random import sample
 project_name = sys.argv[1] # the name of the directory containing the project 
 outgroup = int(sys.argv[2]) # if 0: no outgroup, and so, no SFS. If 1: outgroup, and so, SFS
 #print("outgroup is {0}".format(outgroup))
@@ -229,14 +230,23 @@ if os.path.isfile('{0}/bpfile'.format(project_name)) == False:
 	sys.exit("\n\t\033[1;31;40mERROR: bpfile was not found\n\033[0m\n")
 
 infile = open('{0}/bpfile'.format(project_name), "r")
-
-tmp = infile.readline() # first empty line
+bpfile_header = infile.readline() # first empty line
 L = [ float(i) for i in infile.readline().strip().split("\t") ]
 nSamA = [ int(i) for i in infile.readline().strip().split("\t") ]
 nSamB = [ int(i) for i in infile.readline().strip().split("\t") ]
-
-nLoci = len(L) 
+theta = [ float(i) for i in infile.readline().strip().split("\t") ]
+rho = [ float(i) for i in infile.readline().strip().split("\t") ]
 infile.close()
+
+nLoci = len(L)
+threshold_sim = 100
+if nLoci < threshold_sim:
+	# if less than 1000 of loci
+	nLoci_sim = nLoci
+else:
+	# if more than 1000 of loci, then subsample 1000 for simulations only
+	nLoci_sim = threshold_sim
+	sampled_loci = sample(range(nLoci), threshold_sim)
 
 a1_spA, a1_spB, a2_spA, a2_spB= [], [], [], []
 for nsam in nSamA:
@@ -479,50 +489,109 @@ for line in sys.stdin: # read the ms's output from the stdin
 		nSim_cnt += 1
 		nLoci_cnt = 0
 		
-		# statistics
-		bialsites_avg = cr_mean(bialsites)
-		bialsites_std = cr_std(bialsites, bialsites_avg)
-		sf_avg = cr_mean(sf)
-		sf_std = cr_std(sf, sf_avg)
-		sxA_avg = cr_mean(sxA)
-		sxA_std = cr_std(sxA, sxA_avg)
-		sxB_avg = cr_mean(sxB)
-		sxB_std = cr_std(sxB, sxB_avg)
-		ss_avg = cr_mean(ss)
-		ss_std = cr_std(ss, ss_avg)
-		successive_ss_avg = cr_mean(successive_ss)
-		successive_ss_std = cr_std(successive_ss, successive_ss_avg)
-		piA_avg = cr_mean(piA)
-		piA_std = cr_std(piA, piA_avg)
-		piB_avg = cr_mean(piB)
-		piB_std = cr_std(piB, piB_avg)
-		pearson_r_pi = cr_pearsonR(piA, piB)
-		thetaA_avg = cr_mean(thetaA)
-		thetaA_std = cr_std(thetaA, thetaA_avg)
-		thetaB_avg = cr_mean(thetaB)
-		thetaB_std = cr_std(thetaB, thetaB_avg)
-		pearson_r_theta = cr_pearsonR(thetaA, thetaB)
-		DtajA_avg = cr_mean(DtajA)
-		DtajA_std = cr_std(DtajA, DtajA_avg)
-		DtajB_avg = cr_mean(DtajB)
-		DtajB_std = cr_std(DtajB, DtajB_avg)
-		divAB_avg = cr_mean(divAB)
-		divAB_std = cr_std(divAB, divAB_avg)
-		netdivAB_avg = cr_mean(netdivAB)
-		netdivAB_std = cr_std(netdivAB, netdivAB_avg)
-		minDivAB_avg = cr_mean(minDivAB)
-		minDivAB_std = cr_std(minDivAB, minDivAB_avg)
-		maxDivAB_avg = cr_mean(maxDivAB)
-		maxDivAB_std = cr_std(maxDivAB, maxDivAB_avg)
-		Gmin_avg = cr_mean(Gmin)
-		Gmin_std = cr_std(Gmin, Gmin_avg)
-		Gmax_avg = cr_mean(Gmax)
-		Gmax_std = cr_std(Gmax, Gmax_avg)
-		FST_avg = cr_mean(FST)
-		FST_std = cr_std(FST, FST_avg)
-		pearson_r_div_netDiv = cr_pearsonR(divAB, netdivAB)
-		pearson_r_div_FST = cr_pearsonR(divAB, FST)
-		pearson_r_netDiv_FST = cr_pearsonR(netdivAB, FST)
+		if nLoci < threshold_sim:
+			# if there are less than **threshold_sim** loci, then use all of them 
+			# statistics
+			bialsites_avg = cr_mean(bialsites)
+			bialsites_std = cr_std(bialsites, bialsites_avg)
+			sf_avg = cr_mean(sf)
+			sf_std = cr_std(sf, sf_avg)
+			sxA_avg = cr_mean(sxA)
+			sxA_std = cr_std(sxA, sxA_avg)
+			sxB_avg = cr_mean(sxB)
+			sxB_std = cr_std(sxB, sxB_avg)
+			ss_avg = cr_mean(ss)
+			ss_std = cr_std(ss, ss_avg)
+			successive_ss_avg = cr_mean(successive_ss)
+			successive_ss_std = cr_std(successive_ss, successive_ss_avg)
+			piA_avg = cr_mean(piA)
+			piA_std = cr_std(piA, piA_avg)
+			piB_avg = cr_mean(piB)
+			piB_std = cr_std(piB, piB_avg)
+			pearson_r_pi = cr_pearsonR(piA, piB)
+			thetaA_avg = cr_mean(thetaA)
+			thetaA_std = cr_std(thetaA, thetaA_avg)
+			thetaB_avg = cr_mean(thetaB)
+			thetaB_std = cr_std(thetaB, thetaB_avg)
+			pearson_r_theta = cr_pearsonR(thetaA, thetaB)
+			DtajA_avg = cr_mean(DtajA)
+			DtajA_std = cr_std(DtajA, DtajA_avg)
+			DtajB_avg = cr_mean(DtajB)
+			DtajB_std = cr_std(DtajB, DtajB_avg)
+			divAB_avg = cr_mean(divAB)
+			divAB_std = cr_std(divAB, divAB_avg)
+			netdivAB_avg = cr_mean(netdivAB)
+			netdivAB_std = cr_std(netdivAB, netdivAB_avg)
+			minDivAB_avg = cr_mean(minDivAB)
+			minDivAB_std = cr_std(minDivAB, minDivAB_avg)
+			maxDivAB_avg = cr_mean(maxDivAB)
+			maxDivAB_std = cr_std(maxDivAB, maxDivAB_avg)
+			Gmin_avg = cr_mean(Gmin)
+			Gmin_std = cr_std(Gmin, Gmin_avg)
+			Gmax_avg = cr_mean(Gmax)
+			Gmax_std = cr_std(Gmax, Gmax_avg)
+			FST_avg = cr_mean(FST)
+			FST_std = cr_std(FST, FST_avg)
+			pearson_r_div_netDiv = cr_pearsonR(divAB, netdivAB)
+			pearson_r_div_FST = cr_pearsonR(divAB, FST)
+			pearson_r_netDiv_FST = cr_pearsonR(netdivAB, FST)
+		else:
+			# if there are >= **threshold_sim** loci, then use a sub sampling
+			# statistics
+			bialsites_avg = cr_mean([ bialsites[sampled] for sampled in sampled_loci ])
+			bialsites_std = cr_std([ bialsites[sampled] for sampled in sampled_loci ], bialsites_avg)
+			sf_avg = cr_mean([ sf[sampled] for sampled in sampled_loci ])
+			sf_std = cr_std([ sf[sampled] for sampled in sampled_loci ], sf_avg)
+			sxA_avg = cr_mean([ sxA[sampled] for sampled in sampled_loci ])
+			sxA_std = cr_std([ sxA[sampled] for sampled in sampled_loci ], sxA_avg)
+			sxB_avg = cr_mean([ sxB[sampled] for sampled in sampled_loci ])
+			sxB_std = cr_std([ sxB[sampled] for sampled in sampled_loci ], sxB_avg)
+			ss_avg = cr_mean([ ss[sampled] for sampled in sampled_loci ])
+			ss_std = cr_std([ ss[sampled] for sampled in sampled_loci ], ss_avg)
+			successive_ss_avg = cr_mean([ successive_ss[sampled] for sampled in sampled_loci ])
+			successive_ss_std = cr_std([ successive_ss[sampled] for sampled in sampled_loci ], successive_ss_avg)
+			piA_avg = cr_mean([ piA[sampled] for sampled in sampled_loci ])
+			piA_std = cr_std([ piA[sampled] for sampled in sampled_loci ], piA_avg)
+			piB_avg = cr_mean([ piB[sampled] for sampled in sampled_loci ])
+			piB_std = cr_std([ piB[sampled] for sampled in sampled_loci ], piB_avg)
+			pearson_r_pi = cr_pearsonR([ piA[sampled] for sampled in sampled_loci ], [ piB[sampled] for sampled in sampled_loci ])
+			thetaA_avg = cr_mean([ thetaA[sampled] for sampled in sampled_loci ])
+			thetaA_std = cr_std([ thetaA[sampled] for sampled in sampled_loci ], thetaA_avg)
+			thetaB_avg = cr_mean([ thetaB[sampled] for sampled in sampled_loci ])
+			thetaB_std = cr_std([ thetaB[sampled] for sampled in sampled_loci ], thetaB_avg)
+			pearson_r_theta = cr_pearsonR([ thetaA[sampled] for sampled in sampled_loci ], [ thetaB[sampled] for sampled in sampled_loci ])
+			DtajA_avg = cr_mean([ DtajA[sampled] for sampled in sampled_loci ])
+			DtajA_std = cr_std([ DtajA[sampled] for sampled in sampled_loci ], DtajA_avg)
+			DtajB_avg = cr_mean([ DtajB[sampled] for sampled in sampled_loci ])
+			DtajB_std = cr_std([ DtajB[sampled] for sampled in sampled_loci ], DtajB_avg)
+			divAB_avg = cr_mean([ divAB[sampled] for sampled in sampled_loci ])
+			divAB_std = cr_std([ divAB[sampled] for sampled in sampled_loci ], divAB_avg)
+			netdivAB_avg = cr_mean([ netdivAB[sampled] for sampled in sampled_loci ])
+			netdivAB_std = cr_std([ netdivAB[sampled] for sampled in sampled_loci ], netdivAB_avg)
+			minDivAB_avg = cr_mean([ minDivAB[sampled] for sampled in sampled_loci ])
+			minDivAB_std = cr_std([ minDivAB[sampled] for sampled in sampled_loci ], minDivAB_avg)
+			maxDivAB_avg = cr_mean([ maxDivAB[sampled] for sampled in sampled_loci ])
+			maxDivAB_std = cr_std([ maxDivAB[sampled] for sampled in sampled_loci ], maxDivAB_avg)
+			Gmin_avg = cr_mean([ Gmin[sampled] for sampled in sampled_loci ])
+			Gmin_std = cr_std([ Gmin[sampled] for sampled in sampled_loci ], Gmin_avg)
+			Gmax_avg = cr_mean([ Gmax[sampled] for sampled in sampled_loci ])
+			Gmax_std = cr_std([ Gmax[sampled] for sampled in sampled_loci ], Gmax_avg)
+			FST_avg = cr_mean([ FST[sampled] for sampled in sampled_loci ])
+			FST_std = cr_std([ FST[sampled] for sampled in sampled_loci ], FST_avg)
+			pearson_r_div_netDiv = cr_pearsonR([ divAB[sampled] for sampled in sampled_loci ], [ netdivAB[sampled] for sampled in sampled_loci ])
+			pearson_r_div_FST = cr_pearsonR([ divAB[sampled] for sampled in sampled_loci ], [ FST[sampled] for sampled in sampled_loci ])
+			pearson_r_netDiv_FST = cr_pearsonR([ netdivAB[sampled] for sampled in sampled_loci ], [ FST[sampled] for sampled in sampled_loci ])
+			
+			# reduce the size of the bpfile (i.e, the number of simulated loci)
+			new_bpfile = bpfile_header
+			new_bpfile += '\t'.join([ str(L[sampled]) for sampled in sampled_loci ]) + '\n'
+			new_bpfile += '\t'.join([ str(nSamA[sampled]) for sampled in sampled_loci ]) + '\n'
+			new_bpfile += '\t'.join([ str(nSamB[sampled]) for sampled in sampled_loci ]) + '\n'
+			new_bpfile += '\t'.join([ str(theta[sampled]) for sampled in sampled_loci ]) + '\n'
+			new_bpfile += '\t'.join([ str(rho[sampled]) for sampled in sampled_loci ]) + '\n'
+			out_new_bpfile = open('{0}/bpfile'.format(project_name), "w")
+			out_new_bpfile.write(new_bpfile)
+			out_new_bpfile.close()
 		
 		#print("dataset {0}: {1} loci".format(nSim_cnt-1, len(ss)))
 		res = ""
