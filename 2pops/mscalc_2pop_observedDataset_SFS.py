@@ -239,7 +239,7 @@ rho = [ float(i) for i in infile.readline().strip().split("\t") ]
 infile.close()
 
 nLoci = len(L)
-threshold_sim = 100
+threshold_sim = 1000
 if nLoci < threshold_sim:
 	# if less than 1000 of loci
 	nLoci_sim = nLoci
