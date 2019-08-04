@@ -72,7 +72,8 @@ if sys.argv[1] == "SC_1M_1N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -86,12 +87,12 @@ if sys.argv[1] == "SC_1M_1N":
 	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tTsplit\tTsc\tM12\tM21\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tTsc\tM12\tM21\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], Tsc[sim], M12[sim], M21[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], Tsc[sim], M12[sim], M21[sim])
 		
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12[sim], M21[sim], N1[sim], N2[sim], Tdem1[sim], founders[sim]*Na[sim], Tdem2[sim], (1-founders[sim])*Na[sim], Tsc[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12[sim], M21[sim], N1[sim], N2[sim], Tdem1[sim], founders1[sim]*Na[sim], Tdem2[sim], founders2[sim]*Na[sim], Tsc[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -103,7 +104,8 @@ if sys.argv[1] == "SC_1M_2N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -121,9 +123,9 @@ if sys.argv[1] == "SC_1M_2N":
 	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTsc\tM12\tM21\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTsc\tM12\tM21\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tsc[sim], M12[sim], M21[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tsc[sim], M12[sim], M21[sim])
 		# vectors of size 'nLoci' containing parameters
 		scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
 		N1_vec = [ N1[sim]*i for i in scalar_N ]
@@ -131,7 +133,7 @@ if sys.argv[1] == "SC_1M_2N":
 		Na_vec = [ Na[sim]*i for i in scalar_N ]
 		
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12[sim], M21[sim], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders[sim]*Na_vec[locus], Tdem2[sim], (1-founders[sim])*Na_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12[sim], M21[sim], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -143,7 +145,8 @@ if sys.argv[1] == "SC_2M_1N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -164,9 +167,9 @@ if sys.argv[1] == "SC_2M_1N":
 	
 	
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], Tsc[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], Tsc[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
 		
 		# vectors of size 'nLoci' containing parameters
 		scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
@@ -175,7 +178,7 @@ if sys.argv[1] == "SC_2M_1N":
 		M21_vec = [ M21[sim] * i for i in scalar_M21 ]
 		
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1[sim], N2[sim], Tdem1[sim], founders[sim]*Na[sim], Tdem2[sim], (1-founders[sim])*Na[sim], Tsc[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1[sim], N2[sim], Tdem1[sim], founders1[sim]*Na[sim], Tdem2[sim], founders2[sim]*Na[sim], Tsc[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
 	
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -188,7 +191,8 @@ if sys.argv[1] == "SC_2M_2N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -212,9 +216,9 @@ if sys.argv[1] == "SC_2M_2N":
 	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 	
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tsc[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tsc[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
                 N1_vec = [ N1[sim]*i for i in scalar_N ]
@@ -228,7 +232,7 @@ if sys.argv[1] == "SC_2M_2N":
                 M21_vec = [ M21[sim] * i for i in scalar_M21 ]
 		
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders[sim]*Na_vec[locus], Tdem2[sim], (1-founders[sim])*Na_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -241,7 +245,8 @@ if sys.argv[1] == "AM_1M_1N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -255,12 +260,12 @@ if sys.argv[1] == "AM_1M_1N":
 	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tTsplit\tTam\tM12\tM21\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tTam\tM12\tM21\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], Tam[sim], M12[sim], M21[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], Tam[sim], M12[sim], M21[sim])
 		
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders[sim]*Na[sim], Tdem2[sim], (1-founders[sim])*Na[sim], Tam[sim], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders1[sim]*Na[sim], Tdem2[sim], founders2[sim]*Na[sim], Tam[sim], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -273,7 +278,8 @@ if sys.argv[1] == "AM_1M_2N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -291,9 +297,9 @@ if sys.argv[1] == "AM_1M_2N":
 	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 	
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTam\tM12\tM21\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTam\tM12\tM21\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tam[sim], M12[sim], M21[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tam[sim], M12[sim], M21[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
                 N1_vec = [ N1[sim]*i for i in scalar_N ]
@@ -301,7 +307,7 @@ if sys.argv[1] == "AM_1M_2N":
                 Na_vec = [ Na[sim]*i for i in scalar_N ]
 		
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders[sim]*Na_vec[locus], Tdem2[sim], (1-founders[sim])*Na_vec[locus], Tam[sim], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tam[sim], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -314,7 +320,8 @@ if sys.argv[1] == "AM_2M_1N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -334,9 +341,9 @@ if sys.argv[1] == "AM_2M_1N":
 	shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tTsplit\tTam\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tTam\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], Tam[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], Tam[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
 		
 		# vectors of size 'nLoci' containing parameters
                 scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
@@ -345,7 +352,7 @@ if sys.argv[1] == "AM_2M_1N":
                 M21_vec = [ M21[sim] * i for i in scalar_M21 ]
 	
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders[sim]*Na[sim], Tdem2[sim], (1-founders[sim])*Na[sim], Tam[sim], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na[sim]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders1[sim]*Na[sim], Tdem2[sim], founders2[sim]*Na[sim], Tam[sim], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na[sim]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -358,7 +365,8 @@ if sys.argv[1] == "AM_2M_2N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -382,9 +390,9 @@ if sys.argv[1] == "AM_2M_2N":
 	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTam\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTam\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tam[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tam[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
                 N1_vec = [ N1[sim]*i for i in scalar_N ]
@@ -396,7 +404,7 @@ if sys.argv[1] == "AM_2M_2N":
                 M21_vec = [ M21[sim] * i for i in scalar_M21 ]
 	
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders[sim]*Na_vec[locus], Tdem2[sim], (1-founders[sim])*Na_vec[locus], Tam[sim], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tam[sim], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -409,7 +417,8 @@ if sys.argv[1] == "IM_1M_1N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -422,13 +431,13 @@ if sys.argv[1] == "IM_1M_1N":
 	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tTsplit\tM12\tM21\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tM12\tM21\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], M12[sim], M21[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], M12[sim], M21[sim])
 		
 		for locus in range(nLoci):
 			# SC print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders[sim]*Na[sim], Tdem2[sim], (1-founders[sim])*Na[sim], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders1[sim]*Na[sim], Tdem2[sim], founders2[sim]*Na[sim], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -441,7 +450,8 @@ if sys.argv[1] == "IM_1M_2N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -458,9 +468,9 @@ if sys.argv[1] == "IM_1M_2N":
 	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 	
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tM12\tM21\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tM12\tM21\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], M12[sim], M21[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], M12[sim], M21[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
                 N1_vec = [ N1[sim]*i for i in scalar_N ]
@@ -469,7 +479,7 @@ if sys.argv[1] == "IM_1M_2N":
 		
 		for locus in range(nLoci):
 			# SC print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders[sim]*Na_vec[locus], Tdem2[sim], (1-founders[sim])*Na_vec[locus], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -482,7 +492,8 @@ if sys.argv[1] == "IM_2M_1N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -501,9 +512,9 @@ if sys.argv[1] == "IM_2M_1N":
 	shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tTsplit\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
 		
 		# vectors of size 'nLoci' containing parameters
                 scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
@@ -514,7 +525,7 @@ if sys.argv[1] == "IM_2M_1N":
 	
 		for locus in range(nLoci):
 			# SC print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders[sim]*Na[sim], Tdem2[sim], (1-founders[sim])*Na[sim], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na[sim]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders1[sim]*Na[sim], Tdem2[sim], founders2[sim]*Na[sim], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na[sim]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -527,7 +538,8 @@ if sys.argv[1] == "IM_2M_2N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## Miration rates
 	M12 = [ posterior['M12'][i] for i in used_posterior ]
@@ -550,9 +562,9 @@ if sys.argv[1] == "IM_2M_2N":
 	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
                 N1_vec = [ N1[sim]*i for i in scalar_N ]
@@ -567,7 +579,7 @@ if sys.argv[1] == "IM_2M_2N":
 
 		for locus in range(nLoci):
 			# SC print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders[sim]*Na_vec[locus], Tdem2[sim], (1-founders[sim])*Na_vec[locus], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -580,7 +592,8 @@ if sys.argv[1] == "SI_1N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## times
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
@@ -589,12 +602,12 @@ if sys.argv[1] == "SI_1N":
 	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tTsplit\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], Tsplit[sim])
 		
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders[sim]*Na[sim], Tdem2[sim], (1-founders[sim])*Na[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders1[sim]*Na[sim], Tdem2[sim], founders2[sim]*Na[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
@@ -611,7 +624,8 @@ if sys.argv[1] == "SI_2N":
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	N2 = [ posterior['N2'][i] for i in used_posterior ]
 	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders = [ posterior['founders'][i] for i in used_posterior ]
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 
 	## times
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
@@ -624,9 +638,9 @@ if sys.argv[1] == "SI_2N":
 	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tfounders\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\n"
+	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\n"
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim])
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
                 N1_vec = [ N1[sim]*i for i in scalar_N ]
@@ -634,7 +648,7 @@ if sys.argv[1] == "SI_2N":
                 Na_vec = [ Na[sim]*i for i in scalar_N ]
 	
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders[sim]*Na_vec[locus], Tdem2[sim], (1-founders[sim])*Na_vec[locus], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
