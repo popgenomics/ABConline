@@ -14,6 +14,7 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'ncores'){ ncores = as.integer(tmp[[1]][2]) } # number of cores for the random forest
 	if(tmp[[1]][1] == 'ntree'){ ntree = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'outgroup'){ outgroup = as.integer(tmp[[1]][2]) } # 0: no outgroup, no SFS used. 1: outgroup, SFS used
+	if(tmp[[1]][1] == 'population_growth'){ population_growth = tmp[[1]][2] } # constant; variable
 }
 
 outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
@@ -392,7 +393,33 @@ if(predicted_model_iso_mig$allocation=='migration'){
 		M21_iso = NULL
 		
 		Tsplit = NULL
+		
+		if(population_growth=='variable'){
+			Tdem1_mig = NULL
+			Tdem2_mig = NULL
+			founders1_mig = NULL
+			founders2_mig = NULL
+			
+			Tdem1_iso = NULL
+			Tdem2_iso = NULL
+			founders1_iso = NULL
+			founders2_iso = NULL
+		}
+		
 		for(i in 1:nrow(posterior_IM)){
+			# population growth
+			if(population_growth=='variable'){
+				Tdem1_mig = c(Tdem1_mig, rep(posterior_IM$Tdem1[i], nrep))
+				Tdem2_mig = c(Tdem2_mig, rep(posterior_IM$Tdem2[i], nrep))
+				founders1_mig = c(founders1_mig, rep(posterior_IM$founders1[i], nrep))
+				founders2_mig = c(founders2_mig, rep(posterior_IM$founders2[i], nrep))
+				
+				Tdem1_iso = c(Tdem1_iso, rep(posterior_IM$Tdem1[i], nrep))
+				Tdem2_iso = c(Tdem2_iso, rep(posterior_IM$Tdem2[i], nrep))
+				founders1_iso = c(founders1_iso, rep(posterior_IM$founders1[i], nrep))
+				founders2_iso = c(founders2_iso, rep(posterior_IM$founders2[i], nrep))
+			}
+			
 			Tsplit = c(Tsplit, rep(posterior_IM$Tsplit[i], nrep))
 			
 			# migration
@@ -424,20 +451,34 @@ if(predicted_model_iso_mig$allocation=='migration'){
 		nB_prior = rep(nB, length(Tsplit))
 		ntot = nA_prior + nB_prior
 		
-		prior_mig = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_mig, N2_mig, M12_mig, M21_mig, Tsplit, Tsplit, Na_mig)
-		prior_iso = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_iso, N2_iso, M12_iso, M21_iso, Tsplit, Tsplit, Na_iso)
-
+		if(population_growth=='variable'){
+			# msnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -en tbs 1 tbs -en tbs 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs
+			prior_mig = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_mig, N2_mig, Tdem1_mig, founders1_mig*Na_mig, Tdem2_mig, founders2_mig*Na_mig, M12_mig, M21_mig, Tsplit, Tsplit, Na_mig)
+			prior_iso = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_iso, N2_iso, Tdem1_iso, founders1_iso*Na_iso, Tdem2_iso, founders2_iso*Na_iso, M12_iso, M21_iso, Tsplit, Tsplit, Na_iso)
+		}else{
+			prior_mig = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_mig, N2_mig, M12_mig, M21_mig, Tsplit, Tsplit, Na_mig)
+			prior_iso = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_iso, N2_iso, M12_iso, M21_iso, Tsplit, Tsplit, Na_iso)
+		}
+		
 		# simulations of migration
 		# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
 		write.table(prior_mig, 'prior_mig.txt', sep='\t', col.names=F, row.names=F, quote=F)
-		commande = paste('cat prior_mig.txt | msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
+		if(population_growth=='variable'){
+			commande = paste('cat prior_mig.txt | msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -en tbs 1 tbs -en tbs 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
+		}else{
+			commande = paste('cat prior_mig.txt | msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
+		}
 		system(commande)
 		mig_ss = read.table('ABCstat.txt', h=T)
 		
 		# simulations of isolation
 		# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
 		write.table(prior_iso, 'prior_iso.txt', sep='\t', col.names=F, row.names=F, quote=F)
-		commande = paste('cat prior_iso.txt | msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
+		if(population_growth=='variable'){
+			commande = paste('cat prior_iso.txt | msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -en tbs 1 tbs -en tbs 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
+		}else{
+			commande = paste('cat prior_iso.txt | msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | mscalc_2pop.py', sep='')
+		}
 		system(commande)
 		iso_ss = read.table('ABCstat.txt', h=T)
 		

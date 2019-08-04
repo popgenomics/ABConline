@@ -22,13 +22,13 @@
     },
     "estimation" :
     {
-	"cpusPerTask" : 8,
+	"cpusPerTask" : 10,
 	"time" : "03:00:00",
 	"memPerCpu" : 5000
     },
     "estimation_best_model" :
     {
-	"cpusPerTask" : 8,
+	"cpusPerTask" : 10,
 	"time" : "03:00:00",
 	"memPerCpu" : 5000
     }

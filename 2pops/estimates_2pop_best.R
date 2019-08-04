@@ -45,7 +45,7 @@ for(model_tmp in list_models_param){
 			write(paste(param_i, as.numeric(quantile(posterior[['neural_network']][,i], 0.025))*Nref, as.numeric(quantile(posterior[['neural_network']][,i], 0.5))*Nref, as.numeric(quantile(posterior[['neural_network']][,i], 0.975))*Nref, sep='\t'), outfile, append=T)
 			write(paste(param_i, as.numeric(posterior[['random_forest']][[param_i]][['quantile025']])*Nref, as.numeric(posterior[['random_forest']][[param_i]][['expectation']])*Nref, as.numeric(posterior[['random_forest']][[param_i]][['quantile975']])*Nref, sep='\t'), outfile, append=T)
 		
-		}else if(param_i=='Tsplit' || param_i=='Tam' || param_i=='Tsc'){
+		}else if(param_i=='Tsplit' || param_i=='Tam' || param_i=='Tsc' || param_i=='Tdem1' || param_i=='Tdem2'){
 			write(paste(param_i, as.numeric(quantile(posterior[['neural_network']][,i], 0.025))*4*Nref, as.numeric(quantile(posterior[['neural_network']][,i], 0.5))*4*Nref, as.numeric(quantile(posterior[['neural_network']][,i], 0.975))*4*Nref, sep='\t'), outfile, append=T)
 			write(paste(param_i, as.numeric(posterior[['random_forest']][[param_i]][['quantile025']])*4*Nref, as.numeric(posterior[['random_forest']][[param_i]][['expectation']])*4*Nref, as.numeric(posterior[['random_forest']][[param_i]][['quantile975']])*4*Nref, sep='\t'), outfile, append=T)
 		

@@ -1,7 +1,7 @@
 nmultilocus = 1000 # number of multilocus simulations per iteration (500)
 nIterations_model_comp = 10 # number of subdirectories for the simulations used in the RF model comparison
-nIterations_estim = 2000 # number of subdirectories for the simulations used in the nnet param estimates (2000)
-nIterations_gof = 200 # number of subdirectories for the simulations used in the nnet param estimates (200)
+nIterations_estim = 1000 # number of subdirectories for the simulations used in the nnet param estimates (2000)
+nIterations_gof = 50 # number of subdirectories for the simulations used in the nnet param estimates (200)
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
 ntree = 2000 # number of tree for the random forest (RF) model comparison
 
@@ -192,7 +192,7 @@ rule modelComparison:
 		"""
 #		module load conda
 #		source activate R_env
-		model_comp_2pop_allModels.R nameA={nameA} nameB={nameB} timeStamp={timeStamp} nMin={nMin} sub_dir_sim=modelComp nSubdir={nIterations_model_comp} ntree={ntree} ncores={nCPU_R} outgroup={outgroup}
+		model_comp_2pop_allModels.R nameA={nameA} nameB={nameB} timeStamp={timeStamp} nMin={nMin} sub_dir_sim=modelComp nSubdir={nIterations_model_comp} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} population_growth={population_growth}
 		"""
 
 rule estimation:
