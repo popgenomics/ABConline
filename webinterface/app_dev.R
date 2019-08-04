@@ -20,6 +20,7 @@ library(plotly)
 library(viridis)
 library(RColorBrewer)
 
+
 pvalue = function(distribution, obs){
 	obs = as.numeric(obs)
 	distribution = as.numeric(distribution)
@@ -1272,6 +1273,12 @@ server <- function(input, output, session = session) {
 			sfs_name = paste(rootName, "/gof/gof_sfs.txt", sep='')
 			
 			table_sfs = read.table(sfs_name, h=T)
+		
+			## inelegant way to remove 'useless' bins...
+			table_sfs[4,which(log10(table_sfs[1,])==-Inf)] = NA
+			table_sfs[3,which(log10(table_sfs[1,])==-Inf)] = NA
+			## end ot the inelegant block
+			
 			system(paste('rm -rf ', rootName, sep=''))
 			return(table_sfs)
 		}
