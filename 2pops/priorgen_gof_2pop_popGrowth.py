@@ -83,8 +83,8 @@ if sys.argv[1] == "SC_1M_1N":
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 	Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tTsc\tM12\tM21\n"
@@ -115,8 +115,8 @@ if sys.argv[1] == "SC_1M_2N":
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 	Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
@@ -156,8 +156,8 @@ if sys.argv[1] == "SC_2M_1N":
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 	Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
@@ -202,8 +202,8 @@ if sys.argv[1] == "SC_2M_2N":
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 	Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
@@ -256,8 +256,8 @@ if sys.argv[1] == "AM_1M_1N":
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 	Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tTam\tM12\tM21\n"
@@ -289,8 +289,8 @@ if sys.argv[1] == "AM_1M_2N":
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 	Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
@@ -331,8 +331,8 @@ if sys.argv[1] == "AM_2M_1N":
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 	Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
@@ -376,8 +376,8 @@ if sys.argv[1] == "AM_2M_2N":
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 	Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
@@ -427,8 +427,8 @@ if sys.argv[1] == "IM_1M_1N":
 	## times
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tM12\tM21\n"
@@ -460,8 +460,8 @@ if sys.argv[1] == "IM_1M_2N":
 	## times
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
@@ -502,8 +502,8 @@ if sys.argv[1] == "IM_2M_1N":
 	## times
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
@@ -548,8 +548,8 @@ if sys.argv[1] == "IM_2M_2N":
 	## times
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
@@ -598,8 +598,8 @@ if sys.argv[1] == "SI_1N":
 	## times
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\n"
@@ -630,8 +630,8 @@ if sys.argv[1] == "SI_2N":
 	## times
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 
-	Tdem1 = [ posterior['Tdem1'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]

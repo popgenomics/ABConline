@@ -13,6 +13,7 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'outgroup'){ outgroup = as.integer(tmp[[1]][2]) } # 0: no outgroup, no SFS used. 1: outgroup, SFS used
 	if(tmp[[1]][1] == 'bestModel'){ bestModel = tmp[[1]][2] } # name of the best model
 	if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] } # name of timeStamp
+	if(tmp[[1]][1] == 'nPosterior'){ nPosterior = as.integer(tmp[[1]][2]) }
 }
 
 outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
@@ -37,7 +38,7 @@ options(digits=5)
 list_models_param = c(bestModel)
 for(model_tmp in list_models_param){
 	write(paste('\n#####\n\nparameters of model using neural_network (upper lines) and random_forest (lower lines): ', model_tmp, sep=''), outfile, append=T)
-	posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model='best_model', sub_dir_model='bestModel')
+	posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model='best_model', sub_dir_model='bestModel', nPosterior=nPosterior, figure=F)
 	write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
 	for(i in 1:ncol(posterior[['neural_network']])){
 		param_i = colnames(posterior[['neural_network']])[i]

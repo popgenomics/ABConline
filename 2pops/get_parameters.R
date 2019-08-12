@@ -234,7 +234,7 @@ babar<-function(a,b,space=2,breaks="auto",AL=0.5,nameA="A",nameB="B",xl="",yl=""
 #}
 
 
-get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model){
+get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model, nPosterior, figure){
 	library(data.table)
 	options(digits=5)
 	###################
@@ -400,7 +400,7 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 	transf_obs = rep("logit", ncol(params_sim[[model]]))
 	bb = rbind(apply(x, MARGIN=2, FUN="min"), apply(x, MARGIN=2, FUN="max"))
 	#res2 = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=1000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=10*ncol(x), trace=T)
-	res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=1500/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
+	res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=nPosterior/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
 
 	posterior = res$x
 	colnames(posterior) = colnames(params_sim[[model]])
@@ -410,46 +410,48 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 	res_tot[['random_forest']] = res_rf
 	res_tot[['neural_network']] = posterior	
 
-	# plot pdf	
-	library(ggplot2)
-	library(ggpubr)
-	theme_set(theme_classic())
-	figure = list()
+	# plot pdf
+	if(figure==T){
+		library(ggplot2)
+		library(ggpubr)
+		theme_set(theme_classic())
+		figure = list()
 
-	for(i in 1:nparams){
-		param_name = colnames(params_sim[[model]])[i]
-		
-		scale = 1
-		if(param_name == 'N1' || param_name == 'N2' || param_name == 'Na'){
-			scale = Nref
-		}else if(param_name == 'Tsplit' || param_name == 'Tam' || param_name == 'Tsc' || param_name == 'Tdem1' || param_name == 'Tdem2'){ scale = 4*Nref }
-		
-		prior = x[,i] * scale
-		posterior = res$x[,i] * scale
-		prior = data.frame(x = prior, label=rep('prior', length(prior)))
-		posterior = data.frame(x = posterior, label=rep('posterior', length(posterior)))
-		df=rbind(prior, posterior)
+		for(i in 1:nparams){
+			param_name = colnames(params_sim[[model]])[i]
+			
+			scale = 1
+			if(param_name == 'N1' || param_name == 'N2' || param_name == 'Na'){
+				scale = Nref
+			}else if(param_name == 'Tsplit' || param_name == 'Tam' || param_name == 'Tsc' || param_name == 'Tdem1' || param_name == 'Tdem2'){ scale = 4*Nref }
+			
+			prior = x[,i] * scale
+			posterior = res$x[,i] * scale
+			prior = data.frame(x = prior, label=rep('prior', length(prior)))
+			posterior = data.frame(x = posterior, label=rep('posterior', length(posterior)))
+			df=rbind(prior, posterior)
 
-		rf_estimate = as.numeric(res_rf[[param_name]][['expectation']]) * scale
-		rf_estimate_inf = as.numeric(res_rf[[param_name]][['quantile025']]) * scale
-		rf_estimate_sup = as.numeric(res_rf[[param_name]][['quantile975']]) * scale
-		
-		
-		pp = ggdensity(df, x='x', fill='label') +
-			theme(axis.text=element_text(size=15), axis.title=element_text(size=15), legend.text=element_text(size=15)) +
-			geom_vline(xintercept = rf_estimate, color = "black", size=1.25) +
-			geom_vline(xintercept = rf_estimate_inf, color = "black", size=0.25, linetype="dashed") +
-			geom_vline(xintercept = rf_estimate_sup, color = "black", size=0.25, linetype="dashed") +
-			labs(fill = "") +
-			scale_x_continuous(name = param_name) +
-			scale_y_continuous(name = 'density') +
-			scale_fill_manual(values = c("#f7f7f7", "#f1a340"))
-		
-		figure[[param_name]] = pp
+			rf_estimate = as.numeric(res_rf[[param_name]][['expectation']]) * scale
+			rf_estimate_inf = as.numeric(res_rf[[param_name]][['quantile025']]) * scale
+			rf_estimate_sup = as.numeric(res_rf[[param_name]][['quantile975']]) * scale
+			
+			
+			pp = ggdensity(df, x='x', fill='label') +
+				theme(axis.text=element_text(size=15), axis.title=element_text(size=15), legend.text=element_text(size=15)) +
+				geom_vline(xintercept = rf_estimate, color = "black", size=1.25) +
+				geom_vline(xintercept = rf_estimate_inf, color = "black", size=0.25, linetype="dashed") +
+				geom_vline(xintercept = rf_estimate_sup, color = "black", size=0.25, linetype="dashed") +
+				labs(fill = "") +
+				scale_x_continuous(name = param_name) +
+				scale_y_continuous(name = 'density') +
+				scale_fill_manual(values = c("#f7f7f7", "#f1a340"))
+			
+			figure[[param_name]] = pp
+		}
+		ggarrange(plotlist=figure, common.legend = TRUE, labels='AUTO', align='hv')
+		ggsave(paste(timeStamp, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.pdf', sep=''), bg='white', width=20, height=10)
 	}
-	ggarrange(plotlist=figure, common.legend = TRUE, labels='AUTO', align='hv')
-	ggsave(paste(timeStamp, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.pdf', sep=''), bg='white', width=20, height=10)
-
+	
 	# retur inferences	
 	return(res_tot)
 }
