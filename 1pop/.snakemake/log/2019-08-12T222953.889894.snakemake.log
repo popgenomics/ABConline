@@ -1,0 +1,139 @@
+Building DAG of jobs...
+Provided cores: 7
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	RNAseqFGT
+	1	estimation_best_model
+	1	fasta2ABC_1pop
+	1	gof
+	1	modelComparison
+	1	simulation_best_model
+	1	simulation_gof
+	6	simulationsModelComp
+	1	targets
+	14
+
+rule fasta2ABC_1pop:
+    input: /home/croux/Documents/ABConline/all_loci.fasta
+    output: Ng4PymB1dy/general_infos.txt, Ng4PymB1dy/ABCjsfs.txt, Ng4PymB1dy/ABCstat_global.txt, Ng4PymB1dy/ABCstat_loci.txt, Ng4PymB1dy/bpfile, Ng4PymB1dy/nLoci.txt, Ng4PymB1dy/chi_infos.txt, Ng4PymB1dy/chi.ms
+    jobid: 3
+    threads: 7
+
+
+		x=$(date)
+		fasta2ABC_1pop.py /home/croux/Documents/ABConline/all_loci.fasta Ng4PymB1dy chi num coding 30 0.1 12 3e-09 1
+		echo "nSpecies,"1>Ng4PymB1dy/general_infos.txt
+		echo "nameA,"chi>>Ng4PymB1dy/general_infos.txt
+		y=$( cat Ng4PymB1dy/nLoci.txt )
+		echo "nLoci,"${y}>>Ng4PymB1dy/general_infos.txt
+		echo "mail,"test@gmail.com>>Ng4PymB1dy/general_infos.txt
+		echo "date,"${x}>>Ng4PymB1dy/general_infos.txt
+		
+Finished job 3.
+1 of 14 steps (7%) done
+
+rule simulationsModelComp:
+    input: Ng4PymB1dy/bpfile, Ng4PymB1dy/nLoci.txt
+    output: Ng4PymB1dy/modelComp/Discrete_2N_0/bpfile, Ng4PymB1dy/modelComp/Discrete_2N_0/priorfile.txt, Ng4PymB1dy/modelComp/Discrete_2N_0/ABCstat.txt
+    jobid: 9
+    wildcards: timeStamp=Ng4PymB1dy, model=Discrete_2N, i=0
+
+
+		submit_simulations_1pop.py 1 1000 0 Discrete_2N chi modelComp Discrete_2N /home/croux/Documents/ABConline/1pop/config.yaml Ng4PymB1dy
+		
+rule simulationsModelComp:
+    input: Ng4PymB1dy/bpfile, Ng4PymB1dy/nLoci.txt
+    output: Ng4PymB1dy/modelComp/Constant_2N_0/bpfile, Ng4PymB1dy/modelComp/Constant_2N_0/priorfile.txt, Ng4PymB1dy/modelComp/Constant_2N_0/ABCstat.txt
+    jobid: 10
+    wildcards: timeStamp=Ng4PymB1dy, model=Constant_2N, i=0
+
+
+		submit_simulations_1pop.py 1 1000 0 Constant_2N chi modelComp Constant_2N /home/croux/Documents/ABConline/1pop/config.yaml Ng4PymB1dy
+		
+rule simulationsModelComp:
+    input: Ng4PymB1dy/bpfile, Ng4PymB1dy/nLoci.txt
+    output: Ng4PymB1dy/modelComp/Expo_1N_0/bpfile, Ng4PymB1dy/modelComp/Expo_1N_0/priorfile.txt, Ng4PymB1dy/modelComp/Expo_1N_0/ABCstat.txt
+    jobid: 11
+    wildcards: timeStamp=Ng4PymB1dy, model=Expo_1N, i=0
+
+
+		submit_simulations_1pop.py 1 1000 0 Expo_1N chi modelComp Expo_1N /home/croux/Documents/ABConline/1pop/config.yaml Ng4PymB1dy
+		
+rule simulationsModelComp:
+    input: Ng4PymB1dy/bpfile, Ng4PymB1dy/nLoci.txt
+    output: Ng4PymB1dy/modelComp/Expo_2N_0/bpfile, Ng4PymB1dy/modelComp/Expo_2N_0/priorfile.txt, Ng4PymB1dy/modelComp/Expo_2N_0/ABCstat.txt
+    jobid: 7
+    wildcards: timeStamp=Ng4PymB1dy, model=Expo_2N, i=0
+
+
+		submit_simulations_1pop.py 1 1000 0 Expo_2N chi modelComp Expo_2N /home/croux/Documents/ABConline/1pop/config.yaml Ng4PymB1dy
+		
+rule RNAseqFGT:
+    input: Ng4PymB1dy/chi_infos.txt, /home/croux/Documents/ABConline/all_loci.fasta, Ng4PymB1dy/nLoci.txt
+    output: Ng4PymB1dy/results_recombination.txt
+    jobid: 5
+
+
+		x=$(cat Ng4PymB1dy/chi_infos.txt  | grep -v locusName | awk '{print $2}' | sort -n | tail -n1)
+		if (($x<99990)); then
+			RNAseqFGT /home/croux/Documents/ABConline/all_loci.fasta Ng4PymB1dy/results_recombination.txt
+		else
+			echo "/home/croux/Documents/ABConline/all_loci.fasta not in correct FASTA format (line length > 100000)" > Ng4PymB1dy/results_recombination.txt
+		fi
+		
+rule simulationsModelComp:
+    input: Ng4PymB1dy/bpfile, Ng4PymB1dy/nLoci.txt
+    output: Ng4PymB1dy/modelComp/Discrete_1N_0/bpfile, Ng4PymB1dy/modelComp/Discrete_1N_0/priorfile.txt, Ng4PymB1dy/modelComp/Discrete_1N_0/ABCstat.txt
+    jobid: 6
+    wildcards: timeStamp=Ng4PymB1dy, model=Discrete_1N, i=0
+
+
+		submit_simulations_1pop.py 1 1000 0 Discrete_1N chi modelComp Discrete_1N /home/croux/Documents/ABConline/1pop/config.yaml Ng4PymB1dy
+		
+rule simulationsModelComp:
+    input: Ng4PymB1dy/bpfile, Ng4PymB1dy/nLoci.txt
+    output: Ng4PymB1dy/modelComp/Constant_1N_0/bpfile, Ng4PymB1dy/modelComp/Constant_1N_0/priorfile.txt, Ng4PymB1dy/modelComp/Constant_1N_0/ABCstat.txt
+    jobid: 8
+    wildcards: timeStamp=Ng4PymB1dy, model=Constant_1N, i=0
+
+
+		submit_simulations_1pop.py 1 1000 0 Constant_1N chi modelComp Constant_1N /home/croux/Documents/ABConline/1pop/config.yaml Ng4PymB1dy
+		
+Finished job 10.
+2 of 14 steps (14%) done
+Finished job 8.
+3 of 14 steps (21%) done
+Finished job 9.
+4 of 14 steps (29%) done
+Finished job 6.
+5 of 14 steps (36%) done
+Finished job 7.
+6 of 14 steps (43%) done
+Finished job 11.
+7 of 14 steps (50%) done
+Finished job 5.
+8 of 14 steps (57%) done
+
+rule modelComparison:
+    input: Ng4PymB1dy/ABCstat_global.txt, Ng4PymB1dy/ABCstat_loci.txt, Ng4PymB1dy/modelComp/Constant_1N_0/ABCstat.txt, Ng4PymB1dy/modelComp/Constant_2N_0/ABCstat.txt, Ng4PymB1dy/modelComp/Discrete_1N_0/ABCstat.txt, Ng4PymB1dy/modelComp/Discrete_2N_0/ABCstat.txt, Ng4PymB1dy/modelComp/Expo_1N_0/ABCstat.txt, Ng4PymB1dy/modelComp/Expo_2N_0/ABCstat.txt
+    output: Ng4PymB1dy/modelComp/report_chi.txt, Ng4PymB1dy/modelComp/locus_specific_modelComp.txt, Ng4PymB1dy/modelComp/best_model.txt, Ng4PymB1dy/modelComp/hierarchical_models.txt, Ng4PymB1dy/sfs_plot.pdf, Ng4PymB1dy/sfs_table.txt
+    jobid: 1
+    threads: 7
+
+
+		model_comp_1pop_allModels.R nameA=chi timeStamp=Ng4PymB1dy nMin=12 sub_dir_sim=modelComp nSubdir=1 ntree=2000 ncores=8 outgroup=1
+		
+Error in rule modelComparison:
+    jobid: 1
+    output: Ng4PymB1dy/modelComp/report_chi.txt, Ng4PymB1dy/modelComp/locus_specific_modelComp.txt, Ng4PymB1dy/modelComp/best_model.txt, Ng4PymB1dy/modelComp/hierarchical_models.txt, Ng4PymB1dy/sfs_plot.pdf, Ng4PymB1dy/sfs_table.txt
+
+RuleException:
+CalledProcessError in line 148 of /home/croux/Documents/ABConline/1pop/Snakefile:
+Command '  
+		model_comp_1pop_allModels.R nameA=chi timeStamp=Ng4PymB1dy nMin=12 sub_dir_sim=modelComp nSubdir=1 ntree=2000 ncores=8 outgroup=1 ' returned non-zero exit status 127.
+  File "/home/croux/Documents/ABConline/1pop/Snakefile", line 148, in __rule_modelComparison
+  File "/usr/lib/python3.6/concurrent/futures/thread.py", line 56, in run
+Will exit after finishing currently running jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2019-08-12T222953.889894.snakemake.log
