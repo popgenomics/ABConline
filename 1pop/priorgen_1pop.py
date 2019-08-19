@@ -9,7 +9,8 @@ from numpy.random import beta
 from numpy import log
 from random import shuffle
 help = "\t\033[1;31;40mTakes one model specifier, a number of multilocus simulations and a config.yaml file containing prior boundaries as arguments:\033[0m\n\t\t"
-help += "\n\t\t".join(["Constant_1N", "Constant_2N", "Discrete_1N", "Discrete_2N", "Expo_1N", "Expo_2N"])
+#help += "\n\t\t".join(["Constant_1N", "Constant_2N", "Discrete_1N", "Discrete_2N", "Expo_1N", "Expo_2N"])
+help += "\n\t\t".join(["Constant_1N", "Constant_2N", "Expansion_1N", "Expansion_2N", "Contraction_1N", "Contraction_2N"])
 help += "\n\n"
 help += "\t\033[1;32;40m#Constant\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs\n"
 help += "\t\033[1;32;40m#Discrete\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -eN tbs tbs\n"
@@ -211,6 +212,117 @@ if sys.argv[1] == "Expo_2N":
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}".format(nsamA[locus], theta[locus]*N[sim]*scalar_N[locus], rho[locus]*N[sim], L[locus], alpha[sim], T[sim], T[sim], Nanc[sim]))
+	outfile = open("priorfile.txt", "w")
+	outfile.write(priorfile)
+	outfile.close()
+
+
+if sys.argv[1] == "Expansion_1N":
+	# msnsam tbs 10000 -t tbs -r tbs tbs -eN tbs tbs
+	# nsamA theta 
+	# param multilocus: values that will be printed in priorfile.txt
+	## N = N_pop_i / Nref
+	N = uniform(low = N_bound[0], high = N_bound[1], size = nMultilocus)
+	theta = [ 4*L[i]*mu[i] for i in range(nLoci) ] # vector of theta/N
+	rho = [ 4*L[i]*rec[i] for i in range(nLoci) ] # vector of rho/N
+	
+	T_tmp = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
+	T = [ T_tmp[i]/(4.0*N[i]) for i in range(nMultilocus) ]
+	
+	Nanc_tmp = [ uniform(low = N_bound[0], high = 0.5*i, size = 1)[0] for i in N ]
+	Nanc = [ Nanc_tmp[i]/(1.0*N[i]) for i in range(nMultilocus) ]
+	
+	# param monolocus: values that will be read by ms
+	priorfile = "N\tNpast\tTdem\n"
+	for sim in range(nMultilocus):
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\n".format(N[sim], Nanc[sim]*N[sim], T[sim]*4*N[sim])
+		for locus in range(nLoci):
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(nsamA[locus], theta[locus]*N[sim], rho[locus]*N[sim], L[locus], T[sim], Nanc[sim]))
+	outfile = open("priorfile.txt", "w")
+	outfile.write(priorfile)
+	outfile.close()
+
+if sys.argv[1] == "Expansion_2N":
+	# msnsam tbs 10000 -t tbs -r tbs tbs -eN tbs tbs
+	# nsamA theta 
+	# param multilocus: values that will be printed in priorfile.txt
+	## N = N_pop_i / Nref
+	N = uniform(low = N_bound[0], high = N_bound[1], size = nMultilocus)
+	theta = [ 4*L[i]*mu[i] for i in range(nLoci) ] # vector of theta/N
+	rho = [ 4*L[i]*rec[i] for i in range(nLoci) ] # vector of rho/N
+	
+	## bf = factor of local reduction in Ne. Model of "background selection"
+        shape_N_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
+        shape_N_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
+	
+	T_tmp = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
+	T = [ T_tmp[i]/(4.0*N[i]) for i in range(nMultilocus) ]
+	
+	Nanc_tmp = [ uniform(low = N_bound[0], high = 0.5*i, size = 1)[0] for i in N ]
+	Nanc = [ Nanc_tmp[i]/(1.0*N[i]) for i in range(nMultilocus) ]
+	
+	# param monolocus: values that will be read by ms
+	priorfile = "N\tNpast\tshape_N_a\tshape_N_b\tTdem\n"
+	for sim in range(nMultilocus):
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\n".format(N[sim], Nanc[sim]*N[sim], shape_N_a[sim], shape_N_b[sim], T[sim]*4*N[sim])
+                scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
+		for locus in range(nLoci):
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(nsamA[locus], theta[locus]*N[sim]*scalar_N[locus], rho[locus]*N[sim], L[locus], T[sim], Nanc[sim]))
+	outfile = open("priorfile.txt", "w")
+	outfile.write(priorfile)
+	outfile.close()
+
+if sys.argv[1] == "Contraction_1N":
+	# msnsam tbs 10000 -t tbs -r tbs tbs -eN tbs tbs
+	# nsamA theta 
+	# param multilocus: values that will be printed in priorfile.txt
+	## N = N_pop_i / Nref
+	Nanc_tmp = uniform(low = N_bound[0], high = N_bound[1], size = nMultilocus)
+	theta = [ 4*L[i]*mu[i] for i in range(nLoci) ] # vector of theta/N
+	rho = [ 4*L[i]*rec[i] for i in range(nLoci) ] # vector of rho/N
+	
+	T_tmp = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
+	
+	N = [ uniform(low = N_bound[0], high = 0.5*i, size = 1)[0] for i in Nanc_tmp ]
+	Nanc = [ Nanc_tmp[i]/(1.0*N[i]) for i in range(nMultilocus) ]
+	T = [ T_tmp[i]/(4.0*N[i]) for i in range(nMultilocus) ]
+	
+	# param monolocus: values that will be read by ms
+	priorfile = "N\tNpast\tTdem\n"
+	for sim in range(nMultilocus):
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\n".format(N[sim], Nanc[sim]*N[sim], T[sim]*4*N[sim])
+		for locus in range(nLoci):
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(nsamA[locus], theta[locus]*N[sim], rho[locus]*N[sim], L[locus], T[sim], Nanc[sim]))
+	outfile = open("priorfile.txt", "w")
+	outfile.write(priorfile)
+	outfile.close()
+
+if sys.argv[1] == "Contraction_2N":
+	# msnsam tbs 10000 -t tbs -r tbs tbs -eN tbs tbs
+	# nsamA theta 
+	# param multilocus: values that will be printed in priorfile.txt
+	## N = N_pop_i / Nref
+	Nanc_tmp = uniform(low = N_bound[0], high = N_bound[1], size = nMultilocus)
+	theta = [ 4*L[i]*mu[i] for i in range(nLoci) ] # vector of theta/N
+	rho = [ 4*L[i]*rec[i] for i in range(nLoci) ] # vector of rho/N
+	
+	## bf = factor of local reduction in Ne. Model of "background selection"
+        shape_N_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
+        shape_N_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
+	
+	T_tmp = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
+	
+	N = [ uniform(low = N_bound[0], high = 0.5*i, size = 1)[0] for i in Nanc_tmp ]
+	Nanc = [ Nanc_tmp[i]/(1.0*N[i]) for i in range(nMultilocus) ]
+	T = [ T_tmp[i]/(4.0*N[i]) for i in range(nMultilocus) ]
+	
+	# param monolocus: values that will be read by ms
+	priorfile = "N\tNpast\tshape_N_a\tshape_N_b\tTdem\n"
+	for sim in range(nMultilocus):
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\n".format(N[sim], Nanc[sim]*N[sim], shape_N_a[sim], shape_N_b[sim], T[sim]*4*N[sim])
+                scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
+		for locus in range(nLoci):
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(nsamA[locus], theta[locus]*N[sim]*scalar_N[locus], rho[locus]*N[sim], L[locus], T[sim], Nanc[sim]))
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
 	outfile.close()

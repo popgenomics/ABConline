@@ -6,7 +6,8 @@ nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
 ntree = 2000 # number of tree for the random forest (RF) model comparison
 
 
-MODELS_COMP = ['Constant_1N', 'Constant_2N', 'Discrete_1N', 'Discrete_2N', 'Expo_1N', 'Expo_2N']
+#MODELS_COMP = ['Constant_1N', 'Constant_2N', 'Discrete_1N', 'Discrete_2N', 'Expo_1N', 'Expo_2N']
+MODELS_COMP = ['Constant_1N', 'Constant_2N', 'Expansion_1N', 'Expansion_2N', 'Contraction_1N', 'Contraction_2N']
 ITERATIONS_MODEL_COMP = range(nIterations_model_comp)
 ITERATIONS_ESTIMATES = range(nIterations_estim)
 ITERATIONS_GOF = range(nIterations_gof)

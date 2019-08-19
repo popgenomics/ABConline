@@ -12,6 +12,6 @@ nMin: 12
 mu: 0.000000003
 rho_over_theta: 1
 N_min: 0
-N_max: 200000
+N_max: 10000000
 Tchanges_min: 0
-Tchanges_max: 200000
+Tchanges_max: 1000000

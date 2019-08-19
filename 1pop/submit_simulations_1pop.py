@@ -38,6 +38,10 @@ if "Discrete" in model:
 	mscommand = "-t tbs -r tbs tbs -eN tbs tbs"
 if "Expo" in model:
 	mscommand = "-t tbs -r tbs tbs -G tbs -eG tbs 0.0 -eN tbs tbs"
+if "Contraction" in model:
+	mscommand = "-t tbs -r tbs tbs -eN tbs tbs"
+if "Expansion" in model:
+	mscommand = "-t tbs -r tbs tbs -eN tbs tbs"
 
 if mscommand == "":
 	print("You specified a wrong model: Constant_x, Discrete_x or Expo_x\n")
