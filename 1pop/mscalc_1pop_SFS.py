@@ -172,7 +172,9 @@ nSim_cnt = 0 # count the number of treated multilocus simulations
 nLoci_cnt = 0 # count the number of treated loci within a simulation
 
 #for line in infile:
+prout=0
 for line in sys.stdin: # read the ms's output from the stdin
+	prout+=1
 	line = line.strip()
 	if "segsites" in line:
 		if nLoci_cnt == 0:
@@ -218,15 +220,16 @@ for line in sys.stdin: # read the ms's output from the stdin
 					for SNPi in range(len(tmpA['nDer'])):
 						nDerA = int(tmpA['nDer'][SNPi]) # number of copies of the derived allele in pop A
 						nAncA = nSamA[nLoci_cnt - 1] - nDerA # number of copies of the ancestral allele in pop A
-						if outgroup == 1:
-							# unfolded sfs
-							sfs[nDerA] += 1 # can use the orientation
-						else:
-							# folded sfs : use the minor allele frequency
-							if nDerA <= nAncA: # if the allele labeled 0 is the major one
-								sfs[nDerA] += 1.0 # can use the orientation
+						if nDerA < len(sfs):
+							if outgroup == 1:
+								# unfolded sfs
+								sfs[nDerA] += 1 # can use the orientation
 							else:
-								sfs[nAncA] += 1.0
+								# folded sfs : use the minor allele frequency
+								if nDerA <= nAncA: # if the allele labeled 0 is the major one
+									sfs[nDerA] += 1.0 # can use the orientation
+								else:
+									sfs[nAncA] += 1.0
 
 					
 	# compute average and std over of statistics over loci

@@ -1,10 +1,10 @@
 nmultilocus = 1000 # number of multilocus simulations per iteration (500)
-nIterations_model_comp = 5 # number of subdirectories for the simulations used in the RF model comparison
-nIterations_estim = 1 # number of subdirectories for the simulations used in the nnet param estimates (2000)
+nIterations_model_comp = 10 # number of subdirectories for the simulations used in the RF model comparison
+nIterations_estim = 50 # number of subdirectories for the simulations used in the nnet param estimates (1999)
 nIterations_gof = 1 # number of subdirectories for the simulations used in the nnet param estimates (200)
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
 ntree = 2000 # number of tree for the random forest (RF) model comparison
-
+nPosterior = 1000
 
 #MODELS_COMP = ['Constant_1N', 'Constant_2N', 'Discrete_1N', 'Discrete_2N', 'Expo_1N', 'Expo_2N']
 MODELS_COMP = ['Constant_1N', 'Constant_2N', 'Expansion_1N', 'Expansion_2N', 'Contraction_1N', 'Contraction_2N']
@@ -47,7 +47,6 @@ rule targets:
 		expand("{timeStamp}/modelComp/report_{nameA}.txt", timeStamp=timeStamp, nameA=nameA),
 		expand("{timeStamp}/modelComp/best_model.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/modelComp/hierarchical_models.txt", timeStamp=timeStamp),
-		expand("{timeStamp}/modelComp/locus_specific_modelComp.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/best_model/report_{nameA}.txt", timeStamp=timeStamp, nameA=nameA),
 		expand("{timeStamp}/best_model/posterior_bestModel.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/best_model/posterior_bestModel.pdf", timeStamp=timeStamp),
@@ -139,7 +138,6 @@ rule modelComparison:
 		expand("{timeStamp}/modelComp/{model}_{i}/ABCstat.txt", timeStamp=timeStamp, model=MODELS_COMP, i=ITERATIONS_MODEL_COMP)
 	output:
 		expand("{timeStamp}/modelComp/report_{nameA}.txt", timeStamp=timeStamp, nameA=nameA),
-		expand("{timeStamp}/modelComp/locus_specific_modelComp.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/modelComp/best_model.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/modelComp/hierarchical_models.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/sfs_plot.pdf", timeStamp=timeStamp),
@@ -180,8 +178,9 @@ rule estimation_best_model:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		estimates_1pop_best.R nameA={nameA} nMin={nMin} sub_dir_sim=best_model nSubdir={nIterations_estim} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp}
+		estimates_1pop_best.R nameA={nameA} nMin={nMin} sub_dir_sim=best_model nSubdir={nIterations_estim} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior}
 		"""
+
 rule simulation_gof:
 	params:
 		nmultilocus={nmultilocus}
