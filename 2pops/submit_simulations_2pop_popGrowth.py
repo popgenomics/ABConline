@@ -19,7 +19,6 @@ sub_dir_model = sys.argv[8] # name of the sub_sub_dir containing ABCstat.txt
 config_yaml = sys.argv[9]
 timeStamp = sys.argv[10]
 
-print(model)
 path = os.getcwd() + '/{0}'.format(timeStamp)
 
 test_bpfile = os.path.isfile('{0}/bpfile'.format(path))
@@ -46,13 +45,13 @@ if mscommand == "":
 	print("You specified a wrong model: SI_x, AM_x, AM_x or SC_x\n")
 	sys.exit()
 
-tmp = "mkdir {0}/{1}; ".format(path, sub_dir_sim)
-tmp += "mkdir {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
-tmp += "cp {0}/bpfile {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
+#tmp = "mkdir {0}/{1}; ".format(path, sub_dir_sim)
+#tmp += "mkdir {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
+tmp = "cp {0}/bpfile {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 #tmp += "priorgen_2pop.py {0} {1} {2} | msnsam tbs {3} {4} | mscalc_2pop_SFS.py {5}".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand, outgroup)
 tmp += "priorgen_2pop_popGrowth.py {0} {1} {2} | msnsam tbs {3} {4} | mscalc_2pop_SFS.py {5}".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand, outgroup)
 tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=02:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, iteration, tmp)
-print(tmp)
+
 os.system(tmp) # to submit the job using slurm
 
