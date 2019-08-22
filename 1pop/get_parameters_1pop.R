@@ -293,7 +293,7 @@ get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPost
 	# RANDOM FOREST	
 	library(abcrf)
 	sim_training = 1:5000 # in case of debug
-	params_model_rf = params_sim[sim_training,] # in case of debug
+	params_model_rf = as.matrix(params_sim[sim_training,]) # in case of debug
 	stats_model_rf = ss_sim[sim_training,] # in case of debug
 
 	res_rf = list()
@@ -316,10 +316,22 @@ get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPost
 	library('nnet')
 	
 	target = matrix(obs, nrow=1, ncol=length(obs))
-
-	x = matrix(as.numeric(unlist(params_sim)), byrow=F, ncol=ncol(params_sim))
-
 	sumstat = cbind(ss_sim_tmp, sfs_sim_tmp) # with SFS
+
+	
+	toRemove=NULL
+	for(i in 1:ncol(sumstat)){
+		if(sd(sumstat[,i])==0){
+			toRemove = c(toRemove, i)
+		}
+	}
+	
+	if(is.null(toRemove)==FALSE){
+		target = matrix(target[, -toRemove], nrow=1)
+		sumstat = sumstat[, -toRemove]
+	}
+		
+	x = matrix(as.numeric(unlist(params_sim)), byrow=F, ncol=ncol(params_sim))
 	transf_obs = rep("logit", ncol(params_sim))
 	bb = rbind(apply(x, MARGIN=2, FUN="min"), apply(x, MARGIN=2, FUN="max"))
 	#res2 = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=1000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=10*ncol(x), trace=T)

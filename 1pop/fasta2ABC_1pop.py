@@ -351,8 +351,8 @@ if nameOut == 'NA':
 				
 				bpfile_L2.append(int(ceil(nSites)))
 				bpfile_L3.append(nA)
-				bpfile_L4.append(4*mu*nSites) # 
-				bpfile_L5.append(4*mu*nSites*rho_over_theta)
+				bpfile_L4.append(mu) #
+				bpfile_L5.append(mu)
 					
 				# informations about locus
 				res = "{0}\t{1}\t{2}\t{3}\t{4}\n".format(geneName, L, nSites, nSynSegSite, nA)

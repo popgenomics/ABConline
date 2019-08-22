@@ -1,10 +1,10 @@
 nmultilocus = 1000 # number of multilocus simulations per iteration (500)
 nIterations_model_comp = 10 # number of subdirectories for the simulations used in the RF model comparison
-nIterations_estim = 50 # number of subdirectories for the simulations used in the nnet param estimates (1999)
-nIterations_gof = 1 # number of subdirectories for the simulations used in the nnet param estimates (200)
+nIterations_estim = 200 # number of subdirectories for the simulations used in the nnet param estimates (1999)
+nIterations_gof = 10 # number of subdirectories for the simulations used in the nnet param estimates (200)
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
 ntree = 2000 # number of tree for the random forest (RF) model comparison
-nPosterior = 1000
+nPosterior = 2000
 
 #MODELS_COMP = ['Constant_1N', 'Constant_2N', 'Discrete_1N', 'Discrete_2N', 'Expo_1N', 'Expo_2N']
 MODELS_COMP = ['Constant_1N', 'Constant_2N', 'Expansion_1N', 'Expansion_2N', 'Contraction_1N', 'Contraction_2N']
@@ -55,7 +55,7 @@ rule targets:
 	shell:
 		"""
 		tar -zcvf {timeStamp}.tar.gz {input}
-		rm slurm*out
+#		rm slurm*out
 #		rm -rf {timeStamp}		
 		"""
 
@@ -211,5 +211,5 @@ rule gof:
 		head -n1 {timeStamp}/gof/gof_0/ABCjsfs.txt > {timeStamp}/gof/simulations_jsfs.txt
 		cat {timeStamp}/gof/gof*/ABCjsfs.txt | grep -v fA >> {timeStamp}/gof/simulations_jsfs.txt
 		
-		gof_1pop.R timeStamp={timeStamp}
+		gof_1pop.R timeStamp={timeStamp} sub_dir=gof
 		"""

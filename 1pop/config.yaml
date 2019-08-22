@@ -7,11 +7,11 @@ region: coding
 nameA: chi
 nameOutgroup: num
 max_N_tolerated: 0.1
-Lmin: 30
+Lmin: 100
 nMin: 12
 mu: 0.000000003
 rho_over_theta: 1
 N_min: 0
-N_max: 10000000
+N_max: 1000000
 Tchanges_min: 0
-Tchanges_max: 1000000
+Tchanges_max: 1500000
