@@ -18,6 +18,7 @@ library(dashboardthemes) # library(devtools); install_github("nik01010/dashboard
 library(shinyhelper)
 library(plotly)
 library(viridis)
+library(tidyr)
 library(RColorBrewer)
 
 
@@ -474,8 +475,8 @@ populations <- fluidPage(
 			#	choices = list("One gene pool" = 1, "Two gene pools" = 2, "Four gene pools" = 4), selected = 2),
 
 			prettyRadioButtons("nspecies", label = h3("Number of gene pools"), shape = "round", status = "primary", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
-			choices = list("Two gene pools" = 2), selected = 2),
-			em(strong(h4('Analysis for 1 or 4 populations/species will be soon available'))),
+			choices = list("One gene pool" = 1, "Two gene pools" = 2), selected = 2),
+			em(strong(h4('Analysis for 4 populations/species will be soon available'))),
 			uiOutput("input_names_ui")
 		),
 		
@@ -1128,6 +1129,16 @@ server <- function(input, output, session = session) {
 	## RESULT VISUALIZATION
 	### user informations
 	users_infos <- reactive({
+		# returns an object named "users_infos" containing:
+		# L1 : nSpecies (number of species)
+		# L2 : nameA (name of species A)
+		# L3 : nameB
+		# L4 : nLoci (number of loci)
+		# L5 : mail (user's email)
+		# L6 : date
+		# 
+		# if nSpecies == 1 then L3 is supressed.
+		
 		fileName = input$results
 		if(is.null(fileName)){
 			return (NULL)
@@ -1159,13 +1170,21 @@ server <- function(input, output, session = session) {
 
 	output$user_dataset_tabset <- renderUI({
 		if(is.null(input$results) == FALSE){
-			tabsetPanel(id = "observed_dataset",
-			type = "tabs",
-			tabPanel("Summarized jSFS", plotlyOutput("plot_obs_stats_sites")),
-			tabPanel("Polymorphism", plotlyOutput("plot_obs_stats_diversity")),
-			tabPanel("Tajima's D", plotlyOutput("plot_obs_stats_tajima")),
-			tabPanel("Differentiation and divergence", plotlyOutput("plot_obs_stats_divergence"))
-			)
+			if(users_infos()[1,2]==2){
+				tabsetPanel(id = "observed_dataset",
+				type = "tabs",
+				tabPanel("Summarized jSFS", plotlyOutput("plot_obs_stats_sites")),
+				tabPanel("Polymorphism", plotlyOutput("plot_obs_stats_diversity")),
+				tabPanel("Tajima's D", plotlyOutput("plot_obs_stats_tajima")),
+				tabPanel("Differentiation and divergence", plotlyOutput("plot_obs_stats_divergence"))
+				)
+			}else{
+				if(users_infos()[1,2]==1){
+					plotlyOutput("plot_obs_stats_1pop")
+				}else{
+					return()
+				}
+			}
 		}else{
 			return()
 		}
@@ -1173,13 +1192,24 @@ server <- function(input, output, session = session) {
 	
 	output$user_inferences <- renderUI({
 		if(is.null(input$results) == FALSE){
-			tabsetPanel(id = "inferences",
-			type = "tabs",
-			tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
-			tabPanel("Locus specific model comparison", numericInput("threshold_locus_specific_model_comp", label = h3("Posterior probability threshold value below which an inference is considered ambiguous"), width = (0.25*as.numeric(input$dimension[1])), value = 0.9, min = 0, max = 1, step = 0.005), hr(), plotlyOutput("locus_specific_model_comparison", height = 'auto', width = 'auto')),
-			tabPanel("Goodness-of-fit test : summary statistics", uiOutput("display_gof_table")),
-			tabPanel("Goodness-of-fit test : jSFS", uiOutput("display_sfs_table"))
-			)
+			if(users_infos()[1,2]==2){
+				tabsetPanel(id = "inferences",
+				type = "tabs",
+				tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
+				tabPanel("Locus specific model comparison", numericInput("threshold_locus_specific_model_comp", label = h3("Posterior probability threshold value below which an inference is considered ambiguous"), width = (0.25*as.numeric(input$dimension[1])), value = 0.9, min = 0, max = 1, step = 0.005), hr(), plotlyOutput("locus_specific_model_comparison", height = 'auto', width = 'auto')),
+				tabPanel("Goodness-of-fit test : summary statistics", uiOutput("display_gof_table")),
+				tabPanel("Goodness-of-fit test : jSFS", uiOutput("display_sfs_table"))
+				)
+			}else{
+				if(users_infos()[1,2]==1){
+					tabsetPanel(id = "inferences",
+					type = "tabs",
+					tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
+					tabPanel("Goodness-of-fit test : summary statistics", uiOutput("display_gof_table")),
+					tabPanel("Goodness-of-fit test : jSFS", uiOutput("display_sfs_table"))
+					)
+				}
+			}
 		}else{
 			return()
 		}
@@ -1206,20 +1236,29 @@ server <- function(input, output, session = session) {
 	output$display_modComp <- renderUI({
 		if(is.null(modComp_table())){
 			return(NULL)
-		}else if(modComp_table()[2,1] == 'isolation'){
+		}else if(users_infos()[1,2] == 2){
+			 if(modComp_table()[2,1] == 'isolation'){
+				fluidPage(
+					hr(),
+					infoBox("Migration versus isolation", paste('best model = ', as.matrix(modComp_table()[2,])[1], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[1], sep=''), icon = icon("check"), color='navy'),
+					infoBox("AM versus SI", paste('best model = ', as.matrix(modComp_table()[2,])[2], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[2], sep=''), icon = icon("check"), color='navy'),
+					infoBox("N-homo versus N-hetero", paste('best model = ', as.matrix(modComp_table()[2,])[3], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[3], sep=''), icon = icon("check"), color='navy')
+				)
+			}else if(modComp_table()[2,1] == 'migration'){
+				fluidPage(
+					hr(),
+					infoBox("Migration versus isolation", paste('best model = ', as.matrix(modComp_table()[2,])[1], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[1], sep=''), icon = icon("check"), color='navy'),
+					infoBox("IM versus SC", paste('best model = ', as.matrix(modComp_table()[2,])[2], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[2], sep=''), icon = icon("check"), color='navy'),
+					infoBox("N-homo versus N-hetero", paste('best model = ', as.matrix(modComp_table()[2,])[3], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[3], sep=''), icon = icon("check"), color='navy'),
+					infoBox("M-homo versus M-hetero", paste('best model = ', as.matrix(modComp_table()[2,])[4], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[4], sep=''), icon = icon("check"), color='navy')
+				)
+			}
+		}
+		else if(users_infos()[1,2] == 1){
 			fluidPage(
 				hr(),
-				infoBox("Migration versus isolation", paste('best model = ', as.matrix(modComp_table()[2,])[1], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[1], sep=''), icon = icon("check"), color='navy'),
-				infoBox("AM versus SI", paste('best model = ', as.matrix(modComp_table()[2,])[2], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[2], sep=''), icon = icon("check"), color='navy'),
-				infoBox("N-homo versus N-hetero", paste('best model = ', as.matrix(modComp_table()[2,])[3], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[3], sep=''), icon = icon("check"), color='navy')
-			)
-		}else if(modComp_table()[2,1] == 'migration'){
-			fluidPage(
-				hr(),
-				infoBox("Migration versus isolation", paste('best model = ', as.matrix(modComp_table()[2,])[1], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[1], sep=''), icon = icon("check"), color='navy'),
-				infoBox("IM versus SC", paste('best model = ', as.matrix(modComp_table()[2,])[2], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[2], sep=''), icon = icon("check"), color='navy'),
-				infoBox("N-homo versus N-hetero", paste('best model = ', as.matrix(modComp_table()[2,])[3], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[3], sep=''), icon = icon("check"), color='navy'),
-				infoBox("M-homo versus M-hetero", paste('best model = ', as.matrix(modComp_table()[2,])[4], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[4], sep=''), icon = icon("check"), color='navy')
+				infoBox("Expansion versus Constant versus Contraction", paste('best model = ', as.matrix(modComp_table()[2,])[1], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[1], sep=''), icon = icon("check"), color='navy'),
+				infoBox("N-homo versus N-hetero", paste('best model = ', as.matrix(modComp_table()[2,])[2], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[2], sep=''), icon = icon("check"), color='navy')
 			)
 		}
 	})
@@ -1263,29 +1302,33 @@ server <- function(input, output, session = session) {
 
 	## plot the SFS : get the table
 	table_sfs <- reactive({
+		# 2 pops
 		fileName = input$results
 		if(is.null(fileName)){
 			return (NULL)
 		}else{
 			untar(fileName$datapath, exdir = getwd())
 			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
-		
 			sfs_name = paste(rootName, "/gof/gof_sfs.txt", sep='')
 			
 			table_sfs = read.table(sfs_name, h=T)
-		
-			## inelegant way to remove 'useless' bins...
-			table_sfs[4,which(log10(table_sfs[1,])==-Inf)] = NA
-			table_sfs[3,which(log10(table_sfs[1,])==-Inf)] = NA
-			## end ot the inelegant block
+
+			if(users_infos()[1,2]==2){
+				# if nPops = 2
+				## inelegant way to remove 'useless' bins...
+				table_sfs[4,which(log10(table_sfs[1,])==-Inf)] = NA
+				table_sfs[3,which(log10(table_sfs[1,])==-Inf)] = NA
+				## end ot the inelegant block
+			}
 			
 			system(paste('rm -rf ', rootName, sep=''))
 			return(table_sfs)
 		}
 	})
 	
+		
 	## plot the SFS : display the matrix
-	output$sfs_observed <- renderPlotly({
+	output$sfs_observed_2pops <- renderPlotly({
 		if( is.null(input$results)){
 			return(NULL)
 		}else{
@@ -1331,7 +1374,7 @@ server <- function(input, output, session = session) {
 	})
 
 	## plot the SFS : display the matrix
-	output$sfs_expected <- renderPlotly({
+	output$sfs_expected_2pops <- renderPlotly({
 		if( is.null(input$results)){
 			return(NULL)
 		}else{
@@ -1376,7 +1419,7 @@ server <- function(input, output, session = session) {
 	})
 	
 	## plot the SFS : display the matrix
-	output$sfs_diff <- renderPlotly({
+	output$sfs_diff_2pops <- renderPlotly({
 		if( is.null(input$results)){
 			return(NULL)
 		}else{
@@ -1423,7 +1466,7 @@ server <- function(input, output, session = session) {
 	})
 	
 	## plot the SFS : display the matrix
-	output$sfs_pval <- renderPlotly({
+	output$sfs_pval_2pops <- renderPlotly({
 		if( is.null(input$results)){
 			return(NULL)
 		}else{
@@ -1465,33 +1508,101 @@ server <- function(input, output, session = session) {
 		}
 	})
 	
+
+	output$sfs_observed_1pop <- renderPlotly({
+		if( is.null(input$results)){
+			return(NULL)
+		}else{
+			f=list(
+				family = "Arial",
+				size = 26,
+				color = "black"
+			)
+
+			f2=list(
+				family = "Arial",
+				size = 20,
+				color = "black"
+			)
+
+			f_legend=list(
+				family = "Arial",
+				size = 20,
+				color = "black",
+				color = "#000"
+			)
+
+			xlab = list(
+				title='Frequency',
+				titlefont=f,
+				tickfont=f2
+			)
+
+			ylab = list(
+				title='Number of SNPs',
+				titlefont=f,
+				tickfont=f2
+			)
+			
+			nSNPs <- as.numeric(matrix(unlist(strsplit(colnames(table_sfs()), 'A')), ncol=2, byrow=T)[,2])
+			obs <- as.numeric(table_sfs()[1,])
+			exp <- as.numeric(table_sfs()[2,])
+			data_sfs <- data.frame(nSNPs, obs, exp)
+
+			data_sfs_reshape <- data_sfs %>%
+			  gather(sfs, Count, obs:exp)
+
+			data_sfs_reshape %>%
+				plot_ly(type = "bar",
+					x = ~nSNPs,
+					y = ~Count,
+					color = ~sfs,
+					colors = viridis_pal(option = "D")(2), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>%
+					layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend), hoverlabel = list(font=list(size=20)))
+		}
+	})
+
+	
 	output$display_sfs_table <- renderUI({
 		if(is.null(table_sfs())){
 			return(NULL)
 		}else{
-			fluidPage(
-				hr(),
-				
-				fluidRow(
-					width = 12,
-					column(width=6, offset = 0, style='padding:30px;',
-						plotlyOutput(outputId = "sfs_observed")
+			if(users_infos()[1,2]==2){
+				fluidPage(
+					hr(),
+					
+					fluidRow(
+						width = 12,
+						column(width=6, offset = 0, style='padding:30px;',
+							plotlyOutput(outputId = "sfs_observed_2pops")
+						),
+						column(width=6, offset = 0, style='padding:30px;',
+							plotlyOutput(outputId = "sfs_expected_2pops")
+						)
 					),
-					column(width=6, offset = 0, style='padding:30px;',
-						plotlyOutput(outputId = "sfs_expected")
-					)
-				),
-				
-				fluidRow(
-					width = 12,
-					column(width=6, offset = 0, style='padding:30px;',
-						plotlyOutput(outputId = "sfs_diff")
-					),
-					column(width=6, offset = 0, style='padding:30px;',
-						plotlyOutput(outputId = "sfs_pval")
+					
+					fluidRow(
+						width = 12,
+						column(width=6, offset = 0, style='padding:30px;',
+							plotlyOutput(outputId = "sfs_diff_2pops")
+						),
+						column(width=6, offset = 0, style='padding:30px;',
+							plotlyOutput(outputId = "sfs_pval_2pops")
+						)
 					)
 				)
-			)
+			}else{
+				if(users_infos()[1,2]==1){
+					fluidPage(
+						fluidRow(
+							width = 12,
+							column(width=12, offset = 0, style='padding:30px;',
+								plotlyOutput(outputId = "sfs_observed_1pop")
+							)
+						)
+					)
+				}
+			}
 		}
 	})
 	
@@ -1499,23 +1610,36 @@ server <- function(input, output, session = session) {
 	locus_spe <- reactive({
 		fileName = input$results
 		
-		if (is.null(fileName))
-		return(NULL)
-		
-		untar(fileName$datapath, exdir = getwd())
+		if (is.null(fileName)){
+			return(NULL)
+		}else{
+			
+			untar(fileName$datapath, exdir = getwd())
 
-		rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
-		
-		locus_spe_name = paste(rootName, "/modelComp/locus_specific_modelComp.txt", sep='')
-		
-		#read the table
-		locus_spe = read.table(locus_spe_name, h=T)
-		
-		# delete the untar results
-		system(paste('rm -rf ', rootName, sep=''))
-		
-		# return the read object
-		return(locus_spe)
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+			
+			infos_tmp = as.matrix(read.csv(paste(rootName, "/general_infos.txt", sep=''), h=F))
+			nSpecies = infos_tmp[1,2]
+			
+			#print(nSpecies)
+			#print(class(nSpecies))
+				
+			if( nSpecies == '2'){
+				locus_spe_name = paste(rootName, "/modelComp/locus_specific_modelComp.txt", sep='')
+			}else{
+				if( nSpecies == '1' ){
+					locus_spe_name = paste(rootName, "/ABCstat_loci.txt", sep='')
+				}
+			}
+			#read the table
+			locus_spe = read.table(locus_spe_name, h=T)
+			
+			# delete the untar results
+			system(paste('rm -rf ', rootName, sep=''))
+			
+			# return the read object
+			return(locus_spe)
+		}
 	})
 	
  
@@ -1660,6 +1784,43 @@ server <- function(input, output, session = session) {
 		
 		return(graph_divergence)
 	})
+
+	
+	# GRAPHE ONE POP
+	output$plot_obs_stats_1pop <- renderPlotly({
+		# number of loci
+		nLoci = nrow(locus_spe())
+		f <- list(
+			family = "Arial",
+			size = 30
+		)
+		
+		axis_x <- list(
+			title = "",
+			tickfont = list(size = 20)
+		)
+		
+		axis_y <- list(
+			title = "Pattern of polymorphism",
+			titlefont = f,
+			tickfont = list(size = 20)
+		)
+		
+		statistics_obs_polyM = c(locus_spe()$piA_avg, locus_spe()$thetaA_avg) # piA_avg thetaA_avg DtajA_avg
+		statistics_names_polyM = rep(c(paste('pi ', as.character(users_infos()[2,2]), sep=''), paste('theta ', as.character(users_infos()[2,2]), sep='')), each = nLoci)
+		locus_names_polyM = rep(locus_spe()$dataset, 2)
+		data_obs_polyM = data.frame(statistics_obs_polyM, statistics_names_polyM, locus_names_polyM)
+		graph_polyM = plot_ly(data_obs_polyM, y=~statistics_obs_polyM, x=~statistics_names_polyM, color=~statistics_names_polyM, type="box", boxpoints="all", text = ~paste0("locus: ", locus_names_polyM, "<br>", statistics_obs_polyM), hoverinfo="text", width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "D")(2)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)), hoverlabel = list(font=list(size=20)) )
+		
+		statistics_obs_TajD = c(locus_spe()$DtajA_avg) # piA_avg thetaA_avg DtajA_avg
+		statistics_names_TajD = rep(paste("Tajima's D ", as.character(users_infos()[2,2]), sep=''), each = nLoci)
+		locus_names_TajD = locus_spe()$dataset
+		data_obs_TajD = data.frame(statistics_obs_TajD, statistics_names_TajD, locus_names_TajD)
+		graph_TajD = plot_ly(data_obs_TajD, y=~statistics_obs_TajD, x=~statistics_names_TajD, color=~statistics_names_TajD, type="box", boxpoints="all", text = ~paste0("locus: ", locus_names_TajD, "<br>", statistics_obs_TajD), hoverinfo="text", width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2]), colors = viridis_pal(option = "C")(1)) %>% layout(xaxis = axis_x, yaxis = axis_y, legend=list(orientation = 'h', y=1.05, font = list(size = 15)), hoverlabel = list(font=list(size=20)) )
+		
+		p <- subplot(graph_polyM, graph_TajD)
+		return(p)
+	})
 	
 	
 	# LOCUS SPECIFIC MODEL COMPARISON
@@ -1771,42 +1932,46 @@ server <- function(input, output, session = session) {
 		fileName = input$results
 		if (is.null(fileName)){
 			col = c(grey(0.25), 'turquoise', 'purple', 'red')
-		}else{
-			col = c(grey(0.25), 'turquoise', 'purple', 'red', '#fdae61')
-			untar(fileName$datapath, exdir = getwd())
-			
-			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
-			ABCstat = read.table(paste(rootName, "/ABCstat_global.txt", sep=''), h=T)
+		}else{	
+			if(users_infos()[1,2]==2){
+				col = c(grey(0.25), 'turquoise', 'purple', 'red', '#fdae61')
+				untar(fileName$datapath, exdir = getwd())
 				
-			divergence_user = log10(ABCstat$netdivAB_avg)
-			model_user = system(paste("grep best ", rootName, "/modelComp/report_*.txt | head -n1 | cut -d ' ' -f3", sep=''), intern=T)
-			status_user = "user's point"
+				rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+				ABCstat = read.table(paste(rootName, "/ABCstat_global.txt", sep=''), h=T)
+					
+				divergence_user = log10(ABCstat$netdivAB_avg)
+				model_user = system(paste("grep best ", rootName, "/modelComp/report_*.txt | head -n1 | cut -d ' ' -f3", sep=''), intern=T)
+				status_user = "user's point"
+				
+				P = as.numeric(system(paste("grep proba ", rootName, "/modelComp/report_*.txt | head -n1 | cut -d ' ' -f4", sep=''), intern=T))
+				if(model_user == 'migration'){
+					proba_migration_user = P
+				}else{
+					proba_migration_user = 1-P
+				}
+				species_A_user = as.character(users_infos()[2,2])
+				species_B_user = as.character(users_infos()[3,2])
+				piA_user = ABCstat$piA_avg
+				piB_user = ABCstat$piB_avg
+				author_user = as.character(users_infos()[5,2])
 			
-			P = as.numeric(system(paste("grep proba ", rootName, "/modelComp/report_*.txt | head -n1 | cut -d ' ' -f4", sep=''), intern=T))
-			if(model_user == 'migration'){
-				proba_migration_user = P
+				divergence = c(divergence, divergence_user)
+				model = c(model, model_user)
+				status = c(status, "user's point")
+				proba_migration = c(proba_migration, proba_migration_user)
+				species_A = c(as.character(species_A), species_A_user)
+				species_B = c(as.character(species_B), species_B_user)
+				piA = c(piA, piA_user)
+				piB = c(piB, piB_user)
+				author = c(author, author_user)
+				
+				system(paste('rm -rf ', rootName, sep=''))
 			}else{
-				proba_migration_user = 1-P
+				col = c(grey(0.25), 'turquoise', 'purple', 'red')
 			}
-			species_A_user = as.character(users_infos()[2,2])
-			species_B_user = as.character(users_infos()[3,2])
-			piA_user = ABCstat$piA_avg
-			piB_user = ABCstat$piB_avg
-			author_user = as.character(users_infos()[5,2])
-		
-			divergence = c(divergence, divergence_user)
-			model = c(model, model_user)
-			status = c(status, "user's point")
-			proba_migration = c(proba_migration, proba_migration_user)
-			species_A = c(as.character(species_A), species_A_user)
-			species_B = c(as.character(species_B), species_B_user)
-			piA = c(piA, piA_user)
-			piB = c(piB, piB_user)
-			author = c(author, author_user)
-			
-			system(paste('rm -rf ', rootName, sep=''))
 		}
-	
+
 		res = data.frame(divergence, model, status, proba_migration, species_A, species_B, piA, piB, author)
 		
 		f=list(
