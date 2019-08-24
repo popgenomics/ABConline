@@ -1206,7 +1206,7 @@ server <- function(input, output, session = session) {
 					type = "tabs",
 					tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
 					tabPanel("Goodness-of-fit test : summary statistics", uiOutput("display_gof_table")),
-					tabPanel("Goodness-of-fit test : jSFS", uiOutput("display_sfs_table"))
+					tabPanel("Goodness-of-fit test : SFS", uiOutput("display_sfs_table"))
 					)
 				}
 			}
@@ -1545,12 +1545,12 @@ server <- function(input, output, session = session) {
 			)
 			
 			nSNPs <- as.numeric(matrix(unlist(strsplit(colnames(table_sfs()), 'A')), ncol=2, byrow=T)[,2])
-			obs <- as.numeric(table_sfs()[1,])
-			exp <- as.numeric(table_sfs()[2,])
-			data_sfs <- data.frame(nSNPs, obs, exp)
+			obsserved <- as.numeric(table_sfs()[1,])
+			expected <- as.numeric(table_sfs()[2,])
+			data_sfs <- data.frame(nSNPs, obsserved, expected)
 
 			data_sfs_reshape <- data_sfs %>%
-			  gather(sfs, Count, obs:exp)
+			  gather(sfs, Count, obsserved:expected)
 
 			data_sfs_reshape %>%
 				plot_ly(type = "bar",
@@ -1626,13 +1626,18 @@ server <- function(input, output, session = session) {
 				
 			if( nSpecies == '2'){
 				locus_spe_name = paste(rootName, "/modelComp/locus_specific_modelComp.txt", sep='')
+				locus_infos_name = paste(rootName, "/", infos_tmp[2,2], "_", infos_tmp[3,2], "_infos.txt", sep='')
 			}else{
 				if( nSpecies == '1' ){
 					locus_spe_name = paste(rootName, "/ABCstat_loci.txt", sep='')
+					locus_infos_name = paste(rootName, "/", infos_tmp[2,2], "_infos.txt", sep='')
 				}
 			}
 			#read the table
-			locus_spe = read.table(locus_spe_name, h=T)
+			locus_spe_tmp = read.table(locus_spe_name, h=T)
+			locus_infos = read.table(locus_infos_name, h=T)
+			
+			locus_spe = merge(locus_spe_tmp, locus_infos, by.x=1, by.y=1)
 			
 			# delete the untar results
 			system(paste('rm -rf ', rootName, sep=''))
