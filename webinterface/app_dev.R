@@ -172,8 +172,8 @@ welcome_page <- fluidPage(
 			column(width=4,
 				# Input: Slider for the number of bins
 				sliderInput(inputId = "Ne", label = h3("Effective population size:"), min = 0, max = 1000000, value = 10000, step=1000),
-				sliderInput(inputId = "alpha", label = h3("Shape parameter #1:"), min = 1, max = 10, value = 10, step=0.1),
-				sliderInput(inputId = "beta", label = h3("Shape parameter #2:"), min = 1, max = 10, value = 3, step=0.1)	
+				sliderInput(inputId = "alpha", label = h3("Shape parameter #1:"), min = 1, max = 20, value = 10, step=0.1),
+				sliderInput(inputId = "beta", label = h3("Shape parameter #2:"), min = 1, max = 20, value = 3, step=0.1)	
 			),
 			
 			# Main panel for displaying outputs
@@ -486,13 +486,14 @@ populations <- fluidPage(
 			uiOutput("input_names_outgroup_ui")
 		),
 		
-		boxPlus(title = h2("Size change over time"), height = NULL, width = 4, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-			prettyRadioButtons("population_growth", label = h3("Constant or variable population sizes"), shape = "round", status = "danger", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
-			choices = list("constant" = "constant", "variable" = "variable"), selected = "constant"),
-			em(strong(h4('If setted to constant: the sizes of the daughter populations differ from the ancestral population from the split, and remain constant.'))),
-			em(strong(h4('If setted to variable: the sizes of the daughter populations are equal to that of the ancestral population at the time of the split, then increase (or decrease) exponentially according to N_current = N_ancestral x exp(-alpha x Tsplit), where N_current is the current number of effective individuals, N_ancestral the ancestral population size, alpha the population growth rate (positive/null/negative for growth/constant/decline), and Tsplit the number of generations since the time of split')))
-
-		)
+#		boxPlus(title = h2("Size change over time"), height = NULL, width = 4, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+#			prettyRadioButtons("population_growth", label = h3("Constant or variable population sizes"), shape = "round", status = "danger", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
+#			choices = list("constant" = "constant", "variable" = "variable"), selected = "constant"),
+#			em(strong(h4('If setted to constant: the sizes of the daughter populations differ from the ancestral population from the split, and remain constant.'))),
+#			em(strong(h4('If setted to variable: the sizes of the daughter populations are equal to that of the ancestral population at the time of the split, then increase (or decrease) exponentially according to N_current = N_ancestral x exp(-alpha x Tsplit), where N_current is the current number of effective individuals, N_ancestral the ancestral population size, alpha the population growth rate (positive/null/negative for growth/constant/decline), and Tsplit the number of generations since the time of split')))
+#
+#		)
+		uiOutput("size_change")
 	),
 
 	fluidRow(
@@ -995,7 +996,25 @@ server <- function(input, output, session = session) {
 		# nameOutgroup = 'name specified by the selectInput # CONFIG_YAML
 		}
 	})
-	
+
+	output$size_change <- renderUI({
+		nspecies = as.integer(input$nspecies)
+		if(nspecies==2){
+		boxPlus(title = h2("Size change over time"), height = NULL, width = 4, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+			prettyRadioButtons("population_growth", label = h3("Assuming constant or variable population sizes"), shape = "round", status = "danger", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
+			choices = list("constant" = "constant", "variable" = "variable"), selected = "constant"),
+			em(strong(h4('If setted to constant: the sizes of the daughter populations is assumed to differ from the ancestral population from the split, and remain constant during the ABC inferences.'))),
+			em(strong(h4('If setted to variable: the sizes of the daughter populations are assumed to be be equal to x and (1-x) times the ancestral population size at time of split, and then, suddenly increase or decrease to reach the current population sizes.')))
+			)
+		}else{
+			boxPlus(title = h2("Size change over time"), height = NULL, width = 4, closable = FALSE, status = "danger", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+				prettyRadioButtons("population_growth", label = h3("The ABC analysis will test for variation in population size"), shape = "round", status = "danger", fill = TRUE, inline = FALSE, animation = "pulse", bigger = TRUE,
+				choices = list("variable" = "variable"), selected = "variable"),
+				em(strong(h4('The ABC analysis will compute the probabilities of models of constant population size (a single Ne as parameter), of population expansion and of population contraction (3 parameters: current Ne, ancestral Ne, time of demographic change).')))
+			)
+		}
+	})
+
 	# PRINT INPUT
 	output$parameters <- renderTable({
 		if(is.null(input$infile)) {return()}
