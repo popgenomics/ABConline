@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# #!/home/roux/python/Python-2.7.14/python
+#!/home/roux/python/Python-2.7.14/python
+# #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import sys

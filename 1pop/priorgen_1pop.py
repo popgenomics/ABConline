@@ -1,5 +1,6 @@
-#!/usr/bin/python
+#!/shared/software/miniconda/envs/python-2.7/bin/python2.7
 # #!/home/roux/python/Python-2.7.14/python
+# #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import sys
@@ -25,7 +26,7 @@ if len(sys.argv) != 4:
 # Configuration of the prior distribution
 nMultilocus = int(sys.argv[2])
 
-shape_bound = [0.01, 50]
+shape_bound = [1, 20]
 N_bound = [0, 0] # number of diploid individuals in the population
 T_bound = [0, 10]
 config_yaml = open(sys.argv[3], 'r')

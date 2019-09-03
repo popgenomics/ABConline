@@ -53,7 +53,7 @@ T_bound[0] /= (4*Nref)
 T_bound[1] /= (4*Nref)
 
 max_Tsc = 0.2
-min_Tam = 0.8
+min_Tam = 0.5
 
 # read bpfile
 infile = open("bpfile", "r")
@@ -140,9 +140,10 @@ if sys.argv[1] == "SC_1M_2N":
 		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tsc[sim], M12[sim], M21[sim])
 		# vectors of size 'nLoci' containing parameters
 		scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
-		N1_vec = [ N1[sim]*i for i in scalar_N ]
-		N2_vec = [ N2[sim]*i for i in scalar_N ]
-		Na_vec = [ Na[sim]*i for i in scalar_N ]
+		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
+		N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
+		N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
+		Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
 		
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12[sim], M21[sim], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
@@ -184,8 +185,10 @@ if sys.argv[1] == "SC_2M_1N":
 		# vectors of size 'nLoci' containing parameters
 		scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
 		scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-		M12_vec = [ M12[sim] * i for i in scalar_M12 ]
-		M21_vec = [ M21[sim] * i for i in scalar_M21 ]
+                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
 		
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1[sim], N2[sim], Tdem1[sim], founders1[sim]*Na[sim], Tdem2[sim], founders2[sim]*Na[sim], Tsc[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
@@ -231,16 +234,19 @@ if sys.argv[1] == "SC_2M_2N":
 		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tsc[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
-                N1_vec = [ N1[sim]*i for i in scalar_N ]
-                N2_vec = [ N2[sim]*i for i in scalar_N ]
-                Na_vec = [ Na[sim]*i for i in scalar_N ]
+		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
+                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
 
                 # vectors of size 'nLoci' containing parameters
                 scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
                 scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                M12_vec = [ M12[sim] * i for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i for i in scalar_M21 ]
-		
+                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+	
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
@@ -312,9 +318,10 @@ if sys.argv[1] == "AM_1M_2N":
 		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tam[sim], M12[sim], M21[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
-                N1_vec = [ N1[sim]*i for i in scalar_N ]
-                N2_vec = [ N2[sim]*i for i in scalar_N ]
-                Na_vec = [ Na[sim]*i for i in scalar_N ]
+		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
+                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
 		
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tam[sim], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
@@ -358,8 +365,10 @@ if sys.argv[1] == "AM_2M_1N":
 		# vectors of size 'nLoci' containing parameters
                 scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
                 scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                M12_vec = [ M12[sim] * i for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i for i in scalar_M21 ]
+                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
 	
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tdem1[sim], founders1[sim]*Na[sim], Tdem2[sim], founders2[sim]*Na[sim], Tam[sim], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na[sim]))
@@ -403,13 +412,16 @@ if sys.argv[1] == "AM_2M_2N":
 		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tam[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
-                N1_vec = [ N1[sim]*i for i in scalar_N ]
-                N2_vec = [ N2[sim]*i for i in scalar_N ]
-                Na_vec = [ Na[sim]*i for i in scalar_N ]
+		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
+                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
                 scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
                 scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                M12_vec = [ M12[sim] * i for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i for i in scalar_M21 ]
+                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
 	
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tam[sim], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
@@ -482,9 +494,10 @@ if sys.argv[1] == "IM_1M_2N":
 		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], M12[sim], M21[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
-                N1_vec = [ N1[sim]*i for i in scalar_N ]
-                N2_vec = [ N2[sim]*i for i in scalar_N ]
-                Na_vec = [ Na[sim]*i for i in scalar_N ]
+		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
+                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
 		
 		for locus in range(nLoci):
 			# SC print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
@@ -528,8 +541,10 @@ if sys.argv[1] == "IM_2M_1N":
 		# vectors of size 'nLoci' containing parameters
                 scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
                 scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                M12_vec = [ M12[sim] * i for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i for i in scalar_M21 ]
+                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
 
 	
 		for locus in range(nLoci):
@@ -576,15 +591,18 @@ if sys.argv[1] == "IM_2M_2N":
 		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
-                N1_vec = [ N1[sim]*i for i in scalar_N ]
-                N2_vec = [ N2[sim]*i for i in scalar_N ]
-                Na_vec = [ Na[sim]*i for i in scalar_N ]
+		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
+                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
 	
                 # vectors of size 'nLoci' containing parameters
                 scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
                 scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                M12_vec = [ M12[sim] * i for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i for i in scalar_M21 ]
+                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
 
 		for locus in range(nLoci):
 			# SC print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
@@ -648,9 +666,10 @@ if sys.argv[1] == "SI_2N":
 		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\n".format(N1[sim], N2[sim], Na[sim], founders1[sim], founders2[sim], Tdem1[sim], Tdem2[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim])
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
-                N1_vec = [ N1[sim]*i for i in scalar_N ]
-                N2_vec = [ N2[sim]*i for i in scalar_N ]
-                Na_vec = [ Na[sim]*i for i in scalar_N ]
+		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
+                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
 
 	
 		for locus in range(nLoci):
