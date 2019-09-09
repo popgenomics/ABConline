@@ -17,15 +17,15 @@ help += "\t\033[1;32;30m#PAM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 t
 help += "\t\033[1;32;40m#IM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs\n"
 help += "\t\033[1;32;40m#SC\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -n 1 tbs -n 2 tbs -eM tbs 0 -ej tbs 2 1 -eN tbs tbs\n"
 help += "\t\033[1;32;40m#PSC\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ema tbs 2 0 0 0 0 -ema tbs 2 0 tbs tbs 0 -ema tbs 2 0 0 0 0 -ej tbs 2 1 -eN tbs tbs\n\n"
-help += "\t\033[1;32;40mExample: ./priorgen_gof_2pop.py SC_2M_2N 1000 posterior_file\033[0m\n"
+help += "\t\033[1;32;40mExample: ./priorgen_gof_2pop.py SC_2M_2N 1000 posterior_file beta\033[0m\n"
 
-if len(sys.argv) != 4:
+if len(sys.argv) != 5:
 	print(help)
 	sys.exit()
 
 # Configuration of the prior distribution
 nMultilocus = int(sys.argv[2])
-
+modeBarrier = sys.argv[4]
 
 # read bpfile
 infile = open("bpfile", "r")
@@ -148,24 +148,39 @@ if sys.argv[1] == "SC_2M_1N":
 	Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
-	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-	shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-	shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-	shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        if modeBarrier == "beta":
+		shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
+		shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
+		shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
+		shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        else:
+                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
+                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
 	
 	
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+        if modeBarrier == "beta":
+                priorfile = "N1\tN2\tNa\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+        else:
+                priorfile = "N1\tN2\tNa\tTsplit\tTsc\tM12\tnBarriersM12\tM21\tnBarriersM21\n"
+	
 	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\n".format(N1[sim], N2[sim], Na[sim], Tsplit[sim], Tsc[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
-		
+                if modeBarrier == "beta":
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\n".format(N1[sim], N2[sim], Na[sim], Tsplit[sim], Tsc[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+                else:
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6}\t{7:.5f}\t{8}\n".format(N1[sim], N2[sim], Na[sim], Tsplit[sim], Tsc[sim], M12[sim], nBarriersM12[sim], M21[sim], nBarriersM21[sim])
+
 		# vectors of size 'nLoci' containing parameters
-		scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
-		scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
-                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
-                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                if modeBarrier == "beta":
+                        scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
+                        scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
+                        rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                        rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                        M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                        M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                else:
+                        M12_vec = [ M12[sim]*i for i in produceBarriers(nLoci, nBarriersM12[sim]) ]
+                        M21_vec = [ M21[sim]*i for i in produceBarriers(nLoci, nBarriersM21[sim]) ]
 	
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1[sim], N2[sim], Tsc[sim], Tsplit[sim], Tsplit[sim], Na[sim]))
@@ -191,19 +206,30 @@ if sys.argv[1] == "SC_2M_2N":
 	Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
-	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-	shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-	shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-	shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        if modeBarrier == "beta":
+                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
+                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
+                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
+                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+	else:
+                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
+                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
 	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 	
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tshape_N_a\tshape_N_b\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
-	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\n".format(N1[sim], N2[sim], Na[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tsc[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+        if modeBarrier == "beta":
+                priorfile = "N1\tN2\tNa\tshape_N_a\tshape_N_b\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+        else:
+                priorfile = "N1\tN2\tNa\tshape_N_a\tshape_N_b\tTsplit\tTsc\tM12\tnBarriersM12\tM21\tnBarriersM21\n"
+        for sim in range(nMultilocus):
+                if modeBarrier == "beta":
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\n".format(N1[sim], N2[sim], Na[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tsc[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+                else:
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8}\t{9:.5f}\t{10}\n".format(N1[sim], N2[sim], Na[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tsc[sim], M12[sim], nBarriersM12[sim], M21[sim], nBarriersM21[sim])
+
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
                 rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim])
@@ -212,12 +238,16 @@ if sys.argv[1] == "SC_2M_2N":
                 Na_vec = [ Na[sim]*i/rescale for i in scalar_N ]
 
                 # vectors of size 'nLoci' containing parameters
-                scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
-                scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
-                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
-                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                if modeBarrier == "beta":
+                        scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
+                        scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
+                        rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                        rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                        M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                        M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                else:
+                        M12_vec = [ M12[sim]*i for i in produceBarriers(nLoci, nBarriersM12[sim]) ]
+                        M21_vec = [ M21[sim]*i for i in produceBarriers(nLoci, nBarriersM21[sim]) ]
 	
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
@@ -309,23 +339,37 @@ if sys.argv[1] == "AM_2M_1N":
 	Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
-	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-	shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-	shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-	shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        if modeBarrier == "beta":
+                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
+                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
+                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
+                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        else:
+                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
+                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tTsplit\tTam\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
-	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\n".format(N1[sim], N2[sim], Na[sim], Tsplit[sim], Tam[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+        if modeBarrier == "beta":
+                priorfile = "N1\tN2\tNa\tTsplit\tTam\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+        else:
+                priorfile = "N1\tN2\tNa\tTsplit\tTam\tM12\tnBarriersM12\tM21\tnBarriersM21\n"
+        for sim in range(nMultilocus):
+                if modeBarrier == "beta":
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\n".format(N1[sim], N2[sim], Na[sim], Tsplit[sim], Tam[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+                else:
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6}\t{7:.5f}\t{8}\n".format(N1[sim], N2[sim], Na[sim], Tsplit[sim], Tam[sim], M12[sim], nBarriersM12[sim], M21[sim], nBarriersM21[sim])
 		
 		# vectors of size 'nLoci' containing parameters
-                scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
-                scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
-                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
-                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                if modeBarrier == "beta":
+                        scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
+                        scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
+                        rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                        rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                        M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                        M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                else:
+                        M12_vec = [ M12[sim]*i for i in produceBarriers(nLoci, nBarriersM12[sim]) ]
+                        M21_vec = [ M21[sim]*i for i in produceBarriers(nLoci, nBarriersM21[sim]) ]
 	
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1[sim], N2[sim], Tam[sim], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na[sim]))
@@ -351,32 +395,49 @@ if sys.argv[1] == "AM_2M_2N":
 	Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
-	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-	shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-	shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-	shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        if modeBarrier == "beta":
+                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
+                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
+                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
+                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        else:
+                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
+                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
 	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tshape_N_a\tshape_N_b\tTsplit\tTam\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
-	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\n".format(N1[sim], N2[sim], Na[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tam[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+        if modeBarrier == "beta":
+                priorfile = "N1\tN2\tNa\tshape_N_a\tshape_N_b\tTsplit\tTam\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+        else:
+                priorfile = "N1\tN2\tNa\tshape_N_a\tshape_N_b\tTsplit\tTam\tM12\tnBarriersM12\tM21\tnBarriersM21\n"
+        for sim in range(nMultilocus):
+                if modeBarrier == "beta":
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\n".format(N1[sim], N2[sim], Na[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tam[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+                else:
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8}\t{9:.5f}\t{10}\n".format(N1[sim], N2[sim], Na[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], Tam[sim], M12[sim], nBarriersM12[sim], M21[sim], nBarriersM21[sim])
+		
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
                 rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim])
                 N1_vec = [ N1[sim]*i/rescale for i in scalar_N ]
                 N2_vec = [ N2[sim]*i/rescale for i in scalar_N ]
                 Na_vec = [ Na[sim]*i/rescale for i in scalar_N ]
-                scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
-                scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
-                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
-                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
-	
+
+                # vectors of size 'nLoci' containing parameters
+                if modeBarrier == "beta":
+                        scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
+                        scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
+                        rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                        rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                        M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                        M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                else:
+                        M12_vec = [ M12[sim]*i for i in produceBarriers(nLoci, nBarriersM12[sim]) ]
+                        M21_vec = [ M21[sim]*i for i in produceBarriers(nLoci, nBarriersM21[sim]) ]
+
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tam[sim], M12_vec[locus], M21_vec[locus], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
@@ -466,23 +527,37 @@ if sys.argv[1] == "IM_2M_1N":
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
-	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-	shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-	shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-	shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        if modeBarrier == "beta":
+                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
+                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
+                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
+                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        else:
+                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
+                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tTsplit\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
-	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\n".format(N1[sim], N2[sim], Na[sim], Tsplit[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
-		
+        if modeBarrier == "beta":
+                priorfile = "N1\tN2\tNa\tTsplit\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+        else:
+                priorfile = "N1\tN2\tNa\tTsplit\tM12\tnBarriersM12\tM21\tnBarriersM21\n"
+        for sim in range(nMultilocus):
+                if modeBarrier == "beta":
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\n".format(N1[sim], N2[sim], Na[sim], Tsplit[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+                else:
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5}\t{6:.5f}\t{7}\n".format(N1[sim], N2[sim], Na[sim], Tsplit[sim], M12[sim], nBarriersM12[sim], M21[sim], nBarriersM21[sim])
+	
 		# vectors of size 'nLoci' containing parameters
-                scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
-                scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
-                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
-                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                if modeBarrier == "beta":
+                        scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
+                        scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
+                        rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                        rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                        M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                        M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                else:
+                        M12_vec = [ M12[sim]*i for i in produceBarriers(nLoci, nBarriersM12[sim]) ]
+                        M21_vec = [ M21[sim]*i for i in produceBarriers(nLoci, nBarriersM21[sim]) ]
 
 	
 		for locus in range(nLoci):
@@ -509,19 +584,30 @@ if sys.argv[1] == "IM_2M_2N":
 	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
-	shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-	shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-	shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-	shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        if modeBarrier == "beta":
+                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
+                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
+                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
+                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+        else:
+                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
+                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
 	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 
-	# param monolocus: values that will be read by ms
-	priorfile = "N1\tN2\tNa\tshape_N_a\tshape_N_b\tTsplit\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
-	for sim in range(nMultilocus):
-		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\n".format(N1[sim], N2[sim], Na[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+        # param monolocus: values that will be read by ms
+        if modeBarrier == "beta":
+                priorfile = "N1\tN2\tNa\tshape_N_a\tshape_N_b\tTsplit\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
+        else:
+                priorfile = "N1\tN2\tNa\tshape_N_a\tshape_N_b\tTsplit\tM12\tnBarriersM12\tM21\tnBarriersM21\n"
+        for sim in range(nMultilocus):
+                if modeBarrier == "beta":
+                        priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\n".format(N1[sim], N2[sim], Na[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], M12[sim], shape_M12_a[sim], shape_M12_b[sim], M21[sim], shape_M21_a[sim], shape_M21_b[sim])
+                else:
+                       priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\t{5:.5f}\t{6:.5f}\t{7}\t{8:.5f}\t{9}\n".format(N1[sim], N2[sim], Na[sim], shape_N_a[sim], shape_N_b[sim], Tsplit[sim], M12[sim], nBarriersM12[sim], M21[sim], nBarriersM21[sim])
+	
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
 		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim])
@@ -530,12 +616,16 @@ if sys.argv[1] == "IM_2M_2N":
                 Na_vec = [ Na[sim]*i/rescale for i in scalar_N ]
 	
                 # vectors of size 'nLoci' containing parameters
-                scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
-                scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
-                rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
-                rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
-                M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
-                M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                if modeBarrier == "beta":
+                        scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
+                        scalar_M21 = beta(shape_M21_a[sim], shape_M21_b[sim], size = nLoci)
+                        rescaleM12 = shape_M12_a[sim] / (shape_M12_a[sim] + shape_M12_b[sim])
+                        rescaleM21 = shape_M21_a[sim] / (shape_M21_a[sim] + shape_M21_b[sim])
+                        M12_vec = [ M12[sim] * i / rescaleM12 for i in scalar_M12 ]
+                        M21_vec = [ M21[sim] * i / rescaleM21 for i in scalar_M21 ]
+                else:
+                        M12_vec = [ M12[sim]*i for i in produceBarriers(nLoci, nBarriersM12[sim]) ]
+                        M21_vec = [ M21[sim]*i for i in produceBarriers(nLoci, nBarriersM21[sim]) ]
 
 		for locus in range(nLoci):
 			# SC print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
