@@ -8,6 +8,14 @@ from numpy.random import uniform
 from numpy.random import binomial
 from numpy.random import beta
 from random import shuffle
+from random import randint
+
+def produceBarriers(nLoci, nBarriers):
+        # produces a vector of 0 (non barrier) or 1 (barrier), of size equal to the number of loci
+        barriers = [0]*nBarriers + [1]*(nLoci-nBarriers)
+        shuffle(barriers)
+        return(barriers)
+
 help = "\t\033[1;31;40mTakes one model specifier, a number of multilocus simulations and a config.yaml file containing prior boundaries as arguments:\033[0m\n\t\t"
 help += "\n\t\t".join(["SC_1M_1N", "SC_1M_2N", "SC_2M_1N", "SC_2M_2N", "AM_1M_1N", "AM_1M_2N", "AM_2M_1N", "AM_2M_2N", "IM_1M_1N", "IM_1M_2N", "IM_2M_1N", "IM_2M_2N", "SI_1N", "SI_2N"])
 help += "\n\n"

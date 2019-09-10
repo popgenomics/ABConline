@@ -26,9 +26,9 @@ help += "\t\033[1;32;30m#PAM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 t
 help += "\t\033[1;32;40m#IM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs\n"
 help += "\t\033[1;32;40m#SC\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -n 1 tbs -n 2 tbs -eM tbs 0 -ej tbs 2 1 -eN tbs tbs\n"
 help += "\t\033[1;32;40m#PSC\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ema tbs 2 0 0 0 0 -ema tbs 2 0 tbs tbs 0 -ema tbs 2 0 0 0 0 -ej tbs 2 1 -eN tbs tbs\n\n"
-help += "\t\033[1;32;40mExample: ./priorgen.py SC_2M_2N 1000 config_yaml beta\033[0m\n" # last argument is "beta" or "bimodal"
+help += "\t\033[1;32;40mExample: ./priorgen.py SC_2M_2N 1000 config_yaml\033[0m\n" # last argument is "beta" or "bimodal"
 
-if len(sys.argv) != 5:
+if len(sys.argv) != 4:
 	print(help)
 	sys.exit()
 
@@ -55,7 +55,7 @@ for i in config_yaml:
 	if(i[0] == 'M_max'):
 		M_bound[1] = float(i[1])
 	if(i[0] == 'modeBarrier'): # is equal to "beta" or "bimodal"
-		modeBarrier = i[1]
+		modeBarrier = i[1].replace(" ", "")
 config_yaml.close()
 
 # convert parameter values in coalescent units
@@ -177,8 +177,8 @@ if sys.argv[1] == "SC_2M_1N":
 		shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
 		shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
 	else:
-		nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-		nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+		nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+		nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
@@ -235,8 +235,8 @@ if sys.argv[1] == "SC_2M_2N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
@@ -378,8 +378,8 @@ if sys.argv[1] == "AM_2M_1N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	# param monolocus: values that will be read by ms
 	if modeBarrier == "beta":
@@ -432,8 +432,8 @@ if sys.argv[1] == "AM_2M_2N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
@@ -574,8 +574,8 @@ if sys.argv[1] == "IM_2M_1N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	# param monolocus: values that will be read by ms
 	if modeBarrier == "beta":
@@ -637,8 +637,8 @@ if sys.argv[1] == "IM_2M_2N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	# param monolocus: values that will be read by ms
 	if modeBarrier == "beta":

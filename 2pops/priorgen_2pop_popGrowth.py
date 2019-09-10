@@ -7,6 +7,14 @@ from numpy.random import uniform
 from numpy.random import binomial
 from numpy.random import beta
 from random import shuffle
+from random import randint
+
+def produceBarriers(nLoci, nBarriers):
+        # produces a vector of 0 (non barrier) or 1 (barrier), of size equal to the number of loci
+        barriers = [0]*nBarriers + [1]*(nLoci-nBarriers)
+        shuffle(barriers)
+        return(barriers)
+
 help = "\t\033[1;31;40mTakes one model specifier, a number of multilocus simulations and a config.yaml file containing prior boundaries as arguments:\033[0m\n\t\t"
 help += "\n\t\t".join(["SC_1M_1N", "SC_1M_2N", "SC_2M_1N", "SC_2M_2N", "AM_1M_1N", "AM_1M_2N", "AM_2M_1N", "AM_2M_2N", "IM_1M_1N", "IM_1M_2N", "IM_2M_1N", "IM_2M_2N", "SI_1N", "SI_2N"])
 help += "\n\n"
@@ -143,9 +151,9 @@ if sys.argv[1] == "SC_1M_2N":
 		# vectors of size 'nLoci' containing parameters
 		scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
 		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
-		N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
-		N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
-		Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
+		N1_vec = [ N1[sim]*i/rescale for i in scalar_N ]
+		N2_vec = [ N2[sim]*i/rescale for i in scalar_N ]
+		Na_vec = [ Na[sim]*i/rescale for i in scalar_N ]
 		
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12[sim], M21[sim], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
@@ -174,8 +182,8 @@ if sys.argv[1] == "SC_2M_1N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
@@ -235,8 +243,8 @@ if sys.argv[1] == "SC_2M_2N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
@@ -262,9 +270,9 @@ if sys.argv[1] == "SC_2M_2N":
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
 		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
-                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
-                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
-                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
+                N1_vec = [ N1[sim]*i/rescale for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/rescale for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/rescale for i in scalar_N ]
 
                 # vectors of size 'nLoci' containing parameters
                 if modeBarrier == "beta":
@@ -350,9 +358,9 @@ if sys.argv[1] == "AM_1M_2N":
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
 		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
-                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
-                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
-                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
+                N1_vec = [ N1[sim]*i/rescale for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/rescale for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/rescale for i in scalar_N ]
 		
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}\t{15:.5f}\t{16:.5f}\t{17:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tam[sim], M12[sim], M21[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
@@ -389,8 +397,8 @@ if sys.argv[1] == "AM_2M_1N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	# param monolocus: values that will be read by ms
         if modeBarrier == "beta":
@@ -444,8 +452,8 @@ if sys.argv[1] == "AM_2M_2N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	## times
 	Tsplit = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
@@ -470,9 +478,9 @@ if sys.argv[1] == "AM_2M_2N":
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
 		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
-                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
-                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
-                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
+                N1_vec = [ N1[sim]*i/rescale for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/rescale for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/rescale for i in scalar_N ]
 		
                 if modeBarrier == "beta":
                         scalar_M12 = beta(shape_M12_a[sim], shape_M12_b[sim], size = nLoci)
@@ -557,9 +565,9 @@ if sys.argv[1] == "IM_1M_2N":
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
 		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
-                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
-                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
-                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
+                N1_vec = [ N1[sim]*i/rescale for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/rescale for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/rescale for i in scalar_N ]
 		
 		for locus in range(nLoci):
 			# SC print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], M12_vec[locus], M21_vec[locus], N1_vec[locus], N2_vec[locus], Tsc[sim], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
@@ -596,8 +604,8 @@ if sys.argv[1] == "IM_2M_1N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	# param monolocus: values that will be read by ms
         if modeBarrier == "beta":
@@ -661,8 +669,8 @@ if sys.argv[1] == "IM_2M_2N":
                 shape_M21_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
                 shape_M21_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         else:
-                nBarriersM12 = [ randint(nLoci-1) for i in range(nMultilocus) ]
-                nBarriersM21 = [ randint(nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM12 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
+                nBarriersM21 = [ randint(0, nLoci-1) for i in range(nMultilocus) ]
 
 	# param monolocus: values that will be read by ms
         if modeBarrier == "beta":
@@ -678,9 +686,9 @@ if sys.argv[1] == "IM_2M_2N":
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
 		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
-                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
-                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
-                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
+                N1_vec = [ N1[sim]*i/rescale for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/rescale for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/rescale for i in scalar_N ]
 	
                 # vectors of size 'nLoci' containing parameters
                 if modeBarrier == "beta":
@@ -757,9 +765,9 @@ if sys.argv[1] == "SI_2N":
 		# vectors of size 'nLoci' containing parameters
                 scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
 		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
-                N1_vec = [ N1[sim]*i/scalar for i in scalar_N ]
-                N2_vec = [ N2[sim]*i/scalar for i in scalar_N ]
-                Na_vec = [ Na[sim]*i/scalar for i in scalar_N ]
+                N1_vec = [ N1[sim]*i/rescale for i in scalar_N ]
+                N2_vec = [ N2[sim]*i/rescale for i in scalar_N ]
+                Na_vec = [ Na[sim]*i/rescale for i in scalar_N ]
 
 	
 		for locus in range(nLoci):
