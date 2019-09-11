@@ -70,8 +70,8 @@ infile.close()
 
 
 # get the lines of the posterior used for the simulations: vector of length nMultilocus
-used_posterior = randint(cnt, size=nMultilocus)
-
+# used_posterior = randint(cnt, size=nMultilocus)
+used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
 
 if sys.argv[1] == "SC_1M_1N":
 	# secondary contact
@@ -162,8 +162,8 @@ if sys.argv[1] == "SC_2M_1N":
 		shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
 		shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
         else:
-                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
-                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
+                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
+                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
 	
 	
 	# param monolocus: values that will be read by ms
@@ -220,8 +220,8 @@ if sys.argv[1] == "SC_2M_2N":
                 shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
                 shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
 	else:
-                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
-                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
+                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
+                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
@@ -353,8 +353,8 @@ if sys.argv[1] == "AM_2M_1N":
                 shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
                 shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
         else:
-                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
-                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
+                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
+                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
         if modeBarrier == "beta":
@@ -409,8 +409,8 @@ if sys.argv[1] == "AM_2M_2N":
                 shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
                 shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
         else:
-                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
-                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
+                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
+                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
@@ -541,8 +541,8 @@ if sys.argv[1] == "IM_2M_1N":
                 shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
                 shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
         else:
-                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
-                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
+                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
+                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
 
 	# param monolocus: values that will be read by ms
         if modeBarrier == "beta":
@@ -598,8 +598,8 @@ if sys.argv[1] == "IM_2M_2N":
                 shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
                 shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
         else:
-                nBarriersM12 = [ posterior['nBarriersM12'][i] for i in used_posterior ]
-                nBarriersM21 = [ posterior['nBarriersM21'][i] for i in used_posterior ]
+                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
+                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
 
 	## factor of local reduction in Ne. Model of "background selection"
 	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]

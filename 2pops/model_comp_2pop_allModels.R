@@ -15,6 +15,7 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'ntree'){ ntree = as.integer(tmp[[1]][2]) }
 	if(tmp[[1]][1] == 'outgroup'){ outgroup = as.integer(tmp[[1]][2]) } # 0: no outgroup, no SFS used. 1: outgroup, SFS used
 	if(tmp[[1]][1] == 'population_growth'){ population_growth = tmp[[1]][2] } # constant; variable
+	if(tmp[[1]][1] == 'modeBarrier'){ modeBarrier = tmp[[1]][2] } # beta; bimodal
 }
 
 outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
@@ -423,19 +424,32 @@ if(predicted_model_iso_mig$allocation=='migration'){
 			Tsplit = c(Tsplit, rep(posterior_IM$Tsplit[i], nrep))
 			
 			# migration
-			scalar_N = rbeta(nrep, posterior_IM$shape_N_a[i], posterior_IM$shape_N_b[i])
+			a_N = posterior_IM$shape_N_a[i]
+			b_N = posterior_IM$shape_N_b[i]
+			scalar_N = rbeta(nrep, a_N, b_N) / (a_N / (a_N + b_N))
 			N1_mig = c(N1_mig, scalar_N * posterior_IM$N1[i])
 			N2_mig = c(N2_mig, scalar_N * posterior_IM$N2[i])
 			Na_mig = c(Na_mig, scalar_N * posterior_IM$Na[i])
-			
-			scalar_M12 = rbeta(nrep, posterior_IM$shape_M12_a[i], posterior_IM$shape_M12_b[i])
+		
+			if(modeBarrier == "beta"){
+				a_M1 = posterior_IM$shape_M12_a[i]
+				b_M1 = posterior_IM$shape_M12_b[i]
+				a_M2 = posterior_IM$shape_M21_a[i]
+				b_M2 = posterior_IM$shape_M21_b[i]
+				scalar_M12 = rbeta(nrep, a_M1, b_M1) / (a_M1 / (a_M1 + b_M1))
+				scalar_M21 = rbeta(nrep, a_M2, b_M2) / (a_M1 / (a_M1 + b_M1))
+			}else{
+				# bimodal
+				scalar_M12 = rep(1, nrep)
+				scalar_M21 = rep(1, nrep)
+			}
 			M12_mig = c(M12_mig, scalar_M12 * posterior_IM$M12[i])
-			
-			scalar_M21 = rbeta(nrep, posterior_IM$shape_M21_a[i], posterior_IM$shape_M21_b[i])
 			M21_mig = c(M21_mig, scalar_M21 * posterior_IM$M21[i])
 			
 			# isolation
-			scalar_N = rbeta(nrep, posterior_IM$shape_N_a[i], posterior_IM$shape_N_b[i])
+			a_N = posterior_IM$shape_N_a[i]
+			b_N = posterior_IM$shape_N_b[i]
+			scalar_N = rbeta(nrep, posterior_IM$shape_N_a[i], posterior_IM$shape_N_b[i]) / (a_N / (a_N + b_N))
 			N1_iso = c(N1_iso, scalar_N * posterior_IM$N1[i])
 			N2_iso = c(N2_iso, scalar_N * posterior_IM$N2[i])
 			Na_iso = c(Na_iso, scalar_N * posterior_IM$Na[i])
