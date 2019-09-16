@@ -34,6 +34,7 @@ if population_growth=='constant':
 else:
 	submit_simulations='submit_simulations_2pop_popGrowth.py'
 	submit_simulations_gof='submit_simulations_gof_2pop_popGrowth.py'
+modeBarrier = config['modeBarrier']
 max_N_tolerated = config['max_N_tolerated']
 Lmin = config['Lmin']
 nMin = config['nMin']
@@ -151,7 +152,7 @@ rule simulationsModelComp:
 	shell:
 		"""
 		#submit_simulations_2pop.py {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
-		{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
+		{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp} {modeBarrier}
 		"""
 
 rule simulationsEstim:
@@ -168,7 +169,7 @@ rule simulationsEstim:
 	shell:
 		"""
 		#submit_simulations_2pop.py {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
-		{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
+		{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp} {modeBarrier}
 		"""
 
 
@@ -224,7 +225,7 @@ rule simulation_best_model:
 		"""
 		best_model=$(cat {input.best})
 		#submit_simulations_2pop.py {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
-		{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
+		{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp} {modeBarrier}
 		"""
 
 
@@ -257,7 +258,7 @@ rule simulation_gof:
 		"""
 		best_model=$(cat {input.best})
 		#submit_simulations_gof_2pop.py {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp}
-		{submit_simulations_gof} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp}
+		{submit_simulations_gof} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp} {modeBarrier}
 		"""
 
 

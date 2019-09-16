@@ -1,5 +1,6 @@
-#!/usr/bin/python
+#!/shared/software/miniconda/envs/python-2.7/bin/python2.7
 # #!/home/roux/python/Python-2.7.14/python
+# #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import sys

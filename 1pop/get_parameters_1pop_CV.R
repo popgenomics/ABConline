@@ -1,4 +1,5 @@
-#!/usr/bin/Rscript
+#!/shared/home/croux/.conda/envs/R_env/bin/Rscript
+# #!/usr/bin/Rscript
 # function to estimate the parameters
 abc_nnet_multivar <- function(target,x,sumstat,tol,gwt,rejmethod=F,noweight=F,transf="none",bb=c(0,0),nb.nnet=10,size.nnet=5,trace=T, MaxNWts=10000){
 	options(digits=5)
