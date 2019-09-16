@@ -84,18 +84,11 @@ rule targets:
 	shell:
 		"""
 		tar -zcvf {timeStamp}.tar.gz {input}
+		touch slurm_tmp.out
 		rm slurm*out
-#		rm -rf {timeStamp}		
+		rm -rf {timeStamp}		
 		"""
 
-rule write_Nref:
-	output:
-		expand("{timeStamp}/Nref.txt", timeStamp=timeStamp)
-	shell:
-		"""
-		echo {Nref} > {timeStamp}/Nref.txt
-		"""
-		
 
 rule fasta2ABC_2pops:
 	# pypy fasta2ABC_2pops.py ../../all_loci.fasta txn mal num coding 250 0.007 12 100000 0.000000003 1
@@ -120,7 +113,8 @@ rule fasta2ABC_2pops:
 		expand("{timeStamp}/bpfile", timeStamp=timeStamp),
 		expand("{timeStamp}/nLoci.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/{nameA}_{nameB}_infos.txt", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
-		expand("{timeStamp}/{nameA}_{nameB}.ms", timeStamp=timeStamp, nameA=nameA, nameB=nameB)
+		expand("{timeStamp}/{nameA}_{nameB}.ms", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
+		expand("{timeStamp}/Nref.txt", timeStamp=timeStamp)
 	threads: 8
 	shell:
 		"""
@@ -138,6 +132,7 @@ rule fasta2ABC_2pops:
 		echo "nLoci,"${{y}}>>{timeStamp}/general_infos.txt
 		echo "mail,"{mail_address}>>{timeStamp}/general_infos.txt
 		echo "date,"${{x}}>>{timeStamp}/general_infos.txt
+		echo {params.Nref}>>{timeStamp}/Nref.txt
 		"""
 
 

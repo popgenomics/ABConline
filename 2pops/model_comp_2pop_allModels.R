@@ -436,8 +436,12 @@ if(predicted_model_iso_mig$allocation=='migration'){
 				b_M1 = posterior_IM$shape_M12_b[i]
 				a_M2 = posterior_IM$shape_M21_a[i]
 				b_M2 = posterior_IM$shape_M21_b[i]
+				print(a_M1)
+				print(b_M1)
+				print(a_M2)
+				print(b_M2)
 				scalar_M12 = rbeta(nrep, a_M1, b_M1) / (a_M1 / (a_M1 + b_M1))
-				scalar_M21 = rbeta(nrep, a_M2, b_M2) / (a_M1 / (a_M1 + b_M1))
+				scalar_M21 = rbeta(nrep, a_M2, b_M2) / (a_M2 / (a_M2 + b_M2))
 			}else{
 				# bimodal
 				scalar_M12 = rep(1, nrep)

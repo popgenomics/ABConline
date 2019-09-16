@@ -52,7 +52,7 @@ for i in config_yaml:
 	if(i[0] == 'M_max'):
 		M_bound[1] = float(i[1])
         if(i[0] == 'modeBarrier'): # is equal to "beta" or "bimodal"
-                modeBarrier = i[1]
+                modeBarrier = i[1].replace(" ", "")
 config_yaml.close()
 
 # convert parameter values in coalescent units
