@@ -3,18 +3,43 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from numpy import median
 from numpy.random import randint
 from numpy.random import uniform
 from numpy.random import binomial
 from numpy.random import beta
 from random import shuffle
 from random import randint
+from random import choice
+
+def provideTimes(Tsplit, Tsmall, nMultilocus):
+	# produces a vector of length "nMultilocus" with times smaller than Tsplit
+	res = []
+	for i in range(nMultilocus):
+		Tsmall_tmp = choice(Tsmall)
+		if Tsmall_tmp < Tsplit:
+			res.append(Tsmall_tmp)
+		else:
+			res.append(Tsplit[i] * 0.999)
+	return(res)
+
+
+def randomBeta(posterior, nMultilocus):
+	estimate = median(posterior)
+	a = 15.0
+	b = 15.0
+	scalar_tmp = beta(a=a, b=b, size=nMultilocus)
+	scalar = [ i/(a/(a+b)) for i in scalar_tmp ]
+	res = [ estimate * i for i in scalar ]
+	return(res)
+
 
 def produceBarriers(nLoci, nBarriers):
-        # produces a vector of 0 (non barrier) or 1 (barrier), of size equal to the number of loci
-        barriers = [0]*nBarriers + [1]*(nLoci-nBarriers)
-        shuffle(barriers)
-        return(barriers)
+	# produces a vector of 0 (non barrier) or 1 (barrier), of size equal to the number of loci
+	barriers = [0]*nBarriers + [1]*(nLoci-nBarriers)
+	shuffle(barriers)
+	return(barriers)
+
 
 help = "\t\033[1;31;40mTakes one model specifier, a number of multilocus simulations and a config.yaml file containing prior boundaries as arguments:\033[0m\n\t\t"
 help += "\n\t\t".join(["SC_1M_1N", "SC_1M_2N", "SC_2M_1N", "SC_2M_2N", "AM_1M_1N", "AM_1M_2N", "AM_2M_1N", "AM_2M_2N", "IM_1M_1N", "IM_1M_2N", "IM_2M_1N", "IM_2M_2N", "SI_1N", "SI_2N"])
@@ -23,15 +48,17 @@ help += "\t\033[1;32;40m#SI\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tb
 help += "\t\033[1;32;40m#AM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -ema tbs 2 0 tbs tbs 0 -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs\n"
 help += "\t\033[1;32;40m#IM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs\n"
 help += "\t\033[1;32;40m#SC\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -eM tbs 0 -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs\n"
-help += "\t\033[1;32;40mExample: ./priorgen_gof_2pop_popGrowth.py SC_2M_2N 1000 posterior_file beta\033[0m\n"
+help += "\t\033[1;32;40m\nExample: ./priorgen_gof_2pop.py [SI_1N; SI_2N; ...; SC_2M_2N] [number of multilocus simulations] [name of the posterior posterior_file] [barriers are modelled by a 'beta' or 'bimodal' distribution] [values are chosen in the posterior_file by using 'joint' values; 'disjoint' values; or 'randomBeta' centered around the median of each parameter]\033[0m\n\n"
+help += "\t\033[1;32;40mExample: ./priorgen_gof_2pop.py SC_2M_2N 1000 posterior_file beta joint\033[0m\n"
 
-if len(sys.argv) != 5:
+if len(sys.argv) != 6:
 	print(help)
 	sys.exit()
 
 # Configuration of the prior distribution
 nMultilocus = int(sys.argv[2])
-modeBarrier = sys.argv[4]
+modeBarrier = sys.argv[4] # bimodal / beta
+modePrior = sys.argv[5] # joint / disjoint / randomBeta
 
 # read bpfile
 infile = open("bpfile", "r")
@@ -66,35 +93,145 @@ for line in infile:
 		posterior[ params_posterior[cnt-1] ].append(float(i))
 infile.close()
 
+migration_models = ['SC_1M_1N', 'SC_2M_1N', 'SC_1M_2N', 'SC_2M_2N', 'AM_1M_1N', 'AM_2M_1N', 'AM_1M_2N', 'AM_2M_2N', 'IM_1M_1N', 'IM_2M_1N', 'IM_1M_2N', 'IM_2M_2N']
 
 # get the lines of the posterior used for the simulations: vector of length nMultilocus
 #used_posterior = randint(cnt, size=nMultilocus)
-used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ] 
+
+if modePrior == "joint": # modePrior in {joint; disjoint; randomBeta}, where joint takes the exact joint values of the posterior as a prior; disjoint takes random associations of parameter values from posterior; randombeta simulates a beta distribution around the median of the posterior
+	used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+	N1 = [ posterior['N1'][i] for i in used_posterior ]
+	N2 = [ posterior['N2'][i] for i in used_posterior ]
+	Na = [ posterior['Na'][i] for i in used_posterior ]
+	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
+
+	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
+	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+	
+	if '2N' in sys.argv[1]:
+		shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
+		shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
+
+	if sys.argv[1] in migration_models:
+		M12 = [ posterior['M12'][i] for i in used_posterior ]
+		M21 = [ posterior['M21'][i] for i in used_posterior ]
+		if 'SC' in sys.argv[1]:
+			Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+		if 'AM' in sys.argv[1]:
+			Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
+		if '2M' in sys.argv[1]:
+			if modeBarrier == "beta":
+				shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
+				shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
+				shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
+				shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+			else:
+				nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
+				nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
+				nBarriersM12 = [ i if i <= nLoci else nLoci for i in nBarriersM12 ]
+				nBarriersM21 = [ i if i <= nLoci else nLoci for i in nBarriersM21 ]
+else:
+	if modePrior == "disjoint":
+		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+		N1 = [ posterior['N1'][i] for i in used_posterior ]
+		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+		N2 = [ posterior['N2'][i] for i in used_posterior ]
+		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+		Na = [ posterior['Na'][i] for i in used_posterior ]
+		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+		Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
+		
+		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+		founders1 = [ posterior['founders1'][i] for i in used_posterior ]
+		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+		founders2 = [ posterior['founders2'][i] for i in used_posterior ]
+		
+		Tdem1 = provideTimes(Tsplit=Tsplit, Tsmall=posterior['Tdem1'], nMultilocus=nMultilocus)
+		Tdem2 = provideTimes(Tsplit=Tsplit, Tsmall=posterior['Tdem2'], nMultilocus=nMultilocus)
+		
+		if '2N' in sys.argv[1]:
+			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
+			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
+		
+		if sys.argv[1] in migration_models:
+			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			M12 = [ posterior['M12'][i] for i in used_posterior ]
+			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			M21 = [ posterior['M21'][i] for i in used_posterior ]
+			if 'SC' in sys.argv[1]:
+				Tsc = provideTimes(Tsplit=Tsplit, Tsmall=posterior['Tsc'], nMultilocus=nMultilocus)
+			if 'AM' in sys.argv[1]:
+				Tam = provideTimes(Tsplit=Tsplit, Tsmall=posterior['Tam'], nMultilocus=nMultilocus)
+				#Tam = [ posterior['Tam'][randint(0, cnt-1)] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i]*0.999 for i in range(nMultilocus) ]
+			if '2M' in sys.argv[1]:
+				if modeBarrier == "beta":
+					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
+					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
+					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
+					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
+				else:
+					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
+					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
+					nBarriersM12 = [ i if i <= nLoci else nLoci for i in nBarriersM12 ]
+					nBarriersM21 = [ i if i <= nLoci else nLoci for i in nBarriersM21 ]
+	else: # if modeprior == 'randombeta'
+		N1 = randomBeta(posterior['N1'], nMultilocus)
+		N2 = randomBeta(posterior['N2'], nMultilocus)
+		Na = randomBeta(posterior['Na'], nMultilocus)
+		Tsplit = randomBeta(posterior['Tsplit'], nMultilocus)
+		founders1 = randomBeta(posterior['founders1'], nMultilocus)
+		founders2 = randomBeta(posterior['founders2'], nMultilocus)
+		Tdem1 = randomBeta(posterior['Tdem1'], nMultilocus)
+		Tdem1 = [ Tdem1[i] if Tdem1[i]<Tsplit[i] else 0.999*Tsplit[i] for i in range(nMultilocus) ]
+		Tdem2 = randomBeta(posterior['Tdem2'], nMultilocus)
+		Tdem2 = [ Tdem2[i] if Tdem2[i]<Tsplit[i] else 0.999*Tsplit[i] for i in range(nMultilocus) ]
+		
+		if '2N' in sys.argv[1]:
+			shape_N_a = randomBeta(posterior['shape_N_a'], nMultilocus)
+			shape_N_b = randomBeta(posterior['shape_N_b'], nMultilocus)
+
+		if sys.argv[1] in migration_models:
+			M12 = randomBeta(posterior['M12'], nMultilocus)
+			M21 = randomBeta(posterior['M21'], nMultilocus)
+			if 'SC' in sys.argv[1]:
+				Tsc = randomBeta(posterior['Tsc'], nMultilocus)
+				Tsc = [ Tsc[i] if Tsc[i]<Tsplit[i] else 0.999*Tsplit[i] for i in range(nMultilocus) ]
+			if 'AM' in sys.argv[1]:
+				Tam = randomBeta(posterior['Tam'], nMultilocus)
+				Tam = [ Tam[i] if Tam[i]<Tsplit[i] else 0.999*Tsplit[i] for i in range(nMultilocus) ]
+			if '2M' in sys.argv[1]:
+				if modeBarrier == "beta":
+					shape_M12_a = randomBeta(posterior['shape_M12_a'], nMultilocus)
+					shape_M12_b = randomBeta(posterior['shape_M12_b'], nMultilocus)
+					shape_M21_a = randomBeta(posterior['shape_M21_a'], nMultilocus)
+					shape_M21_b = randomBeta(posterior['shape_M21_b'], nMultilocus)
+				else:
+					for post in range(cnt):
+						posterior['nBarriersM12'][post] = int(posterior['nBarriersM12'][post])
+						posterior['nBarriersM21'][post] = int(posterior['nBarriersM21'][post])
+					nBarriersM12 = randomBeta(posterior['nBarriersM12'], nMultilocus)
+					nBarriersM21 = randomBeta(posterior['nBarriersM21'], nMultilocus)
+					for i in range(nMultilocus):
+						nBarriersM12[i] = int(nBarriersM12[i])
+						nBarriersM21[i] = int(nBarriersM21[i])
+					nBarriersM12 = [ i if i <= nLoci else nLoci for i in nBarriersM12 ]
+					nBarriersM21 = [ i if i <= nLoci else nLoci for i in nBarriersM21 ]
 
 
 if sys.argv[1] == "SC_1M_1N":
 	# secondary contact
 	# ms tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -n 1 tbs -n 2 tbs -eM tbs 0 -ej tbs 2 1 -eN tbs tbs
 	# nsamtot theta rho L nsamA nsamB M12 M21 N1 N2 Tsc Tsplit Tsplit Na
-
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-	Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tTsc\tM12\tM21\n"
 	for sim in range(nMultilocus):
@@ -109,28 +246,6 @@ if sys.argv[1] == "SC_1M_1N":
 
 
 if sys.argv[1] == "SC_1M_2N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-	Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
-	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
-
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTsc\tM12\tM21\n"
 	for sim in range(nMultilocus):
@@ -151,35 +266,6 @@ if sys.argv[1] == "SC_1M_2N":
 
 
 if sys.argv[1] == "SC_2M_1N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-	Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-        if modeBarrier == "beta":
-                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
-        else:
-                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
-                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
-	
-	
         # param monolocus: values that will be read by ms
         if modeBarrier == "beta":
                 priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
@@ -213,38 +299,6 @@ if sys.argv[1] == "SC_2M_1N":
 
 
 if sys.argv[1] == "SC_2M_2N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-        if modeBarrier == "beta":
-                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
-        else:
-                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
-                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
-	
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-	Tsc = [ posterior['Tsc'][i] if posterior['Tsc'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
-	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
-	
         # param monolocus: values that will be read by ms
         if modeBarrier == "beta":
                 priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTsc\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
@@ -286,24 +340,6 @@ if sys.argv[1] == "SC_2M_2N":
 
 
 if sys.argv[1] == "AM_1M_1N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-	Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tTam\tM12\tM21\n"
 	for sim in range(nMultilocus):
@@ -319,28 +355,6 @@ if sys.argv[1] == "AM_1M_1N":
 
 
 if sys.argv[1] == "AM_1M_2N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-	Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
-	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
-	
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTam\tM12\tM21\n"
 	for sim in range(nMultilocus):
@@ -362,34 +376,6 @@ if sys.argv[1] == "AM_1M_2N":
 
 
 if sys.argv[1] == "AM_2M_1N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-	Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-        if modeBarrier == "beta":
-                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
-        else:
-                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
-                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
-
         # param monolocus: values that will be read by ms
         if modeBarrier == "beta":
                 priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tTam\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
@@ -423,38 +409,6 @@ if sys.argv[1] == "AM_2M_1N":
 
 
 if sys.argv[1] == "AM_2M_2N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-        if modeBarrier == "beta":
-                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
-        else:
-                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
-                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
-	
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-	Tam = [ posterior['Tam'][i] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
-	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
-
         # param monolocus: values that will be read by ms
         if modeBarrier == "beta":
                 priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tTam\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
@@ -493,23 +447,6 @@ if sys.argv[1] == "AM_2M_2N":
 
 
 if sys.argv[1] == "IM_1M_1N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tM12\tM21\n"
 	for sim in range(nMultilocus):
@@ -526,27 +463,6 @@ if sys.argv[1] == "IM_1M_1N":
 
 
 if sys.argv[1] == "IM_1M_2N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
-	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
-	
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tM12\tM21\n"
 	for sim in range(nMultilocus):
@@ -569,33 +485,6 @@ if sys.argv[1] == "IM_1M_2N":
 
 
 if sys.argv[1] == "IM_2M_1N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-        if modeBarrier == "beta":
-                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
-        else:
-                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
-                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
-
         # param monolocus: values that will be read by ms
         if modeBarrier == "beta":
                 priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
@@ -630,37 +519,6 @@ if sys.argv[1] == "IM_2M_1N":
 
 
 if sys.argv[1] == "IM_2M_2N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## Miration rates
-	M12 = [ posterior['M12'][i] for i in used_posterior ]
-	M21 = [ posterior['M21'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-        if modeBarrier == "beta":
-                shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-                shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-                shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-                shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
-        else:
-                nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
-                nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
-	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
-
         # param monolocus: values that will be read by ms
         if modeBarrier == "beta":
                 priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\tM12\tshape_M12_a\tshape_M12_b\tM21\tshape_M21_a\tshape_M21_b\n"
@@ -702,19 +560,6 @@ if sys.argv[1] == "IM_2M_2N":
 
 
 if sys.argv[1] == "SI_1N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tTsplit\n"
 	for sim in range(nMultilocus):
@@ -727,28 +572,7 @@ if sys.argv[1] == "SI_1N":
 	outfile.write(priorfile)
 	outfile.close()
 
-	outfile = open("priorfile.txt", "w")
-	outfile.write(priorfile)
-	outfile.close()
-
 if sys.argv[1] == "SI_2N":
-	# param multilocus: values that will be printed in priorfile.txt
-	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	founders1 = [ posterior['founders1'][i] for i in used_posterior ]
-	founders2 = [ posterior['founders2'][i] for i in used_posterior ]
-
-	## times
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-
-	Tdem1 = [ posterior['Tdem1'][i] if posterior['Tdem1'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-	Tdem2 = [ posterior['Tdem2'][i] if posterior['Tdem2'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i] for i in used_posterior ]
-
-	## factor of local reduction in Ne. Model of "background selection"
-	shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
-	shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
-
 	# param monolocus: values that will be read by ms
 	priorfile = "N1\tN2\tNa\tfounders1\tfounders2\tTdem1\tTdem2\tshape_N_a\tshape_N_b\tTsplit\n"
 	for sim in range(nMultilocus):
