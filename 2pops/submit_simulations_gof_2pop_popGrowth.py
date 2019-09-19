@@ -8,7 +8,7 @@ import time
 #    for model in SI; do for N in 1N 2N; do ./submit.py 100000 10 ${model}_${N}; done; done
 
 
-if len(sys.argv) != 12:
+if len(sys.argv) != 13:
 	print("\n\t submit_simulations_gof_2pop_popGrowth.py [nmultilocus] [iteration] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB] [sub_dir_sim] [sub_dir_model] [posterior_file] [beta or bimodal]")
 	print("\n\tex: submit_simulations_gof_2pop_popGrowth.py 1000 2 SI_1N flo mal sim_SI_1N SI_1N posterior_IM_1M_2N.txt beta\n\tto simulate 1000 multilocus simulations at the second iteration, in the folder sim_SI_1N") 
 	sys.exit(0)
@@ -23,7 +23,8 @@ sub_dir_sim = sys.argv[7] # name of the subdir where the simulations will be run
 sub_dir_model = sys.argv[8] # name of the sub_sub_dir containing ABCstat.txt
 posterior_file = sys.argv[9]
 timeStamp = sys.argv[10]
-modeBarrier = sys.argv[11]
+modeBarrier = sys.argv[11] # beta / bimodal
+modePrior = sys.argv[12] # joint / disjoint / randomBeta
 
 path = os.getcwd() + '/{0}'.format(timeStamp)
 
@@ -56,7 +57,7 @@ if mscommand == "":
 tmp = "cp {0}/bpfile {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 
-tmp += "priorgen_gof_2pop_popGrowth.py {0} {1} {2} {6} | msnsam tbs {3} {4} | mscalc_2pop_SFS.py {5}".format(model, nmultilocus, posterior_file, nmultilocus*nlocus, mscommand, outgroup, modeBarrier)
+tmp += "priorgen_gof_2pop_popGrowth.py {0} {1} {2} {6} {7} | msnsam tbs {3} {4} | mscalc_2pop_SFS.py {5}".format(model, nmultilocus, posterior_file, nmultilocus*nlocus, mscommand, outgroup, modeBarrier, modePrior)
 tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=02:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, iteration, tmp)
 print(tmp)
 os.system(tmp)
