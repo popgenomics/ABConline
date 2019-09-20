@@ -20,6 +20,8 @@ library(plotly)
 library(viridis)
 library(tidyr)
 library(RColorBrewer)
+library(yaml)
+library(ggpubr)
 
 
 pvalue = function(distribution, obs){
@@ -195,7 +197,57 @@ welcome_page <- fluidPage(
 				htmlOutput("homo_hetero")
 	
 			)
+		),
+		
+		fluidRow(
+			column(
+				hr(),
+				width = 12,
+				h3("Genomic variation in migration rates can be modeled in two alternative models:"),
+				h3(strong("A. beta distribution"), " of N.m:")
+			)
+		),
+
+		fluidRow(
+			# Sidebar panel for inputs
+			column(width=4,
+				# Input: Slider for the number of bins
+				sliderInput(inputId = "M", label = h3("Effective migration rates (number of migrants per generation):"), min = 0, max = 10, value = 5, step=0.1),
+				sliderInput(inputId = "alphaM", label = h3("Shape parameter #1:"), min = 1, max = 20, value = 10, step=0.1),
+				sliderInput(inputId = "betaM", label = h3("Shape parameter #2:"), min = 1, max = 20, value = 3, step=0.1)	
+			),
+			
+			# Main panel for displaying outputs
+			column(width=8,
+				# Output: density
+				plotOutput(outputId = "migration_hetero_beta")
+			)
+		),
+
+		fluidRow(
+			column(
+				hr(),
+				width = 12,
+				h3(strong('B. bimodal distribution'), " of N.m:")
+			)
+		),
+
+		fluidRow(
+			# Sidebar panel for inputs
+			column(width=4,
+				# Input: Slider for the number of bins
+				sliderInput(inputId = "Mexample", label = h3("Effective migration rates (number of migrants per generation):"), min = 0, max = 10, value = 5, step=0.1),
+				sliderInput(inputId = "nLociExample", label = h3("Number of studied loci:"), min = 20, max = 1000, value = 100, step=1),
+				sliderInput(inputId = "propBarrierExample", label = h3("Proportion of barriers (in %):"), min = 0, max = 100, value = 50, step=1)
+			),
+			
+			# Main panel for displaying outputs
+			column(width=8,
+				# Output: density
+				plotOutput(outputId = "migration_hetero_bimodal")
+			)
 		)
+
 	),
 	
 #	box(title = h2("Model comparisons for 2 populations/species"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
@@ -897,16 +949,34 @@ server <- function(input, output, session = session) {
 	output$genomic_hetero <- renderPlot({
 		par(las=1)
 		y_points = dbeta(0:100/100, input$alpha, input$beta)
-		x_points = 0:100/100 * input$Ne
+		x_points = 0:100/100 * input$Ne/( input$alpha / (input$alpha + input$beta) )
 		plot(x_points, y_points, type='l', xlab = expression(paste("Genomic distribution of ", italic('Ne'), sep=" ")), ylab='density', main=expression(italic("Example of genomic distributions that fastABC will try to infer")), col="white", cex.main = 1.5, cex.axis = 1.5, cex.lab=1.5, xlim=c(min(c(x_points, input$Ne*1.2)), max(c(x_points, input$Ne*1.2))))
 		
 		x_points = c(0, x_points, max(x_points), 0)
 		y_points = c(0, y_points, 0, 0)
-		polygon(x_points, y_points, border = 'NA', col="#b2df8a")
-		abline(v=input$Ne, lwd=4, col="#fee08b")
+		polygon(x_points, y_points, border = 'NA', col=viridis_pal(option="D")(2)[2])
+		abline(v=input$Ne, lwd=8, col=viridis_pal(option="D")(2)[1])
 	})
 	
+	output$migration_hetero_beta <- renderPlot({
+		par(las=1)
+		y_points = dbeta(0:100/100, input$alphaM, input$betaM)
+		x_points = 0:100/100 * input$M/( input$alphaM / (input$alphaM + input$betaM) )
+		plot(x_points, y_points, type='l', xlab = expression(paste("Genomic distribution of ", italic('N.m'), sep=" ")), ylab='density', main=expression(italic("Beta distributions")), col="white", cex.main = 1.5, cex.axis = 1.5, cex.lab=1.5, xlim=c(min(c(x_points, input$M*1.2)), max(c(x_points, input$M*1.2))))
+		
+		x_points = c(0, x_points, max(x_points), 0)
+		y_points = c(0, y_points, 0, 0)
+		polygon(x_points, y_points, border = 'NA', col=viridis_pal(option="D")(2)[2])
+		abline(v=input$M, lwd=8, col=viridis_pal(option="D")(2)[1])
+	})
 	
+	output$migration_hetero_bimodal <- renderPlot({
+		nLociExample = input$nLociExample
+		barriers = as.integer(input$propBarrierExample/100 * nLociExample)
+		distribution = c(rep(0, barriers), rep(input$Mexample, nLociExample-barriers))
+		hist(distribution, xlab = expression(paste("Genomic distribution of ", italic('N.m'), sep=" ")), ylab='Number of loci', main=expression(italic("Bimodal distribution of N.m")), col=viridis_pal(option="D")(2)[2], cex.main = 1.5, cex.axis = 1.5, cex.lab=1.5, xlim=1.2*range(distribution))
+	})
+
 	#	UPLOAD DATA
 	## GET THE SUMMARY STATS ABOUT THE UPLOADED FILE
 	## list of species
@@ -1190,6 +1260,7 @@ server <- function(input, output, session = session) {
 	output$user_dataset_tabset <- renderUI({
 		if(is.null(input$results) == FALSE){
 			if(users_infos()[1,2]==2){
+				# if number of species == 2
 				tabsetPanel(id = "observed_dataset",
 				type = "tabs",
 				tabPanel("Summarized jSFS", plotlyOutput("plot_obs_stats_sites")),
@@ -1199,6 +1270,7 @@ server <- function(input, output, session = session) {
 				)
 			}else{
 				if(users_infos()[1,2]==1){
+					# if number of species == 1
 					plotlyOutput("plot_obs_stats_1pop")
 				}else{
 					return()
@@ -1212,15 +1284,18 @@ server <- function(input, output, session = session) {
 	output$user_inferences <- renderUI({
 		if(is.null(input$results) == FALSE){
 			if(users_infos()[1,2]==2){
+				# if number of species == 2
 				tabsetPanel(id = "inferences",
 				type = "tabs",
 				tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
 				tabPanel("Locus specific model comparison", numericInput("threshold_locus_specific_model_comp", label = h3("Posterior probability threshold value below which an inference is considered ambiguous"), width = (0.25*as.numeric(input$dimension[1])), value = 0.9, min = 0, max = 1, step = 0.005), hr(), plotlyOutput("locus_specific_model_comparison", height = 'auto', width = 'auto')),
+				tabPanel("Estimated parameters", uiOutput("parameters_estimates")),
 				tabPanel("Goodness-of-fit test : summary statistics", uiOutput("display_gof_table")),
 				tabPanel("Goodness-of-fit test : jSFS", uiOutput("display_sfs_table"))
 				)
 			}else{
 				if(users_infos()[1,2]==1){
+					# if number of species == 1
 					tabsetPanel(id = "inferences",
 					type = "tabs",
 					tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
@@ -1256,6 +1331,7 @@ server <- function(input, output, session = session) {
 		if(is.null(modComp_table())){
 			return(NULL)
 		}else if(users_infos()[1,2] == 2){
+			# if number of species == 2
 			 if(modComp_table()[2,1] == 'isolation'){
 				fluidPage(
 					hr(),
@@ -1274,6 +1350,7 @@ server <- function(input, output, session = session) {
 			}
 		}
 		else if(users_infos()[1,2] == 1){
+			# if number of species == 1
 			fluidPage(
 				hr(),
 				infoBox("Expansion versus Constant versus Contraction", paste('best model = ', as.matrix(modComp_table()[2,])[1], sep=''), paste('post. proba = ', round(as.numeric(as.matrix(modComp_table()[3,])), 5)[1], sep=''), icon = icon("check"), color='navy'),
@@ -1281,7 +1358,265 @@ server <- function(input, output, session = session) {
 			)
 		}
 	})
-	
+
+	output$output_posterior_2pops <- renderUI({
+		fileName = input$results
+		if(is.null(fileName)) {
+			return()
+		}else{
+			fluidPage(
+				fluidRow( width = 12,
+					selectInput('param_name', 'Select: ', list_parameters())
+				),
+				
+				fluidRow( width = 12,
+					plotlyOutput( outputId = 'posterior_parameters_2pops')
+				)
+			)
+		}
+	})
+
+
+	## Get the names of the parameters
+	list_parameters = reactive({
+		fileName = input$results
+		if(is.null(fileName)){
+			return (NULL)
+		}else{
+			untar(fileName$datapath, exdir = getwd())
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+
+			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T)
+			
+			# remove the temporary unarchived results
+			system(paste('rm -rf ', rootName, sep=''))
+			return(colnames(res1))
+		}
+	})
+
+
+	##  Plot the posterior
+	output$posterior_parameters_2pops <- renderPlotly({
+		fileName = input$results
+		if (is.null(fileName)){
+			return(NULL)
+		}else{
+			param_name = input$param_name
+			
+			untar(fileName$datapath, exdir = getwd())
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+
+			theme_set(theme_classic())
+			figure = list()
+
+			bpfile = read.table(paste(rootName, '/bpfile', sep=''), h=F, skip=1); nLoci = ncol(bpfile)
+			yaml = read_yaml(paste(rootName, '/config.yaml', sep=''))
+			Nref = as.numeric(read.table(paste(rootName, '/Nref.txt', sep='')))
+			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T)
+			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
+			
+			# remove the temporary unarchived results
+			system(paste('rm -rf ', rootName, sep=''))
+
+
+			# prior
+			nPrior = 0.5e6
+			prior_shape = runif(nPrior, 0.01, 50)
+			prior_founders = runif(nPrior, 0, 1)
+
+			scale = 1
+			if( param_name == 'N1' || param_name == 'N2' || param_name == 'Na' ){
+				scale = Nref
+				
+				# prior
+				min = yaml$N_min
+				max = yaml$N_max
+				prior = runif(nPrior, min, max)
+			}
+
+			if( param_name == 'founders2' || param_name == 'founders1' ){
+				prior = prior_founders
+			}
+
+			if( param_name == 'M12' || param_name == 'M21' ){
+				prior = runif(nPrior, yaml$M_min, yaml$M_max)
+			}
+
+			if( param_name == 'Tsplit' || param_name == 'Tam' || param_name == 'Tsc' || param_name == 'Tdem1' || param_name == 'Tdem2' ){
+				scale = 4*Nref
+				
+				# prior
+				min = yaml$Tsplit_min
+				max = yaml$Tsplit_max
+				if( param_name == 'Tsplit' ){
+					prior = runif(nPrior, min, max)
+				}
+
+				if( param_name == 'Tam' ){
+					prior_Tsplit = runif(nPrior, min, max)
+					prior = vector(length = nPrior)
+					for(j in 1:nPrior){
+						prior[j] = runif(1, 0.5*prior_Tsplit[j], prior_Tsplit[j])
+					}
+				}
+				
+				if( param_name == 'Tsc' ){
+					prior_Tsplit = runif(nPrior, min, max)
+					prior = vector(length = nPrior)
+					for(j in 1:nPrior){
+						prior[j] = runif(1, min, 0.2*prior_Tsplit[j])
+					}
+				}
+				
+				if( param_name == 'Tdem1' || param_name == 'Tdem2' ){
+					prior_Tsplit = runif(nPrior, min, max)
+					prior = vector(length = nPrior)
+					for(j in 1:nPrior){
+						prior[j] = runif(1, min, prior_Tsplit[j])
+					}
+				}
+			}
+
+			if( param_name == "shape_N_a" || param_name == "shape_N_b" || param_name == "shape_M12_a" || param_name == "shape_M12_b" || param_name == "shape_M21_a" || param_name == "shape_M21_b" ){
+				prior = prior_shape
+			}
+
+			if( param_name == "nBarriersM12" || param_name == "nBarriersM21" ){
+				prior = runif(nPrior, 0, nLoci)
+			}
+
+			#	prior = x[,i] * scale
+			#	prior = data.frame(x = prior, label=rep('prior', length(prior)))
+			prior = data.frame(x = prior, distribution=rep("Prior", length(prior)))
+			posterior1 = res1[,which(colnames(res1)==param_name)] * scale
+			posterior1 = data.frame(x = posterior1, distribution=rep('Posterior', length(posterior1)))
+			posterior2 = res2[,which(colnames(res1)==param_name)] * scale
+			posterior2 = data.frame(x = posterior2, distribution=rep('Optimized posterior', length(posterior2)))
+			#	df=rbind(prior, posterior)
+			df=rbind(prior, posterior1, posterior2)
+
+
+			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", rev(viridis_pal(option="D")(2)))) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
+			p <- ggplotly(p, width = 0.55*as.numeric(input$dimension[1]), height = 0.55*as.numeric(input$dimension[2]))
+
+			figure_estimations = ggplotly(p)
+			return(figure_estimations)
+		}
+	})
+
+	# Display the table with estimated parameters	
+	output$table_parameters_2pops <- renderPlotly({
+		fileName = input$results
+		if (is.null(fileName)){
+			return(NULL)
+		}else{
+			untar(fileName$datapath, exdir = getwd())
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+		
+			# table
+			theme_set(theme_classic())
+			figure = list()
+
+			# read informations
+			Nref = as.numeric(read.table(paste(rootName, '/Nref.txt', sep='')))
+			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T)
+			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
+			
+			# remove the temporary unarchived results
+			system(paste('rm -rf ', rootName, sep=''))
+
+			# table
+			param_names = NULL
+			post1_Q1 = NULL
+			post1_median = NULL
+			post1_Q2 = NULL
+			post2_Q1 = NULL
+			post2_median = NULL
+			post2_Q2 = NULL
+
+			nparams = ncol(res1)
+			for(i in 1:nparams){
+				param_name = colnames(res1)[i]
+				
+				scale = 1
+				if( param_name == 'N1' || param_name == 'N2' || param_name == 'Na' ){
+					scale = Nref
+				}
+				
+				if( param_name == 'Tsplit' || param_name == 'Tam' || param_name == 'Tsc' || param_name == 'Tdem1' || param_name == 'Tdem2' ){
+					scale = 4*Nref
+				}
+					
+				posterior1 = res1[,i] * scale
+				posterior1 = data.frame(x = posterior1, label=rep('Posterior', length(posterior1)))
+				posterior2 = res2[,i] * scale
+				posterior2 = data.frame(x = posterior2, label=rep('Optimized posterior', length(posterior2)))
+				
+				# table
+				param_names = c(param_names, param_name)
+				if(param_name%in%c('N1', 'N2', 'Na', 'Tsplit', 'Tsc', 'Tmin', 'Tdem1', 'Tdem2', 'nBarriersM12', 'nBarriersM21')){
+					post1_Q1_tmp = formatC(round(quantile(posterior1$x, 0.025), 0), format='d', big.mark=' ')
+					post1_median_tmp = formatC(round(quantile(posterior1$x, 0.5), 0), format='d', big.mark=' ')
+					post1_Q2_tmp = formatC(round(quantile(posterior1$x, 0.975), 0), format='d', big.mark=' ')
+					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 0), format='d', big.mark=' ')
+					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 0), format='d', big.mark=' ')
+					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 0), format='d', big.mark=' ')
+				}else{
+					post1_Q1_tmp = formatC(round(quantile(posterior1$x, 0.025), 5), format="f", big.mark=" ", digits=5)
+					post1_median_tmp = formatC(round(quantile(posterior1$x, 0.5), 5), format="f", big.mark=" ", digits=5)
+					post1_Q2_tmp = formatC(round(quantile(posterior1$x, 0.975), 5), format="f", big.mark=" ", digits=5)
+					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 5), format="f", big.mark=" ", digits=5)
+					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 5), format="f", big.mark=" ", digits=5)
+					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 5), format="f", big.mark=" ", digits=5)
+				}
+					
+				post1_Q1 = c(post1_Q1, post1_Q1_tmp)
+				post1_median = c(post1_median, post1_median_tmp)
+				post1_Q2 = c(post1_Q2, post1_Q2_tmp)
+				post2_Q1 = c(post2_Q1, post2_Q1_tmp)
+				post2_median = c(post2_median, post2_median_tmp)
+				post2_Q2 = c(post2_Q2, post2_Q2_tmp)
+			}
+
+			# print table
+			col_tmp = rev(viridis_pal(option="D", alpha=1)(2))
+			col_post1_header = col_tmp[1]
+			col_post2_header = col_tmp[2]
+			col_tmp = rev(viridis_pal(option="D", alpha=0.4)(2))
+			col_post1 = col_tmp[1]
+			col_post2 = col_tmp[2]
+			green = "#C7F464"
+			dark_grey = "#1e2b37"
+			light_grey = "#556270"
+
+			table_estimations = plot_ly( type = 'table',
+				header = list(
+					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median</b>", "<b>HPD 0.975</b>"),
+					line = list(color = dark_grey),
+					fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post2_header, col_post2_header, col_post2_header)),
+					align = c('left','center'),
+					font = list(color = c(green, dark_grey, dark_grey, dark_grey, "white", "white", "white", size = 30))
+				),
+				cells = list(
+					values = rbind(
+						paste('<b>', param_names, '</b>', sep=''),
+						post1_Q1,
+						paste('<b>', post1_median, '</b>', sep=''),
+						post1_Q2,
+						post2_Q1,
+						paste('<b>', post2_median, '</b>', sep=''),
+						post2_Q2
+					),
+					line = list(color = dark_grey),
+					fill = list(color = c(light_grey, col_post1, col_post1, col_post1, col_post2, col_post2, col_post2)),
+					align = c('left', 'center'),
+					font = list(color = c(green, dark_grey,  size = 30))
+				), 
+				width = 0.75*as.numeric(input$dimension[1]), height = 0.75*as.numeric(input$dimension[2])
+			)
+			return(table_estimations)
+		}
+	})
 	
 	## READ THE GOODNESS OF FIT TEST (GOF)
 	gof_table <- reactive({
@@ -1580,13 +1915,28 @@ server <- function(input, output, session = session) {
 					layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend), hoverlabel = list(font=list(size=20)))
 		}
 	})
-
+	
+	output$parameters_estimates <- renderUI({
+		if(is.null(input$results)){
+			return(NULL)
+		}else{
+			if(users_infos()[1,2]==2){
+				# if nSpecies == 2
+				tabsetPanel(
+					#tabPanel("Posterior", selectInput('param_name', 'Select: ', ''), plotlyOutput(outputId = "posterior_parameters_2pops")),
+					tabPanel("Posterior", uiOutput("output_posterior_2pops")),
+					tabPanel("Highest Posterior Density", plotlyOutput(outputId = "table_parameters_2pops"))
+				)
+			}
+		}
+	})
 	
 	output$display_sfs_table <- renderUI({
 		if(is.null(table_sfs())){
 			return(NULL)
 		}else{
 			if(users_infos()[1,2]==2){
+			# if nSpecies == 2
 				fluidPage(
 					hr(),
 					
@@ -1612,6 +1962,7 @@ server <- function(input, output, session = session) {
 				)
 			}else{
 				if(users_infos()[1,2]==1){
+					# if nSpecies == 1
 					fluidPage(
 						fluidRow(
 							width = 12,
