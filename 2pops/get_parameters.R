@@ -439,9 +439,9 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 			
 			pp = ggdensity(df, x='x', fill='label') +
 				theme(axis.text=element_text(size=15), axis.title=element_text(size=15), legend.text=element_text(size=15)) +
-				geom_vline(xintercept = rf_estimate, color = "black", size=1.25) +
-				geom_vline(xintercept = rf_estimate_inf, color = "black", size=0.25, linetype="dashed") +
-				geom_vline(xintercept = rf_estimate_sup, color = "black", size=0.25, linetype="dashed") +
+#				geom_vline(xintercept = rf_estimate, color = "black", size=1.25) +
+#				geom_vline(xintercept = rf_estimate_inf, color = "black", size=0.25, linetype="dashed") +
+#				geom_vline(xintercept = rf_estimate_sup, color = "black", size=0.25, linetype="dashed") +
 				labs(fill = "") +
 				scale_x_continuous(name = param_name) +
 				scale_y_continuous(name = 'density') +
