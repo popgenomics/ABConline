@@ -1,5 +1,5 @@
 # general property
-nmultilocus = 1000 # number of multilocus simulations per iteration (500)
+nmultilocus = 500 # number of multilocus simulations per iteration (500)
 
 # model comparison
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
@@ -11,17 +11,17 @@ MODELS_COMP = ['SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N', 'AM_1M_1N', 'AM_1
 # first and second estimation of parameters
 MODELS_ESTIM = ['IM_2M_2N'] #MODELS_ESTIM = ['SC_2M_2N', 'AM_2M_2N', 'IM_2M_2N', 'SI_2N', 'SI_1N']
 nIterations_gof = 50 # number of subdirectories for the simulations used in the nnet param estimates (200)
-nIterations_estim_1_3 = 1000 # number of subdirectories for the simulations used in the nnet param estimates (2000)
+nIterations_estim_1_3 = 500 # number of subdirectories for the simulations used in the nnet param estimates (2000)
 ITERATIONS_ESTIMATES_1_3 = range(nIterations_estim_1_3)
 ITERATIONS_GOF = range(nIterations_gof)
-nPosterior1 = 1500
-nPosterior3 = 1500
+nPosterior1 = 2000
+nPosterior3 = 10000
 
 # second estimation of parameters
 nIterations_estim_2 = 100 # number of subdirectories for the simulations used in the nnet param estimates (2000)
 ITERATIONS_ESTIMATES_2 = range(nIterations_estim_2)
 ITERATIONS_GOF_2 = range(nIterations_gof)
-nPosterior2 = 1500
+nPosterior2 = 2000
 
 # informations from the config.yaml file
 mail_address = config['mail_address']
@@ -55,7 +55,9 @@ rho_over_theta = config['rho_over_theta']
 
 rule targets:
 	input:
+		expand("{timeStamp}/bpfile", timeStamp=timeStamp),
 		expand("{timeStamp}/Nref.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/config.yaml", timeStamp=timeStamp),
 		expand("{timeStamp}/general_infos.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/{nameA}_{nameB}_infos.txt", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
 		expand("{timeStamp}/ABCstat_global.txt", timeStamp=timeStamp),
@@ -113,7 +115,8 @@ rule fasta2ABC_2pops:
 		expand("{timeStamp}/nLoci.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/{nameA}_{nameB}_infos.txt", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
 		expand("{timeStamp}/{nameA}_{nameB}.ms", timeStamp=timeStamp, nameA=nameA, nameB=nameB),
-		expand("{timeStamp}/Nref.txt", timeStamp=timeStamp)
+		expand("{timeStamp}/Nref.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/config.yaml", timeStamp=timeStamp)
 	threads: 8
 	shell:
 		"""
@@ -132,6 +135,7 @@ rule fasta2ABC_2pops:
 		echo "mail,"{mail_address}>>{timeStamp}/general_infos.txt
 		echo "date,"${{x}}>>{timeStamp}/general_infos.txt
 		echo {params.Nref}>>{timeStamp}/Nref.txt
+		cp {config_yaml} {timeStamp}/config.yaml
 		"""
 
 
@@ -225,7 +229,7 @@ rule estimation:
 	threads: nCPU_R
 	shell:
 		"""
-		estimates_2pop.R Nref={Nref} nameA={nameA} nameB={nameB} timeStamp={timeStamp} nMin={nMin} sub_dir_sim=estim nSubdir={nIterations_estim} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} nPosterior={nPosterior1}
+		estimates_2pop.R Nref={Nref} nameA={nameA} nameB={nameB} timeStamp={timeStamp} nMin={nMin} sub_dir_sim=estim nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} nPosterior={nPosterior1}
 		"""
 
 rule simulation_best_model:
@@ -260,7 +264,7 @@ rule estimation_best_model:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model nSubdir={nIterations_estim} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2}
+		estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2}
 		"""
 
 
@@ -328,7 +332,7 @@ rule estimation_best_model_2:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_2 nSubdir={nIterations_estim} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2}
+		estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_2 nSubdir={nIterations_estim_2} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2}
 		"""
 
 # third estimation of parameters
@@ -359,7 +363,7 @@ rule estimation_best_model_3:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_3 nSubdir={nIterations_estim} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior3}
+		estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_3 nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior3}
 		"""
 
 # second goodness of fit test from the third estimates
