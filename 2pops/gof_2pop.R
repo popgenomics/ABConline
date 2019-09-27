@@ -4,6 +4,8 @@ for(i in commandArgs()){
         tmp = strsplit(i, '=')
         if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] }
         if(tmp[[1]][1] == 'sub_dir'){ sub_dir = tmp[[1]][2] }
+        if(tmp[[1]][1] == 'nIterations_gof'){ nIterations_gof = as.integer(tmp[[1]][2]) }
+        if(tmp[[1]][1] == 'writeDistribution'){ writeDistribution = as.logical(tmp[[1]][2]) }
 }
 
 ### Summary Stats
@@ -13,19 +15,45 @@ x = read.table(paste(timeStamp, '/', sub_dir, '/simulations.txt', sep=''), h=T)
 # observation
 y = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
 
-
-# function to compute the pval
-pvalue = function(distribution, obs){
-	median_x = median(distribution)
-	if(obs==median_x){
-		pval=0.5
-	}else if(as.numeric(obs)>median_x){
-		pval = length(which(distribution>as.numeric(obs)))/length(distribution)
-	}else{
-		pval = length(which(distribution<as.numeric(obs)))/length(distribution)
+if( writeDistribution==TRUE){
+	# function to compute the pval
+	pvalue = function(distribution, obs){
+		median_x = median(distribution)
+		if(obs==median_x){
+			pval=0.5
+		}else if(as.numeric(obs)>median_x){
+			pval = length(which(distribution>as.numeric(obs)))/length(distribution)
+		}else{
+			pval = length(which(distribution<as.numeric(obs)))/length(distribution)
+		}
+		return(pval)
 	}
-	return(pval)
+
+	### Summary Stats
+	prior_ss = gof1_ss = gof2_ss = NULL
+	prior_sfs = gof1_sfs = gof2_sfs = NULL
+	# simulations
+	for(i in 0:(nIterations_gof-1)){
+		prior_ss = rbind(prior_ss, read.table(paste(timeStamp, '/best_model/best_model_', i, '/ABCstat.txt', sep=''), h=T))
+		gof1_ss = rbind(gof1_ss, read.table(paste(timeStamp, '/gof/gof_', i, '/ABCstat.txt', sep=''), h=T))
+		gof2_ss = rbind(gof2_ss, read.table(paste(timeStamp, '/gof_2/gof_', i, '/ABCstat.txt', sep=''), h=T))
+		prior_sfs = rbind(prior_sfs, read.table(paste(timeStamp, '/best_model/best_model_', i, '/ABCjsfs.txt', sep=''), h=T))
+		gof1_sfs = rbind(gof1_sfs, read.table(paste(timeStamp, '/gof/gof_', i, '/ABCjsfs.txt', sep=''), h=T))
+		gof2_sfs = rbind(gof2_sfs, read.table(paste(timeStamp, '/gof_2/gof_', i, '/ABCjsfs.txt', sep=''), h=T))
+
+	}
+
+	# observation
+	obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
+	obs_sfs = read.table(paste( timeStamp, '/ABCjsfs.txt', sep=''), h=T)
+
+	# output for the web interface
+	origin = c('observed dataset', rep('prior', nrow(prior_ss)), rep('posterior', nrow(gof1_ss)), rep('optimized posterior', nrow(gof2_ss)))
+	PCA = rbind(cbind(obs_ss, obs_sfs), cbind(prior_ss, prior_sfs), cbind(gof1_ss, gof1_sfs), cbind(gof2_ss, gof2_sfs))
+	PCA = cbind(PCA, origin)
+	write.table(PCA, paste(timeStamp, '/distribution_PCA.txt', sep=''), col.names=T, row.names=F, quote=F, sep='\t')
 }
+
 
 # measure the pval over all statistics
 ss = c(2:31, 40:48)

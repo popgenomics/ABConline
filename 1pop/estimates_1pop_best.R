@@ -1,5 +1,5 @@
-#!/usr/bin/Rscript
-# #!/shared/home/croux/.conda/envs/R_env/bin/Rscript
+#!/shared/home/croux/.conda/envs/R_env/bin/Rscript
+# #!/usr/bin/Rscript
 for(i in commandArgs()){
 	tmp = strsplit(i, '=')
 	if(tmp[[1]][1] == 'nameA'){ nameA = tmp[[1]][2] }
@@ -26,7 +26,8 @@ obs_sfs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)[-1]
 
 ######################################################
 #source('/shared/home/croux/softwares/ABConline/1pops/get_parameters_1pop.R') # cluster
-source('/home/croux/Documents/ABConline/1pop/get_parameters_1pop.R') # own laptop
+#source('/home/croux/Documents/ABConline/1pop/get_parameters_1pop.R') # own laptop
+source("/shared/mfs/data/home/croux/softwares/ABConline/1pop/get_parameters_1pop.R")
 
 options(digits=5)
 model_tmp = bestModel

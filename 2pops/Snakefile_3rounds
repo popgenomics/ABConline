@@ -1,5 +1,5 @@
 # general property
-nmultilocus = 500 # number of multilocus simulations per iteration (500)
+nmultilocus = 1000 # number of multilocus simulations per iteration (500)
 
 # model comparison
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
@@ -11,7 +11,7 @@ MODELS_COMP = ['SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N', 'AM_1M_1N', 'AM_1
 # first and second estimation of parameters
 MODELS_ESTIM = ['IM_2M_2N'] #MODELS_ESTIM = ['SC_2M_2N', 'AM_2M_2N', 'IM_2M_2N', 'SI_2N', 'SI_1N']
 nIterations_gof = 50 # number of subdirectories for the simulations used in the nnet param estimates (200)
-nIterations_estim_1_3 = 500 # number of subdirectories for the simulations used in the nnet param estimates (2000)
+nIterations_estim_1_3 = 1000 # number of subdirectories for the simulations used in the nnet param estimates (2000)
 ITERATIONS_ESTIMATES_1_3 = range(nIterations_estim_1_3)
 ITERATIONS_GOF = range(nIterations_gof)
 nPosterior1 = 2000
@@ -300,7 +300,7 @@ rule gof:
 		head -n1 {timeStamp}/gof/gof_0/ABCjsfs.txt > {timeStamp}/gof/simulations_jsfs.txt
 		cat {timeStamp}/gof/gof*/ABCjsfs.txt | grep -v fA >> {timeStamp}/gof/simulations_jsfs.txt
 		
-		gof_2pop.R timeStamp={timeStamp} sub_dir=gof
+		gof_2pop.R timeStamp={timeStamp} sub_dir=gof nIterations_gof={nIterations_gof} writeDistribution=FALSE
 		"""
 
 
@@ -398,6 +398,6 @@ rule gof_2:
 		head -n1 {timeStamp}/gof_2/gof_0/ABCjsfs.txt > {timeStamp}/gof_2/simulations_jsfs.txt
 		cat {timeStamp}/gof_2/gof*/ABCjsfs.txt | grep -v fA >> {timeStamp}/gof_2/simulations_jsfs.txt
 		
-		gof_2pop.R timeStamp={timeStamp} sub_dir=gof_2
+		gof_2pop.R timeStamp={timeStamp} sub_dir=gof_2 nIterations_gof={nIterations_gof} writeDistribution=TRUE
 		"""
 
