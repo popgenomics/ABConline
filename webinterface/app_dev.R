@@ -137,14 +137,15 @@ convertMenuItem <- function(mi,tabName) {
 welcome_page <- fluidPage(
 	fluidRow(
 		boxPlus(title = h2("Overview"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = FALSE,
-			h3(strong("fastABC"), "is a DNA sequence analysis workflow to study the demographic history of sampled populations or species by using Approximate Bayesian Computations."),
-			h3("From a single uploaded input file containing sequenced genes or DNA fragments,", strong("fastABC"), "will:"),
+			h3(strong("DILS"), "= Demographic Inferences with Linked Selection"),
+			h3(strong("DILS"), "is a DNA sequence analysis workflow to study the demographic history of sampled populations or species by using Approximate Bayesian Computations."),
+			h3("From a single uploaded input file containing sequenced genes or DNA fragments,", strong("DILS"), "will:"),
 			h3(strong("1."), "simulate different models/scenarios."),
 			h3(strong("2."), "select the best model using an ABC approach based on", a(span(strong("random forests."), style = "color:teal"), href="https://cran.r-project.org/web/packages/abcrf/index.html", target="_blank")),
 			h3(strong("3."), "estimate the parameters of the best model using a", a(span(strong("neural network"), style = "color:teal"), href="https://cran.r-project.org/web/packages/abc/index.html", target="_blank"), "approach."),
-			h3(strong("4."), "measure the robustness of the analyses.", strong("fastABC"), "is transparent on the ability of its inferences to reproduce the observed data or not."),
+			h3(strong("4."), "measure the robustness of the analyses.", strong("DILS"), "is transparent on the ability of its inferences to reproduce the observed data or not."),
 			hr(),
-			h3("The first goal of", strong("fastABC"), "is to distinguish between isolation versus migration models for sister gene pools."),
+			h3("The first goal of", strong("DILS"), "is to distinguish between isolation versus migration models for sister gene pools."),
 			h3("Its ultimate goal is to produce for each studied gene the probability of being associated with a species barrier.")
 		)
 	),
@@ -188,12 +189,12 @@ welcome_page <- fluidPage(
 		fluidRow(
 			column(width=12,
 				h3("All demographic models exist under AT LEAST two alternative genomic models:"),
-				h3(strong("1."), "a model where the effective size", strong("(Ne)"), "is genomically homogeneous (orange bar), i.e., all locus are simulated by sharing the same", strong("Ne"), "value. In this model,", strong("fastABC"), "will try to estimate the value of", strong("Ne"), "best explaining the observed data.", strong("Ne"), "being independent between all populations (current, past)."),
-				h3(strong("2."), "a model where", strong("Ne"), "is genomically heterogeneous (green distribution), i.e., all locus are simulated with a value of", strong("Ne"), "drawn in a Beta distribution. In this model,", strong("fastABC"), "will try to estimate the value of", strong("Ne"), "as well as the two shape parameters", strong("(shape1 and shape2)"), "that best explain the observations. Here,", strong("fastABC"), "assumes that all populations (current and past)", strong("share the same Beta distribution"), "but are independently rescaled by different", strong("Ne"), "values."),
+				h3(strong("1."), "a model where the effective size", strong("(Ne)"), "is genomically homogeneous (orange bar), i.e., all locus are simulated by sharing the same", strong("Ne"), "value. In this model,", strong("DILS"), "will try to estimate the value of", strong("Ne"), "best explaining the observed data.", strong("Ne"), "being independent between all populations (current, past)."),
+				h3(strong("2."), "a model where", strong("Ne"), "is genomically heterogeneous (green distribution), i.e., all locus are simulated with a value of", strong("Ne"), "drawn in a Beta distribution. In this model,", strong("DILS"), "will try to estimate the value of", strong("Ne"), "as well as the two shape parameters", strong("(shape1 and shape2)"), "that best explain the observations. Here,", strong("DILS"), "assumes that all populations (current and past)", strong("share the same Beta distribution"), "but are independently rescaled by different", strong("Ne"), "values."),
 				hr(),
 				h3("In addition, all demographic models with migration have two alternative models of introgression:"),
-				h3(strong("1."), "a model where all of the loci share the same introgression rate for a given direction, but these rates are independent between directions. Here,", strong("fastABC"), "will simply try to estimate the introgression rate for each direction."),
-				h3(strong("2."), "a model where introgression rates are Beta distributed throughout genomes.", strong("fastABC"), "assumes independent Beta distributions for each direction where gene flow occurs."),
+				h3(strong("1."), "a model where all of the loci share the same introgression rate for a given direction, but these rates are independent between directions. Here,", strong("DILS"), "will simply try to estimate the introgression rate for each direction."),
+				h3(strong("2."), "a model where introgression rates are Beta distributed throughout genomes.", strong("DILS"), "assumes independent Beta distributions for each direction where gene flow occurs."),
 				htmlOutput("homo_hetero")
 	
 			)
@@ -253,7 +254,7 @@ welcome_page <- fluidPage(
 #	box(title = h2("Model comparisons for 2 populations/species"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
 	boxPlus(title = h2("Model comparisons for 2 populations/species"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = TRUE, collapsed = TRUE,
 		htmlOutput("model_comparisons"),
-		h3(strong("fastABC"), "performs hierarchical model comparisons."),
+		h3(strong("DILS"), "performs hierarchical model comparisons."),
 		h3(strong("1."), "comparison between all models with", strong("current isolation"), "({SI; AM} x {Ne_homo; Ne_hetero} x {M_homo; M_hetero}) versus", strong("ongoing migration"), "({IM; SC} x {Ne_homo; Ne_hetero} x {M_homo; M_hetero})"),
 		h3(strong("2. if current isolation ->"), "comparison between", strong("SI"), "({Ne_homo; Ne_hetero}) versus", strong("AM"), "({Ne_homo; Ne_hetero} x {M_homo; M_hetero})"),
 		h3(strong("2. if ongoing migration ->"), "comparison between", strong("IM"), "({Ne_homo; Ne_hetero} x {M_homo; M_hetero}) versus", strong("SC"), "({Ne_homo; Ne_hetero} x {M_homo; M_hetero})"),
@@ -314,7 +315,7 @@ upload_data <- fluidPage(
 		textInput("mail_address", label = h4("address to receive the download link of the results"), value = "user@gmail.com"),
 		hr(),
 		h4("This address will only be used for 2 things:"),
-		h4(strong("1)"), "send the results of fastABC to the user"),
+		h4(strong("1)"), "send the results of DILS to the user"),
 		h4(strong("2)"), "contact users on the day when a collaborative meta-analysis will be considered")
 		)
 	),
@@ -496,7 +497,7 @@ filtering <- fluidPage(
 				title = h3("nMin"), width = NULL, icon = NULL, solidHeader = TRUE, background = NULL,
 				boxToolSize = "lg", footer_padding = TRUE, collapsible = TRUE, collapsed = TRUE, closable = FALSE,
 				enable_label = TRUE, label_text = "EXPLANATIONS", label_status = "warning",
-				h3(strong("fastABC"), " starts for each gene by eliminating individual sequences containing too many N and gaps", span(strong("(max_N_tolerated; blue box)", style = "color:blue")), "."),
+				h3(strong("DILS"), " starts for each gene by eliminating individual sequences containing too many N and gaps", span(strong("(max_N_tolerated; blue box)", style = "color:blue")), "."),
 				br(),
 				h3("If for a gene and", strong("within a population/species"), "there are fewer ", strong("nMin"), "sequences left, then the gene is not considered in the ", strong("ABC"), "analysis."),
 				br(),
@@ -681,7 +682,7 @@ run_ABC <- fluidPage(
 upload_results <- fluidPage(
 	# upload results
 	fluidRow(NULL, soldHeader = TRUE, status ="danger",
-		boxPlus(title = h2("Results to upload (i.e, fastABC's archived output)"), height = 200,	width = 12, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
+		boxPlus(title = h2("Results to upload (i.e, DILS's archived output)"), height = 200,	width = 12, closable = FALSE, status = "success", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
 			fileInput("results", label = NULL),
 			tags$style(".progress-bar {background-color: #1e2b37;}")
 		)
@@ -725,7 +726,7 @@ informations <- fluidPage(
 		column(width = 12,
 			#box(title = h2("Citations"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
 			boxPlus(title = h2("Citations"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-				h3("Please, in case of publication of a study using fastABC, do not forget to quote the following references:"),
+				h3("Please, in case of publication of a study using DILS, do not forget to quote the following references:"),
 				h3(code('Csilléry, Katalin, Olivier François, and Michael GB Blum. "abc: an R package for approximate Bayesian computation (ABC)." Methods in ecology and evolution 3.3 (2012): 475-479.')),
 				h3(code('Pudlo, Pierre, Jean-Michel Marin, Arnaud Estoup, Jean-Marie Cornuet, Mathieu Gautier, and Christian P. Robert. "Reliable ABC model choice via random forests." Bioinformatics 32, no. 6 (2015): 859-866.')),
 				h3(code('Roux, Camille, Christelle Fraisse, Jonathan Romiguier, Yoann Anciaux, Nicolas Galtier, and Nicolas Bierne. "Shedding light on the grey zone of speciation along a continuum of genomic divergence." PLoS biology 14, no. 12 (2016): e2000234.'))
@@ -733,7 +734,7 @@ informations <- fluidPage(
 			
 			#box(title = h2("Acknowledgment"), width = 12, solidHeader = TRUE, background = NULL, status = "primary",
 			boxPlus(title = h2("Acknowledgment"), width = NULL, closable = FALSE, status = "warning", solidHeader = FALSE, collapsible = FALSE, collapsed = FALSE,
-				h3("Please, if you use this online version of fastABC, do not forget to recognize and acknowledge the free provision of calculation cores by France Bioinformatique"),
+				h3("Please, if you use this online version of DILS, do not forget to recognize and acknowledge the free provision of calculation cores by France Bioinformatique"),
 				h3(code("The demographic inferences were conducted on the IFB Core Cluster which is part of the National Network of Compute Resources (NNCR) of the", a(span(strong("Institut Français de Bioinformatique (IFB)."), style = "color:teal"), href="https://www.france-bioinformatique.fr/fr", target="_blank")))
 			),
 			
@@ -748,9 +749,10 @@ informations <- fluidPage(
 ui <- dashboardPage(
 	
 	#skin = "black",
-	dashboardHeader(title = "menu fastABC",
+	dashboardHeader(title = "menu DILS",
 #		tags$li(class = "dropdown", socialButton(url = "https://github.com/popgenomics/ABConline", type = "github"), tags$img(height = "auto"))
-		tags$li(class="dropdown", tags$a(href="https://github.com/popgenomics/ABConline", icon("github"), "Source Code", target="_blank"))
+		tags$li(class="dropdown", tags$a(href="https://github.com/popgenomics/ABConline", icon("github"), "Source Code", target="_blank")),
+		tags$li(class="dropdown", tags$a(href="https://groups.google.com/forum/#!forum/dils---demographic-inferences-with-linked-selection", icon("envelope"), "Help/Discussion", target="_blank"))
 
 	),
 
@@ -883,7 +885,7 @@ ui <- dashboardPage(
 				run_ABC
 			),
 			
-			# Upload the fastABC's results
+			# Upload the DILS's results
 			tabItem(tabName = "upload_results",
 				upload_results
 			),
@@ -950,7 +952,7 @@ server <- function(input, output, session = session) {
 		par(las=1)
 		y_points = dbeta(0:100/100, input$alpha, input$beta)
 		x_points = 0:100/100 * input$Ne/( input$alpha / (input$alpha + input$beta) )
-		plot(x_points, y_points, type='l', xlab = expression(paste("Genomic distribution of ", italic('Ne'), sep=" ")), ylab='density', main=expression(italic("Example of genomic distributions that fastABC will try to infer")), col="white", cex.main = 1.5, cex.axis = 1.5, cex.lab=1.5, xlim=c(min(c(x_points, input$Ne*1.2)), max(c(x_points, input$Ne*1.2))))
+		plot(x_points, y_points, type='l', xlab = expression(paste("Genomic distribution of ", italic('Ne'), sep=" ")), ylab='density', main=expression(italic("Example of genomic distributions that DILS will try to infer")), col="white", cex.main = 1.5, cex.axis = 1.5, cex.lab=1.5, xlim=c(min(c(x_points, input$Ne*1.2)), max(c(x_points, input$Ne*1.2))))
 		
 		x_points = c(0, x_points, max(x_points), 0)
 		y_points = c(0, y_points, 0, 0)
@@ -1290,8 +1292,7 @@ server <- function(input, output, session = session) {
 				tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
 				tabPanel("Locus specific model comparison", numericInput("threshold_locus_specific_model_comp", label = h3("Posterior probability threshold value below which an inference is considered ambiguous"), width = (0.25*as.numeric(input$dimension[1])), value = 0.9, min = 0, max = 1, step = 0.005), hr(), plotlyOutput("locus_specific_model_comparison", height = 'auto', width = 'auto')),
 				tabPanel("Estimated parameters", uiOutput("parameters_estimates")),
-				tabPanel("Goodness-of-fit test : summary statistics", uiOutput("display_gof_table")),
-				tabPanel("Goodness-of-fit test : jSFS", uiOutput("display_sfs_table"))
+				tabPanel("Goodness-of-fit test", uiOutput("gof"))
 				)
 			}else{
 				if(users_infos()[1,2]==1){
@@ -1299,8 +1300,8 @@ server <- function(input, output, session = session) {
 					tabsetPanel(id = "inferences",
 					type = "tabs",
 					tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
-					tabPanel("Goodness-of-fit test : summary statistics", uiOutput("display_gof_table")),
-					tabPanel("Goodness-of-fit test : SFS", uiOutput("display_sfs_table"))
+					tabPanel("Estimated parameters", uiOutput("parameters_estimates")),
+					tabPanel("Goodness-of-fit test", uiOutput("gof"))
 					)
 				}
 			}
@@ -1366,11 +1367,28 @@ server <- function(input, output, session = session) {
 		}else{
 			fluidPage(
 				fluidRow( width = 12,
-					selectInput('param_name', 'Select: ', list_parameters())
+					selectInput('param_name', 'Parameter: ', list_parameters())
 				),
 				
 				fluidRow( width = 12,
 					plotlyOutput( outputId = 'posterior_parameters_2pops')
+				)
+			)
+		}
+	})
+
+	output$output_posterior_1pop <- renderUI({
+		fileName = input$results
+		if(is.null(fileName)) {
+			return()
+		}else{
+			fluidPage(
+				fluidRow( width = 12,
+					selectInput('param_name', 'Parameter: ', list_parameters())
+				),
+				
+				fluidRow( width = 12,
+					plotlyOutput( outputId = 'posterior_parameters_1pop')
 				)
 			)
 		}
@@ -1504,6 +1522,71 @@ server <- function(input, output, session = session) {
 		}
 	})
 
+	# posterior 1 pop
+	##  Plot the posterior
+	output$posterior_parameters_1pop <- renderPlotly({
+		fileName = input$results
+		if (is.null(fileName)){
+			return(NULL)
+		}else{
+			param_name = input$param_name
+		
+			untar(fileName$datapath, exdir = getwd())
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+			theme_set(theme_classic())
+			figure = list()
+			bpfile = read.table(paste(rootName, '/bpfile', sep=''), h=F, skip=1); nLoci = ncol(bpfile)
+			yaml = read_yaml(paste(rootName, '/config.yaml', sep=''))
+			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T)
+			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
+			
+			# remove the temporary unarchived results
+			system(paste('rm -rf ', rootName, sep=''))
+
+
+			# prior
+			nPrior = 0.5e6
+			prior_shape = runif(nPrior, 0.01, 50)
+
+			if( param_name == 'N' || param_name == 'Npast' ){
+				# prior
+				min = yaml$N_min
+				max = yaml$N_max
+				prior = runif(nPrior, min, max)
+			}
+
+			if( param_name == 'Tdem' ){
+				# prior
+				min = yaml$Tchanges_min
+				max = yaml$Tchanges_max
+				prior = runif(nPrior, min, max)
+
+			}
+
+			if( param_name == "shape_N_a" || param_name == "shape_N_b" ){
+				prior = prior_shape
+			}
+
+			#	prior = x[,i] * scale
+			#	prior = data.frame(x = prior, label=rep('prior', length(prior)))
+			prior = data.frame(x = prior, distribution=rep("Prior", length(prior)))
+			posterior1 = res1[,which(colnames(res1)==param_name)]
+			posterior1 = data.frame(x = posterior1, distribution=rep('Posterior', length(posterior1)))
+			posterior2 = res2[,which(colnames(res1)==param_name)]
+			posterior2 = data.frame(x = posterior2, distribution=rep('Optimized posterior', length(posterior2)))
+			#	df=rbind(prior, posterior)
+			df=rbind(prior, posterior1, posterior2)
+
+
+			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", rev(viridis_pal(option="D")(2)))) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
+			p <- ggplotly(p, width = 0.55*as.numeric(input$dimension[1]), height = 0.55*as.numeric(input$dimension[2]))
+
+			figure_estimations = ggplotly(p)
+			return(figure_estimations)
+		}
+	})
+
+
 	# Display the table with estimated parameters	
 	output$table_parameters_2pops <- renderPlotly({
 		fileName = input$results
@@ -1591,7 +1674,110 @@ server <- function(input, output, session = session) {
 
 			table_estimations = plot_ly( type = 'table',
 				header = list(
-					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median</b>", "<b>HPD 0.975</b>"),
+					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median (posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (optimized posterior)</b>", "<b>HPD 0.975</b>"),
+					line = list(color = dark_grey),
+					fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post2_header, col_post2_header, col_post2_header)),
+					align = c('left','center'),
+					font = list(color = c(green, dark_grey, dark_grey, dark_grey, "white", "white", "white", size = 30))
+				),
+				cells = list(
+					values = rbind(
+						paste('<b>', param_names, '</b>', sep=''),
+						post1_Q1,
+						paste('<b>', post1_median, '</b>', sep=''),
+						post1_Q2,
+						post2_Q1,
+						paste('<b>', post2_median, '</b>', sep=''),
+						post2_Q2
+					),
+					line = list(color = dark_grey),
+					fill = list(color = c(light_grey, col_post1, col_post1, col_post1, col_post2, col_post2, col_post2)),
+					align = c('left', 'center'),
+					font = list(color = c(green, dark_grey,  size = 30))
+				), 
+				width = 0.75*as.numeric(input$dimension[1]), height = 0.75*as.numeric(input$dimension[2])
+			)
+			return(table_estimations)
+		}
+	})
+	
+	output$table_parameters_1pop <- renderPlotly({
+		fileName = input$results
+		if (is.null(fileName)){
+			return(NULL)
+		}else{
+			untar(fileName$datapath, exdir = getwd())
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+		
+			# table
+			theme_set(theme_classic())
+			figure = list()
+
+			# read informations
+			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T)
+			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
+			
+			# remove the temporary unarchived results
+			system(paste('rm -rf ', rootName, sep=''))
+
+			# table
+			param_names = NULL
+			post1_Q1 = NULL
+			post1_median = NULL
+			post1_Q2 = NULL
+			post2_Q1 = NULL
+			post2_median = NULL
+			post2_Q2 = NULL
+
+			nparams = ncol(res1)
+			for(i in 1:nparams){
+				param_name = colnames(res1)[i]
+				
+				posterior1 = res1[,i]
+				posterior1 = data.frame(x = posterior1, label=rep('Posterior', length(posterior1)))
+				posterior2 = res2[,i]
+				posterior2 = data.frame(x = posterior2, label=rep('Optimized posterior', length(posterior2)))
+				
+				# table
+				param_names = c(param_names, param_name)
+				if(param_name%in%c('N', 'Npast', 'Tdem')){
+					post1_Q1_tmp = formatC(round(quantile(posterior1$x, 0.025), 0), format='d', big.mark=' ')
+					post1_median_tmp = formatC(round(quantile(posterior1$x, 0.5), 0), format='d', big.mark=' ')
+					post1_Q2_tmp = formatC(round(quantile(posterior1$x, 0.975), 0), format='d', big.mark=' ')
+					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 0), format='d', big.mark=' ')
+					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 0), format='d', big.mark=' ')
+					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 0), format='d', big.mark=' ')
+				}else{
+					post1_Q1_tmp = formatC(round(quantile(posterior1$x, 0.025), 5), format="f", big.mark=" ", digits=5)
+					post1_median_tmp = formatC(round(quantile(posterior1$x, 0.5), 5), format="f", big.mark=" ", digits=5)
+					post1_Q2_tmp = formatC(round(quantile(posterior1$x, 0.975), 5), format="f", big.mark=" ", digits=5)
+					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 5), format="f", big.mark=" ", digits=5)
+					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 5), format="f", big.mark=" ", digits=5)
+					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 5), format="f", big.mark=" ", digits=5)
+				}
+					
+				post1_Q1 = c(post1_Q1, post1_Q1_tmp)
+				post1_median = c(post1_median, post1_median_tmp)
+				post1_Q2 = c(post1_Q2, post1_Q2_tmp)
+				post2_Q1 = c(post2_Q1, post2_Q1_tmp)
+				post2_median = c(post2_median, post2_median_tmp)
+				post2_Q2 = c(post2_Q2, post2_Q2_tmp)
+			}
+
+			# print table
+			col_tmp = rev(viridis_pal(option="D", alpha=1)(2))
+			col_post1_header = col_tmp[1]
+			col_post2_header = col_tmp[2]
+			col_tmp = rev(viridis_pal(option="D", alpha=0.4)(2))
+			col_post1 = col_tmp[1]
+			col_post2 = col_tmp[2]
+			green = "#C7F464"
+			dark_grey = "#1e2b37"
+			light_grey = "#556270"
+
+			table_estimations = plot_ly( type = 'table',
+				header = list(
+					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median (posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (optimized posterior)</b>", "<b>HPD 0.975</b>"),
 					line = list(color = dark_grey),
 					fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post2_header, col_post2_header, col_post2_header)),
 					align = c('left','center'),
@@ -1627,7 +1813,7 @@ server <- function(input, output, session = session) {
 		untar(fileName$datapath, exdir = getwd())
 		rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
 	
-		gof_table_name = paste(rootName, "/gof/goodness_of_fit_test.txt", sep='')
+		gof_table_name = paste(rootName, "/gof_2/goodness_of_fit_test.txt", sep='')
 		#read.table("/home/croux/Documents/ABConline/data_visualization/oKybz73JWT/gof/goodness_of_fit_test.txt", header = TRUE)
 		x = read.table(gof_table_name, h=T)
 		system(paste('rm -rf ', rootName, sep=''))
@@ -1663,7 +1849,7 @@ server <- function(input, output, session = session) {
 		}else{
 			untar(fileName$datapath, exdir = getwd())
 			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
-			sfs_name = paste(rootName, "/gof/gof_sfs.txt", sep='')
+			sfs_name = paste(rootName, "/gof_2/gof_sfs.txt", sep='')
 			
 			table_sfs = read.table(sfs_name, h=T)
 
@@ -1898,17 +2084,20 @@ server <- function(input, output, session = session) {
 				tickfont=f2
 			)
 			
-			nSNPs <- as.numeric(matrix(unlist(strsplit(colnames(table_sfs()), 'A')), ncol=2, byrow=T)[,2])
-			obsserved <- as.numeric(table_sfs()[1,])
+			nClasses <- as.numeric(matrix(unlist(strsplit(colnames(table_sfs()), 'A')), ncol=2, byrow=T)[,2])
+			observed <- as.numeric(table_sfs()[1,])
 			expected <- as.numeric(table_sfs()[2,])
-			data_sfs <- data.frame(nSNPs, obsserved, expected)
+#			nSNPs = sum(expected)
+#			expected_constant = (nSNPs/sum(1/nClasses))/nClasses # vector of expected SFS for a given observed total number of SNPs
+#			data_sfs <- data.frame(nClasses, observed, expected, expected_constant)
+			data_sfs <- data.frame(nClasses, observed, expected)
 
 			data_sfs_reshape <- data_sfs %>%
-			  gather(sfs, Count, obsserved:expected)
+			  gather(sfs, Count, observed:expected)
 
 			data_sfs_reshape %>%
 				plot_ly(type = "bar",
-					x = ~nSNPs,
+					x = ~nClasses,
 					y = ~Count,
 					color = ~sfs,
 					colors = viridis_pal(option = "D")(2), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>%
@@ -1927,9 +2116,137 @@ server <- function(input, output, session = session) {
 					tabPanel("Posterior", uiOutput("output_posterior_2pops")),
 					tabPanel("Highest Posterior Density", plotlyOutput(outputId = "table_parameters_2pops"))
 				)
+			}else{
+				if(users_infos()[1,2]==1){
+					# if nSpecies == 2
+					tabsetPanel(
+						#tabPanel("Posterior", selectInput('param_name', 'Select: ', ''), plotlyOutput(outputId = "posterior_parameters_2pops")),
+						tabPanel("Posterior", uiOutput("output_posterior_1pop")),
+						tabPanel("Highest Posterior Density", plotlyOutput(outputId = "table_parameters_1pop"))
+					)
+				}
+
 			}
 		}
 	})
+
+	output$gof <- renderUI({
+		if(is.null(input$results)){
+			return(NULL)
+		}else{
+			if(users_infos()[1,2]==2){
+				# if nSpecies == 2
+				tabsetPanel(
+					#tabPanel("Posterior", selectInput('param_name', 'Select: ', ''), plotlyOutput(outputId = "posterior_parameters_2pops")),
+					tabPanel("Statistics", uiOutput("display_gof_table")),
+					tabPanel("SFS", uiOutput("display_sfs_table"))
+				)
+			}else{
+				if(users_infos()[1,2]==1){
+					# if nSpecies == 2
+					tabsetPanel(
+						#tabPanel("Posterior", selectInput('param_name', 'Select: ', ''), plotlyOutput(outputId = "posterior_parameters_2pops")),
+						tabPanel("Statistics", uiOutput("display_gof_table")),
+						tabPanel("SFS", uiOutput("display_sfs_table")),
+						tabPanel("PCA", uiOutput("display_PCA"))
+					)
+				}
+
+			}
+		}
+	})
+
+	
+	output$display_PCA <- renderUI({
+		fluidRow( width = 12, column(width=12, offset = 0, style='padding:30px;', plotlyOutput(outputId = "plot_PCA")))
+	})
+
+
+	output$plot_PCA <- renderPlotly({
+		fileName = input$results
+		
+		if (is.null(fileName)){
+			return(NULL)
+		}else{
+			library(FactoMineR)
+			untar(fileName$datapath, exdir = getwd())
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+			x = read.table(paste(rootName, "/distribution_PCA.txt", sep=''), h=T, sep='\t')
+			y = rbind(x[1,], x[which(x$origin=='prior')[1:20000],], x[which(x$origin=='posterior')[1:20000],], x[which(x$origin=='optimized posterior')[1:20000],])
+
+			toRemove = c(1)
+			for(i in 1:(ncol(y)-1)){
+				if(sd(y[,i]) < 0.00001){
+					toRemove = c(toRemove, i)
+				}
+			}
+			
+			toRemove = unique(toRemove)
+			y = y[, -toRemove]
+
+			res.pca <- PCA(y[, -ncol(y)], graph = FALSE, ncp=3)
+
+			observed = which(y$origin == 'observed dataset')
+			prior = which(y$origin == 'prior')
+			posterior = which(y$origin == 'posterior')
+			optimized_posterior = which(y$origin == 'optimized posterior')
+
+			trace1 <- list(
+				mode = "markers", 
+				name = "prior", 
+				type = "scatter3d", 
+				x = res.pca$ind$coord[,1][prior],
+				y = res.pca$ind$coord[,2][prior],
+				z = res.pca$ind$coord[,3][prior]
+			)
+
+			trace2 <- list(
+				mode = "markers", 
+				name = "estimated model", 
+				type = "scatter3d", 
+				x = res.pca$ind$coord[,1][posterior],
+				y = res.pca$ind$coord[,2][posterior],
+				z = res.pca$ind$coord[,3][posterior]
+			)
+			trace3 <- list(
+				mode = "markers", 
+				name = "optimized estimation", 
+				type = "scatter3d", 
+				x = res.pca$ind$coord[,1][optimized_posterior],
+				y = res.pca$ind$coord[,2][optimized_posterior],
+				z = res.pca$ind$coord[,3][optimized_posterior]
+			)
+
+			trace4 <- list(
+				mode = "markers", 
+				name = "observed dataset", 
+				type = "scatter3d",
+				x = res.pca$ind$coord[,1][observed],
+				y = res.pca$ind$coord[,2][observed],
+				z = res.pca$ind$coord[,3][observed]
+			)
+
+			l <- list( font = list( family = "sans-serif", size = 18 ), orientation = 'h' )
+
+
+			layout <- list(
+				scene = list(
+					xaxis = list(title = paste("PC1 (", round(res.pca$eig[,2][1], 2), "%)", sep=''), showline = FALSE), 
+					yaxis = list(title = paste("PC2 (", round(res.pca$eig[,2][2], 2), "%)", sep=''), showline = FALSE), 
+					zaxis = list(title = paste("PC3 (", round(res.pca$eig[,2][3], 2), "%)", sep=''), showline = FALSE)
+				), 
+				title = "PCA of goodness-of-fit (3D)"
+			)
+
+			p <- plot_ly(type = 'scatter', mode = 'markers', width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>%
+				add_trace( mode=trace1$mode, name=trace1$name, type=trace1$type, x=trace1$x, y=trace1$y, z=trace1$z, marker = list(size = 6, color = viridis_pal(option='D')(4)[1])) %>%
+				add_trace( mode=trace2$mode, name=trace2$name, type=trace2$type, x=trace2$x, y=trace2$y, z=trace2$z, marker = list(size = 6, color = viridis_pal(option='D')(4)[2])) %>%
+				add_trace( mode=trace3$mode, name=trace3$name, type=trace3$type, x=trace3$x, y=trace3$y, z=trace3$z, marker = list(size = 6, color = viridis_pal(option='D')(4)[3])) %>%
+				add_trace( mode=trace4$mode, name=trace4$name, type=trace4$type, x=trace4$x, y=trace4$y, z=trace4$z, marker = list(size = 10, color = viridis_pal(option='D')(4)[4])) %>%
+				layout( scene=layout$scene, title=layout$title, legend=l, xaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F), yaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F), legend=list(size=10) )
+			return(p)
+	}})
+	
 	
 	output$display_sfs_table <- renderUI({
 		if(is.null(table_sfs())){
