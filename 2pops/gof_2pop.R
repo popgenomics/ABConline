@@ -15,19 +15,20 @@ x = read.table(paste(timeStamp, '/', sub_dir, '/simulations.txt', sep=''), h=T)
 # observation
 y = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
 
-if( writeDistribution==TRUE){
-	# function to compute the pval
-	pvalue = function(distribution, obs){
-		median_x = median(distribution)
-		if(obs==median_x){
-			pval=0.5
-		}else if(as.numeric(obs)>median_x){
-			pval = length(which(distribution>as.numeric(obs)))/length(distribution)
-		}else{
-			pval = length(which(distribution<as.numeric(obs)))/length(distribution)
-		}
-		return(pval)
+# function to compute the pval
+pvalue = function(distribution, obs){
+	median_x = median(distribution)
+	if(obs==median_x){
+		pval=0.5
+	}else if(as.numeric(obs)>median_x){
+		pval = length(which(distribution>as.numeric(obs)))/length(distribution)
+	}else{
+		pval = length(which(distribution<as.numeric(obs)))/length(distribution)
 	}
+	return(pval)
+}
+
+if( writeDistribution==TRUE){
 
 	### Summary Stats
 	prior_ss = gof1_ss = gof2_ss = NULL

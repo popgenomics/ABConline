@@ -1,6 +1,9 @@
 # general property
 nmultilocus = 1000 # number of multilocus simulations per iteration (500)
 
+# links to the codes
+bin = "/shared/mfs/data/home/croux/softwares/ABConline/bin"
+
 # model comparison
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
 ntree = 1000 # number of tree for the random forest (RF) model comparison
@@ -55,6 +58,7 @@ rho_over_theta = config['rho_over_theta']
 
 rule targets:
 	input:
+		expand("{timeStamp}/distribution_PCA.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/bpfile", timeStamp=timeStamp),
 		expand("{timeStamp}/Nref.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/config.yaml", timeStamp=timeStamp),
@@ -126,7 +130,7 @@ rule fasta2ABC_2pops:
 #		source activate R_env;
 #		module load pandoc/2.7.2;
 		x=$(date)
-		fasta2ABC_2pops.py {infile} {timeStamp} {params.nameA} {params.nameB} {params.nameOutgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}
+		{bin}/fasta2ABC_2pops.py {infile} {timeStamp} {params.nameA} {params.nameB} {params.nameOutgroup} {params.region} {params.Lmin} {params.max_N_tolerated} {params.nMin} {params.Nref} {params.mu} {params.rho_over_theta}
 		echo "nSpecies,"{nspecies}>{timeStamp}/general_infos.txt
 		echo "nameA,"{nameA}>>{timeStamp}/general_infos.txt
 		echo "nameB,"{nameB}>>{timeStamp}/general_infos.txt
@@ -154,7 +158,7 @@ rule RNAseqFGT:
 		"""
 		x=$(cat {input.infos}  | grep -v locusName | awk '{{print $2}}' | sort -n | tail -n1)
 		if (($x<99990)); then
-			RNAseqFGT {input.fasta} {output}
+			{bin}/RNAseqFGT {input.fasta} {output}
 		else
 			echo "{input.fasta} not in correct FASTA format (line length > 100000)" > {output}
 		fi
@@ -174,8 +178,7 @@ rule simulationsModelComp:
 	threads: 1
 	shell:
 		"""
-		#submit_simulations_2pop.py {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp}
-		{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp} {modeBarrier}
+		{bin}/{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} modelComp {wildcards.model} {config_yaml} {timeStamp} {modeBarrier}
 		"""
 
 rule simulationsEstim:
@@ -191,8 +194,7 @@ rule simulationsEstim:
 	threads: 1
 	shell:
 		"""
-		#submit_simulations_2pop.py {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp}
-		{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp} {modeBarrier}
+		{bin}/{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} {wildcards.model} {nameA} {nameB} estim  {wildcards.model} {config_yaml} {timeStamp} {modeBarrier}
 		"""
 
 
@@ -216,7 +218,7 @@ rule modelComparison:
 		"""
 #		module load conda
 #		source activate R_env
-		model_comp_2pop_allModels.R nameA={nameA} nameB={nameB} timeStamp={timeStamp} nMin={nMin} sub_dir_sim=modelComp nSubdir={nIterations_model_comp} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} population_growth={population_growth} modeBarrier={modeBarrier}
+		{bin}/model_comp_2pop_allModels.R nameA={nameA} nameB={nameB} timeStamp={timeStamp} nMin={nMin} sub_dir_sim=modelComp nSubdir={nIterations_model_comp} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} population_growth={population_growth} modeBarrier={modeBarrier}
 		"""
 
 rule estimation:
@@ -229,7 +231,7 @@ rule estimation:
 	threads: nCPU_R
 	shell:
 		"""
-		estimates_2pop.R Nref={Nref} nameA={nameA} nameB={nameB} timeStamp={timeStamp} nMin={nMin} sub_dir_sim=estim nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} nPosterior={nPosterior1}
+		{bin}/estimates_2pop.R Nref={Nref} nameA={nameA} nameB={nameB} timeStamp={timeStamp} nMin={nMin} sub_dir_sim=estim nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} nPosterior={nPosterior1}
 		"""
 
 rule simulation_best_model:
@@ -246,8 +248,7 @@ rule simulation_best_model:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		#submit_simulations_2pop.py {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp}
-		{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp} {modeBarrier}
+		{bin}/{submit_simulations} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model best_model {config_yaml} {timeStamp} {modeBarrier}
 		"""
 
 
@@ -264,7 +265,7 @@ rule estimation_best_model:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2}
+		{bin}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2}
 		"""
 
 
@@ -279,8 +280,7 @@ rule simulation_gof:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		#submit_simulations_gof_2pop.py {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp}
-		{submit_simulations_gof} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp} {modeBarrier} joint
+		{bin}/{submit_simulations_gof} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof gof ${{PWD}}/{input.posterior} {timeStamp} {modeBarrier} joint
 		"""
 
 
@@ -300,7 +300,7 @@ rule gof:
 		head -n1 {timeStamp}/gof/gof_0/ABCjsfs.txt > {timeStamp}/gof/simulations_jsfs.txt
 		cat {timeStamp}/gof/gof*/ABCjsfs.txt | grep -v fA >> {timeStamp}/gof/simulations_jsfs.txt
 		
-		gof_2pop.R timeStamp={timeStamp} sub_dir=gof nIterations_gof={nIterations_gof} writeDistribution=FALSE
+		{bin}/gof_2pop.R timeStamp={timeStamp} sub_dir=gof nIterations_gof={nIterations_gof} writeDistribution=FALSE
 		"""
 
 
@@ -316,7 +316,7 @@ rule simulation_best_model_2:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		{submit_simulations_gof} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model_2 best_model ${{PWD}}/{input.posterior} {timeStamp} {modeBarrier} joint
+		{bin}/{submit_simulations_gof} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model_2 best_model ${{PWD}}/{input.posterior} {timeStamp} {modeBarrier} joint
 		"""
 
 rule estimation_best_model_2:
@@ -332,7 +332,7 @@ rule estimation_best_model_2:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_2 nSubdir={nIterations_estim_2} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2}
+		{bin}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_2 nSubdir={nIterations_estim_2} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2}
 		"""
 
 # third estimation of parameters
@@ -347,7 +347,7 @@ rule simulation_best_model_3:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		{submit_simulations_gof} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model_3 best_model ${{PWD}}/{input.posterior} {timeStamp} {modeBarrier} randomBeta
+		{bin}/{submit_simulations_gof} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} best_model_3 best_model ${{PWD}}/{input.posterior} {timeStamp} {modeBarrier} randomBeta
 		"""
 
 rule estimation_best_model_3:
@@ -363,7 +363,7 @@ rule estimation_best_model_3:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_3 nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior3}
+		{bin}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_3 nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior3}
 		"""
 
 # second goodness of fit test from the third estimates
@@ -379,7 +379,7 @@ rule simulation_gof_2:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		{submit_simulations_gof} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof_2 gof ${{PWD}}/{input.posterior} {timeStamp} {modeBarrier} joint
+		{bin}/{submit_simulations_gof} {outgroup} {params.nmultilocus} {wildcards.i} ${{best_model}} {nameA} {nameB} gof_2 gof ${{PWD}}/{input.posterior} {timeStamp} {modeBarrier} joint
 		"""
 
 rule gof_2:
@@ -388,6 +388,7 @@ rule gof_2:
 		expand("{timeStamp}/ABCjsfs.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/gof_2/gof_{i}/ABCstat.txt", timeStamp=timeStamp, i=ITERATIONS_GOF)
 	output:
+		"{timeStamp}/distribution_PCA.txt",
 		"{timeStamp}/gof_2/goodness_of_fit_test.txt",
 		"{timeStamp}/gof_2/gof_sfs.txt"
 	shell:
@@ -398,6 +399,6 @@ rule gof_2:
 		head -n1 {timeStamp}/gof_2/gof_0/ABCjsfs.txt > {timeStamp}/gof_2/simulations_jsfs.txt
 		cat {timeStamp}/gof_2/gof*/ABCjsfs.txt | grep -v fA >> {timeStamp}/gof_2/simulations_jsfs.txt
 		
-		gof_2pop.R timeStamp={timeStamp} sub_dir=gof_2 nIterations_gof={nIterations_gof} writeDistribution=TRUE
+		{bin}/gof_2pop.R timeStamp={timeStamp} sub_dir=gof_2 nIterations_gof={nIterations_gof} writeDistribution=TRUE
 		"""
 

@@ -3,8 +3,8 @@ import sys
 import os
 import time
 
-if len(sys.argv) != 11:
-	print("\n\tsubmit_simulations_gof_1pop.py [outgroup] [nmultilocus] [iteration] [model: Constant_x; Discrete_x; Expo_x] [nameA] [sub_dir_sim] [sub_dir_model] [config_yaml] [project's directory name, i.e, timeStamp] [modePrior in [joint; disjoint; randomBeta]")
+if len(sys.argv) != 12:
+	print("\n\tsubmit_simulations_gof_1pop.py [outgroup] [nmultilocus] [iteration] [model: Constant_x; Discrete_x; Expo_x] [nameA] [sub_dir_sim] [sub_dir_model] [config_yaml] [project's directory name, i.e, timeStamp] [modePrior in [joint; disjoint; randomBeta] [binpath]")
 	print("\n\tex: submit_simulations_gof_1pop.py 1 1000 2 Constant_1N flo sim_Constant_1N Constant_1N posterior_Constant_1N.txt Ng4PymB1dy randomBeta\n\tto simulate 1000 multilocus simulations at the second iteration, in the folder sim_Constant_1N, with outgroup") 
 	sys.exit(0)
 
@@ -18,6 +18,7 @@ sub_dir_model = sys.argv[7] # name of the sub_sub_dir containing ABCstat.txt
 posterior_file = sys.argv[8]
 timeStamp = sys.argv[9]
 modePrior = sys.argv[10]
+bin = sys.argv[11]
 
 print(model)
 path = os.getcwd() + '/{0}'.format(timeStamp)
@@ -53,7 +54,7 @@ if mscommand == "":
 tmp = "cp {0}/bpfile {0}/{1}/{2}_{3}/; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 
-tmp += "priorgen_gof_1pop.py {0} {1} {2} {6} | msnsam tbs {3} {4} | mscalc_1pop_SFS.py {5}".format(model, nmultilocus, posterior_file, nmultilocus*nlocus, mscommand, outgroup, modePrior)
+tmp += "{7}/priorgen_gof_1pop.py {0} {1} {2} {6} | {7}/msnsam tbs {3} {4} | {7}/mscalc_1pop_SFS.py {5}".format(model, nmultilocus, posterior_file, nmultilocus*nlocus, mscommand, outgroup, modePrior, binpath)
 print(tmp)
 os.system(tmp) # to submit the job using slurm
 

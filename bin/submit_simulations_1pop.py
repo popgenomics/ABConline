@@ -3,8 +3,8 @@ import sys
 import os
 import time
 
-if len(sys.argv) != 10:
-	print("\n\tsubmit_simulations_1pop.py [outgroup] [nmultilocus] [iteration] [model: Constant_x; Discrete_x; Expo_x] [nameA] [sub_dir_sim] [sub_dir_model] [config_yaml] [project's directory name, i.e, timeStamp]")
+if len(sys.argv) != 11:
+	print("\n\tsubmit_simulations_1pop.py [outgroup] [nmultilocus] [iteration] [model: Constant_x; Discrete_x; Expo_x] [nameA] [sub_dir_sim] [sub_dir_model] [config_yaml] [project's directory name, i.e, timeStamp] [pathway to the bin")
 	print("\n\tex: submit_simulations_1pop.py 1 1000 2 Constant_1N flo sim_Constant_1N Constant_1N config.yaml Ng4PymB1dy\n\tto simulate 1000 multilocus simulations at the second iteration, in the folder sim_Constant_1N, with outgroup") 
 	sys.exit(0)
 
@@ -17,6 +17,7 @@ sub_dir_sim = sys.argv[6] # name of the subdir where the simulations will be run
 sub_dir_model = sys.argv[7] # name of the sub_sub_dir containing ABCstat.txt
 config_yaml = sys.argv[8]
 timeStamp = sys.argv[9]
+binpath = sys.argv[10]
 
 path = os.getcwd() + '/{0}'.format(timeStamp)
 
@@ -49,6 +50,6 @@ if mscommand == "":
 tmp = "cp {0}/bpfile {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 
-tmp += "priorgen_1pop.py {0} {1} {2} | msnsam tbs {3} {4} | mscalc_1pop_SFS.py {5}".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand, outgroup)
+tmp += "{6}/priorgen_1pop.py {0} {1} {2} | {6}/msnsam tbs {3} {4} | {6}/mscalc_1pop_SFS.py {5}".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand, outgroup, binpath)
 os.system(tmp) # to submit the job using slurm
 

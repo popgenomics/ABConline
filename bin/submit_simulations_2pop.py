@@ -8,8 +8,8 @@ import time
 #    for model in SI; do for N in 1N 2N; do ./submit.py 100000 10 ${model}_${N}; done; done
 
 
-if len(sys.argv) != 12:
-	print("\n\tsubmit_simulations_2pop.py [outgroup] [nmultilocus] [iteration] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB] [sub_dir_sim] [sub_dir_model] [config_yaml] [project's directory name, i.e, timeStamp] [beta or bimodal]")
+if len(sys.argv) != 13:
+	print("\n\tsubmit_simulations_2pop.py [outgroup] [nmultilocus] [iteration] [model: SI_x AM_x IM_x SC_x PSC_x PAM_x] [nameA] [nameB] [sub_dir_sim] [sub_dir_model] [config_yaml] [project's directory name, i.e, timeStamp] [beta or bimodal] [binpath]")
 	print("\n\tex: submit_simulations_2pop.py 1 1000 2 SI_1N flo mal sim_SI_1N SI_1N config.yaml Ng4PymB1dy beta\n\tto simulate 1000 multilocus simulations at the second iteration, in the folder sim_SI_1N, with outgroup") 
 	sys.exit(0)
 
@@ -24,6 +24,7 @@ sub_dir_model = sys.argv[8] # name of the sub_sub_dir containing ABCstat.txt
 config_yaml = sys.argv[9]
 timeStamp = sys.argv[10]
 modeBarrier = sys.argv[11]
+binpath = sys.argv[12]
 
 path = os.getcwd() + '/{0}'.format(timeStamp)
 
@@ -65,7 +66,7 @@ tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration
 #tmp += "module load python/2.7.12; "
 #tmp += "module load java; "
 #tmp += "priorgen_2pop.py {0} {1} {2} | msnsam tbs {3} {4} | mscalc_2pop.py".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand)
-tmp += "priorgen_2pop.py {0} {1} {2} | msnsam tbs {3} {4} | mscalc_2pop_SFS.py {5}".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand, outgroup)
+tmp += "{6}/priorgen_2pop.py {0} {1} {2} | {6}/msnsam tbs {3} {4} | {6}/mscalc_2pop_SFS.py {5}".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand, outgroup, binpath)
 tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=02:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, iteration, tmp)
 
 print(tmp)
