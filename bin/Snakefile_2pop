@@ -218,7 +218,7 @@ rule modelComparison:
 		"""
 #		module load conda
 #		source activate R_env
-		{binpath}/model_comp_2pop_allModels.R nameA={nameA} nameB={nameB} timeStamp={timeStamp} nMin={nMin} sub_dir_sim=modelComp nSubdir={nIterations_model_comp} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} population_growth={population_growth} modeBarrier={modeBarrier}
+		{binpath}/model_comp_2pop_allModels.R nameA={nameA} nameB={nameB} timeStamp={timeStamp} nMin={nMin} sub_dir_sim=modelComp nSubdir={nIterations_model_comp} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} population_growth={population_growth} modeBarrier={modeBarrier} binpath={binpath}
 		"""
 
 rule estimation:
