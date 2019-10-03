@@ -18,7 +18,7 @@ sub_dir_model = sys.argv[7] # name of the sub_sub_dir containing ABCstat.txt
 posterior_file = sys.argv[8]
 timeStamp = sys.argv[9]
 modePrior = sys.argv[10]
-bin = sys.argv[11]
+binpath = sys.argv[11]
 
 print(model)
 path = os.getcwd() + '/{0}'.format(timeStamp)
