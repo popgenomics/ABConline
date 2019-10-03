@@ -2,9 +2,9 @@
 # #!/usr/bin/Rscript
 for(i in commandArgs()){
         tmp = strsplit(i, '=')
-        if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] }
-        if(tmp[[1]][1] == 'sub_dir'){ sub_dir = tmp[[1]][2] }
-        if(tmp[[1]][1] == 'nIterations_gof'){ nIterations_gof = as.integer(tmp[[1]][2]) }
+        if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] } # name of the directory where the project is written 
+        if(tmp[[1]][1] == 'sub_dir'){ sub_dir = tmp[[1]][2] } # name of the directory where the simulations were run
+        if(tmp[[1]][1] == 'nIterations_gof'){ nIterations_gof = as.integer(tmp[[1]][2]) } # number of iterations : ~/timeStamp/sub_dir_{i} where i = range(nIterations_gof)
         if(tmp[[1]][1] == 'writeDistribution'){ writeDistribution = as.logical(tmp[[1]][2]) }
 }
 

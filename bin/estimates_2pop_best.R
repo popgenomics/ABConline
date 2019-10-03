@@ -30,7 +30,7 @@ obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
 
 ######################################################
 # parameters of the best model, IM_2M_2N and SI_2N
-source(paste(bin, '/get_parameters.R', sep=''))
+source(paste(bin, '/get_parameters_2pop.R', sep=''))
 
 # SI_2N; IM_2M_2N; AM_2M_2N; SC_2M_2N
 options(digits=5)
