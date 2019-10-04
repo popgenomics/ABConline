@@ -26,8 +26,8 @@ if len(sys.argv) != 5:
 
 def randomBeta(posterior, nMultilocus):
 	estimate = median(posterior)
-	a = 50.0
-	b = 50.0
+	a = 20.0
+	b = 20.0
 	scalar_tmp = beta(a=a, b=b, size=nMultilocus)
 	scalar = [ i/(a/(a+b)) for i in scalar_tmp ]
 	

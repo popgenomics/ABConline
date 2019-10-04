@@ -267,11 +267,17 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 	sfs_obs_A = matrix(NA, nrow=nrow(sfs_obs), ncol=length(unique(header_obs[,1]))) # will contain the observed SFS for A
 	sfs_obs_B = matrix(NA, nrow=nrow(sfs_obs), ncol=length(unique(header_obs[,2]))) # will contain the observed SFS for B
 
-	cnt = 0; colnames_sfs_obs_A = NULL
+       	cnt = 0; colnames_sfs_obs_A = NULL
 	for(i in unique(header_obs[,1])){
 		cnt = cnt + 1
 		colnames_sfs_obs_A = c(colnames_sfs_obs_A, i)
-		sfs_obs_A[, cnt] = apply(sfs_obs[,which(header_obs[,1]==i)], FUN='sum', MARGIN=1)
+
+		selected_col = which(header_obs[,1]==i)
+		if( length(selected_col) == 1 ){
+			sfs_obs_A[, cnt] = sapply(sfs_obs[, selected_col], FUN='sum')
+		}else{
+			sfs_obs_A[, cnt] = apply(sfs_obs[, selected_col], FUN='sum', MARGIN=1)
+		}
 	}
 	colnames(sfs_obs_A) = colnames_sfs_obs_A
 
@@ -280,7 +286,13 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 	for(i in unique(header_obs[,2])){
 		cnt = cnt + 1
 		colnames_sfs_obs_B = c(colnames_sfs_obs_B, i)
-		sfs_obs_B[, cnt] = apply(sfs_obs[,which(header_obs[,2]==i)], FUN='sum', MARGIN=1)
+
+		selected_col = which(header_obs[,2]==i)
+		if( length(selected_col) == 1 ){
+			sfs_obs_B[, cnt] = sapply(sfs_obs[, selected_col], FUN='sum')
+		}else{
+			sfs_obs_B[, cnt] = apply(sfs_obs[, selected_col], FUN='sum', MARGIN=1)
+		}
 	}
 	colnames(sfs_obs_B) = colnames_sfs_obs_B
 
@@ -320,7 +332,15 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 		for(i in unique(header_obs[,1])){
 			cnt = cnt + 1
 			colnames_sfs_sim_A = c(colnames_sfs_sim_A, i)
-			sfs_sim_A[, cnt] = apply(sfs_sim[,which(header_obs[,1]==i)], FUN='sum', MARGIN=1)
+
+			selected_col = which(header_obs[,1]==i)
+			if( length(selected_col) == 1 ){
+				sfs_sim_A[, cnt] = sapply(sfs_sim[, selected_col], FUN='sum')
+			}else{
+				sfs_sim_A[, cnt] = apply(sfs_sim[, selected_col], FUN='sum', MARGIN=1)
+			}
+
+			#sfs_sim_A[, cnt] = apply(sfs_sim[,which(header_obs[,1]==i)], FUN='sum', MARGIN=1)
 		}
 		colnames(sfs_sim_A) = colnames_sfs_sim_A
 
@@ -329,8 +349,18 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 		for(i in unique(header_obs[,2])){
 			cnt = cnt + 1
 			colnames_sfs_sim_B = c(colnames_sfs_sim_B, i)
-			sfs_sim_B[, cnt] = apply(sfs_sim[,which(header_obs[,2]==i)], FUN='sum', MARGIN=1)
+
+
+			selected_col = which(header_obs[,2]==i)
+			if( length(selected_col) == 1 ){
+				sfs_sim_B[, cnt] = sapply(sfs_sim[, selected_col], FUN='sum')
+			}else{
+				sfs_sim_B[, cnt] = apply(sfs_sim[, selected_col], FUN='sum', MARGIN=1)
+			}
+
+			#sfs_sim_B[, cnt] = apply(sfs_sim[,which(header_obs[,2]==i)], FUN='sum', MARGIN=1)
 		}
+
 		colnames(sfs_sim_B) = colnames_sfs_sim_B
 		sfs_sim_A_tmp[(rep*nSimulations+1):((rep+1)*nSimulations),] = sfs_sim_A
 		sfs_sim_B_tmp[(rep*nSimulations+1):((rep+1)*nSimulations),] = sfs_sim_B

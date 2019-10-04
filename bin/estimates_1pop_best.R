@@ -1,4 +1,5 @@
-#!/shared/home/croux/.conda/envs/R_env/bin/Rscript
+#!/shared/software/miniconda/envs/r-3.5.1/bin/Rscript
+# #!/shared/home/croux/.conda/envs/R_env/bin/Rscript
 # #!/usr/bin/Rscript
 for(i in commandArgs()){
 	tmp = strsplit(i, '=')
@@ -11,7 +12,7 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'outgroup'){ outgroup = as.integer(tmp[[1]][2]) } # 0: no outgroup, no SFS used. 1: outgroup, SFS used
 	if(tmp[[1]][1] == 'bestModel'){ bestModel = tmp[[1]][2] } # name of the best model
 	if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] } # name of timeStamp
-	if(tmp[[1]][1] == 'bin'){ bin = tmp[[1]][2] } # bin = path where to source get_parameters
+	if(tmp[[1]][1] == 'binpath'){ binpath = tmp[[1]][2] } # bin = path where to source get_parameters
 	if(tmp[[1]][1] == 'nPosterior'){ nPosterior = as.integer(tmp[[1]][2]) }
 }
 
@@ -26,7 +27,7 @@ obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
 obs_sfs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)[-1]
 
 ######################################################
-source(paste(bin, "/get_parameters_1pop.R", sep=''))
+source(paste(binpath, "/get_parameters_1pop.R", sep=''))
 
 options(digits=5)
 model_tmp = bestModel

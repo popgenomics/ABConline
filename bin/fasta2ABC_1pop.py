@@ -6,7 +6,7 @@ from math import ceil
 import random
 
 # check the arguments
-if len(sys.argv) != 11:
+if len(sys.argv) != 12:
 	print("\n\tfasta2ABC_1pops.py produces: bpfile (for simulations) and summary statistics (for inferences)")
 	print("\n\033[1;33m\tExample: ./fasta2ABC_1pops.py all_loci.fasta flo coding 30 0.1 10 100000 0.00000002 1\033[0m\n")
 	print("\t\targ1 =\tname of the fasta file containing all of the sequences")
@@ -19,10 +19,11 @@ if len(sys.argv) != 11:
 	print("\t\targ8 =\tinteger, corresponding to the minimum number of retained sequences (after rejection).\n\t\t\tif not enough sequences are retained, the loci is excluded from the analysis")
 	print("\t\targ9 =\tmutation rate by bp and by generation. example: 0.00000002")
 	print("\t\targ10 =\tratio of the recombination rate over mutation. example: 1")
-	if(len(sys.argv)<11):
-		sys.exit("\n\033[1;31m ERROR in fasta2ABC_1pops.py: 11 arguments are required: {0} missing\033[0m\n".format(11-len(sys.argv)))
-	if(len(sys.argv)>11):
-		sys.exit("\n\033[1;31m ERROR in fasta2ABC_1pops.py: 11 arguments are required: {0} too much\033[0m\n".format(len(sys.argv)-11))
+	print("\t\targ11 =\tbinpath. example: /tools/ABConline/bin")
+	if(len(sys.argv)<12):
+		sys.exit("\n\033[1;31m ERROR in fasta2ABC_1pops.py: 12 arguments are required: {0} missing\033[0m\n".format(12-len(sys.argv)))
+	if(len(sys.argv)>12):
+		sys.exit("\n\033[1;31m ERROR in fasta2ABC_1pops.py: 12 arguments are required: {0} too much\033[0m\n".format(len(sys.argv)-12))
 
 fileName = sys.argv[1] # example: all_loci.fasta
 timeStamp = sys.argv[2] # example: timeStamp used as directory for the project
@@ -34,6 +35,7 @@ max_N_tolerated = float(sys.argv[7]) # if an allele has %N > threshold_N --> seq
 nMin = int(sys.argv[8]) # minimum number of individuals within a species. example: 10
 mu = float(sys.argv[9]) # mutation rate by bp and by generation. example: 0.00000002
 rho_over_theta = float(sys.argv[10]) # ratio of the recombination rate over mutation. example: 1
+binpath = sys.argv[11] # path to the bin directory of DILS containing all executables 
 
 test = os.path.isfile(fileName)
 if test == False:
@@ -732,7 +734,7 @@ if nameOut == 'NA':
 else:
 	outgroup_present = 1
 #commande = 'cat {0}/{1}.ms | mscalc_1pop_observedDataset.py {0} {2}'.format(timeStamp, nameA, outgroup_present)
-commande = 'cat {0}/{1}.ms | mscalc_1pop_observedDataset_SFS.py {0} {2}'.format(timeStamp, nameA, outgroup_present)
+commande = 'cat {0}/{1}.ms | {3}/mscalc_1pop_observedDataset_SFS.py {0} {2}'.format(timeStamp, nameA, outgroup_present, binpath)
 #print(commande)
 os.system(commande)
 
