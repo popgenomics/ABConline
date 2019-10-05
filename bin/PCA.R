@@ -2,7 +2,7 @@
 library(FactoMineR)
 for(i in commandArgs()){
 	tmp = strsplit(i, '=')
-	if(tmp[[0]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] }
+	if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] }
 }
 
 
