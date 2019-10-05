@@ -160,14 +160,49 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	write('\n#votes:', outfile, append=T)
 	write.table(t(as.matrix(predicted_model$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 
-	write(paste(predicted_model$allocation, '\n', sep=''), outfile_best, append=F)
 	
 	summary_modelComp = c(summary_modelComp, 'IM versus SC')
 	summary_bestModel = c(summary_bestModel, as.character(predicted_model$allocation))
 	summary_proba = c(summary_proba, predicted_model$post.prob)
 
+	best_hierarchical = as.character(predicted_model$allocation)
 	
-	# model comparison #3 --> Nhomo versus Nhetero
+
+	# model comparison #3 --> two models: mig homo versus mig hetero
+	Mhomo = NULL
+	for( i in c('SC_1M_1N', 'SC_1M_2N', 'IM_1M_1N', 'IM_1M_2N')){
+		Mhomo = rbind(Mhomo, ss_sim[[i]])
+	}
+
+	Mhetero = NULL
+	for( i in c('SC_2M_1N', 'SC_2M_2N', 'IM_2M_1N', 'IM_2M_2N')){
+		Mhetero = rbind(Mhetero, ss_sim[[i]])
+	}
+
+	modIndexes = c(rep('Mhomo', nrow(Mhomo)), rep('Mhetero', nrow(Mhetero)))
+	mod_Mhomo_Mhetero = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+	predicted_model_Mhomo_Mhetero = predict(mod_Mhomo_Mhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+
+	write('\n#####\n\nMODEL COMPARISON #3: Mhomo versus Mhetero', outfile, append=T)
+	write('#confusion matrix:', outfile, append=T)
+	write.table(mod_Mhomo_Mhetero$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
+	write(paste('\n#best model: ', predicted_model_Mhomo_Mhetero$allocation, sep=''), outfile, append=T)
+	write(paste('#proba best model: ', predicted_model_Mhomo_Mhetero$post.prob, sep=''), outfile, append=T)
+	write('\n#votes:', outfile, append=T)
+	write.table(t(as.matrix(predicted_model_Mhomo_Mhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
+	
+	summary_modelComp = c(summary_modelComp, 'M-homo versus M-hetero')
+	summary_bestModel = c(summary_bestModel, as.character(predicted_model_Mhomo_Mhetero$allocation))
+	summary_proba = c(summary_proba, predicted_model_Mhomo_Mhetero$post.prob)
+
+	if(as.character(predicted_model_Mhomo_Mhetero$allocation) == 'Mhomo'){
+		best_hierarchical = paste(best_hierarchical, '1M', sep='_')
+	}else{
+		best_hierarchical = paste(best_hierarchical, '2M', sep='_')
+
+	}
+	
+	# model comparison #4 --> Nhomo versus Nhetero
 	Nhomo = NULL
 	for( i in c('SC_1M_1N', 'SC_2M_1N', 'IM_1M_1N', 'IM_2M_1N')){
 		Nhomo = rbind(Nhomo, ss_sim[[i]])
@@ -183,7 +218,7 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	predicted_model_Nhomo_Nhetero = predict(mod_Nhomo_Nhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Nhomo, Nhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
 	
 	
-	write('\n#####\n\nMODEL COMPARISON #3: Nhomo versus Nhetero', outfile, append=T)
+	write('\n#####\n\nMODEL COMPARISON #4: Nhomo versus Nhetero', outfile, append=T)
 	write('#confusion matrix:', outfile, append=T)
 	write.table(mod_Nhomo_Nhetero$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
 	write(paste('\n#best model: ', predicted_model_Nhomo_Nhetero$allocation, sep=''), outfile, append=T)
@@ -195,66 +230,45 @@ if(predicted_model_iso_mig$allocation=='migration'){
 	summary_bestModel = c(summary_bestModel, as.character(predicted_model_Nhomo_Nhetero$allocation))
 	summary_proba = c(summary_proba, predicted_model_Nhomo_Nhetero$post.prob)
 
+	if(as.character(predicted_model_Nhomo_Nhetero$allocation) == 'Nhomo'){
+		best_hierarchical = paste(best_hierarchical, '1N', sep='_')
+	}else{
+		best_hierarchical = paste(best_hierarchical, '2N', sep='_')
 
-	# model comparison #4 --> two models: mig homo versus mig hetero
-	Mhomo = NULL
-	for( i in c('SC_1M_1N', 'SC_1M_2N', 'IM_1M_1N', 'IM_1M_2N')){
-		Mhomo = rbind(Mhomo, ss_sim[[i]])
 	}
-
-	Mhetero = NULL
-	for( i in c('SC_2M_1N', 'SC_2M_2N', 'IM_2M_1N', 'IM_2M_2N')){
-		Mhetero = rbind(Mhetero, ss_sim[[i]])
-	}
-
-	modIndexes = c(rep('Mhomo', nrow(Mhomo)), rep('Mhetero', nrow(Mhetero)))
-	mod_Mhomo_Mhetero = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-	predicted_model_Mhomo_Mhetero = predict(mod_Mhomo_Mhetero, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(Mhomo, Mhetero)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-
-	write('\n#####\n\nMODEL COMPARISON #4: Mhomo versus Mhetero', outfile, append=T)
-	write('#confusion matrix:', outfile, append=T)
-	write.table(mod_Mhomo_Mhetero$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
-	write(paste('\n#best model: ', predicted_model_Mhomo_Mhetero$allocation, sep=''), outfile, append=T)
-	write(paste('#proba best model: ', predicted_model_Mhomo_Mhetero$post.prob, sep=''), outfile, append=T)
-	write('\n#votes:', outfile, append=T)
-	write.table(t(as.matrix(predicted_model_Mhomo_Mhetero$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
 	
-	summary_modelComp = c(summary_modelComp, 'M-homo versus M-hetero')
-	summary_bestModel = c(summary_bestModel, as.character(predicted_model_Mhomo_Mhetero$allocation))
-	summary_proba = c(summary_proba, predicted_model_Mhomo_Mhetero$post.prob)
-
-	
-	# model comparison #5 --> within demographic scenario
-	if( predicted_model$allocation == 'IM' ){
-		write('\n#####\n\nMODEL COMPARISON #4: within IM', outfile, append=T)
-		IM_1M_1N = ss_sim[['IM_1M_1N']]
-		IM_1M_2N = ss_sim[['IM_1M_2N']]
-		IM_2M_1N = ss_sim[['IM_2M_1N']]
-		IM_2M_2N = ss_sim[['IM_2M_2N']]
-		
-		modIndexes = c(rep('IM_1M_1N', nrow(IM_1M_1N)), rep('IM_1M_2N', nrow(IM_1M_2N)), rep('IM_2M_1N', nrow(IM_2M_1N)), rep('IM_2M_2N', nrow(IM_2M_2N)))
-		mod_best = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(IM_1M_1N, IM_1M_2N, IM_2M_1N, IM_2M_2N)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-		predicted_best = predict(mod_best, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(IM_1M_1N, IM_1M_2N, IM_2M_1N, IM_2M_2N)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-		
-		}else if( predicted_model$allocation == 'SC' ){
-		write('\n#####\n\nMODEL COMPARISON #4: within SC', outfile, append=T)
-		SC_1M_1N = ss_sim[['SC_1M_1N']]
-		SC_1M_2N = ss_sim[['SC_1M_2N']]
-		SC_2M_1N = ss_sim[['SC_2M_1N']]
-		SC_2M_2N = ss_sim[['SC_2M_2N']]
-		
-		modIndexes = c(rep('SC_1M_1N', nrow(SC_1M_1N)), rep('SC_1M_2N', nrow(SC_1M_2N)), rep('SC_2M_1N', nrow(SC_2M_1N)), rep('SC_2M_2N', nrow(SC_2M_2N)))
-		mod_best = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(SC_1M_1N, SC_1M_2N, SC_2M_1N, SC_2M_2N)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-		predicted_best = predict(mod_best, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(SC_1M_1N, SC_1M_2N, SC_2M_1N, SC_2M_2N)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
-		}
-		
-	write('#confusion matrix:', outfile, append=T)
-	write.table(mod_best$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
-	write(paste('\n#best model: ', predicted_best$allocation, sep=''), outfile, append=T)
-	write(paste('#proba best model: ', predicted_best$post.prob, sep=''), outfile, append=T)
-	write('\n#votes:', outfile, append=T)
-	write.table(t(as.matrix(predicted_best$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
-	write(paste(predicted_best$allocation, '\n', sep=''), outfile_best, append=F)
+#	# model comparison #5 --> within demographic scenario
+#	if( predicted_model$allocation == 'IM' ){
+#		write('\n#####\n\nMODEL COMPARISON #4: within IM', outfile, append=T)
+#		IM_1M_1N = ss_sim[['IM_1M_1N']]
+#		IM_1M_2N = ss_sim[['IM_1M_2N']]
+#		IM_2M_1N = ss_sim[['IM_2M_1N']]
+#		IM_2M_2N = ss_sim[['IM_2M_2N']]
+#		
+#		modIndexes = c(rep('IM_1M_1N', nrow(IM_1M_1N)), rep('IM_1M_2N', nrow(IM_1M_2N)), rep('IM_2M_1N', nrow(IM_2M_1N)), rep('IM_2M_2N', nrow(IM_2M_2N)))
+#		mod_best = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(IM_1M_1N, IM_1M_2N, IM_2M_1N, IM_2M_2N)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+#		predicted_best = predict(mod_best, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(IM_1M_1N, IM_1M_2N, IM_2M_1N, IM_2M_2N)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+#		
+#		}else if( predicted_model$allocation == 'SC' ){
+#		write('\n#####\n\nMODEL COMPARISON #4: within SC', outfile, append=T)
+#		SC_1M_1N = ss_sim[['SC_1M_1N']]
+#		SC_1M_2N = ss_sim[['SC_1M_2N']]
+#		SC_2M_1N = ss_sim[['SC_2M_1N']]
+#		SC_2M_2N = ss_sim[['SC_2M_2N']]
+#		
+#		modIndexes = c(rep('SC_1M_1N', nrow(SC_1M_1N)), rep('SC_1M_2N', nrow(SC_1M_2N)), rep('SC_2M_1N', nrow(SC_2M_1N)), rep('SC_2M_2N', nrow(SC_2M_2N)))
+#		mod_best = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(SC_1M_1N, SC_1M_2N, SC_2M_1N, SC_2M_2N)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+#		predicted_best = predict(mod_best, data.frame(ss_obs[, -ss_2_remove]), training=data.frame(modIndexes, rbind(SC_1M_1N, SC_1M_2N, SC_2M_1N, SC_2M_2N)[, -ss_2_remove]), ntree = ntree, paral = T, ncores = ncores)
+#		}
+#		
+#	write('#confusion matrix:', outfile, append=T)
+#	write.table(mod_best$model.rf$confusion.matrix, outfile, append=T, col.names=T, row.names=T, sep='\t', quote=F)
+#	write(paste('\n#best model: ', predicted_best$allocation, sep=''), outfile, append=T)
+#	write(paste('#proba best model: ', predicted_best$post.prob, sep=''), outfile, append=T)
+#	write('\n#votes:', outfile, append=T)
+#	write.table(t(as.matrix(predicted_best$vote, ncol=1)), outfile, append=T, col.names=F, row.names=T, sep='\t', quote=F)
+#	#write(paste(predicted_best$allocation, '\n', sep=''), outfile_best, append=F)
+	write(paste(best_hierarchical, '\n', sep=''), outfile_best, append=F)
 }
 
 
@@ -350,6 +364,7 @@ if(predicted_model_iso_mig$allocation=='isolation'){
 	write(paste(predicted_best$allocation, '\n', sep=''), outfile_best, append=F)
 }
 
+
 # summarized output
 summary_outfile = paste(timeStamp, '/', sub_dir_sim, '/hierarchical_models.txt', sep='')
 write(paste(c(summary_modelComp), collapse='\t'), summary_outfile, append=F)
@@ -438,10 +453,6 @@ if(predicted_model_iso_mig$allocation=='migration'){
 				b_M1 = posterior_IM$shape_M12_b[i]
 				a_M2 = posterior_IM$shape_M21_a[i]
 				b_M2 = posterior_IM$shape_M21_b[i]
-				print(a_M1)
-				print(b_M1)
-				print(a_M2)
-				print(b_M2)
 				scalar_M12 = rbeta(nrep, a_M1, b_M1) / (a_M1 / (a_M1 + b_M1))
 				scalar_M21 = rbeta(nrep, a_M2, b_M2) / (a_M2 / (a_M2 + b_M2))
 			}else{

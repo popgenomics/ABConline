@@ -14,14 +14,14 @@ MODELS_COMP = ['SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N', 'AM_1M_1N', 'AM_1
 # first and second estimation of parameters
 MODELS_ESTIM = ['IM_2M_2N'] #MODELS_ESTIM = ['SC_2M_2N', 'AM_2M_2N', 'IM_2M_2N', 'SI_2N', 'SI_1N']
 nIterations_gof = 50 # number of subdirectories for the simulations used in the nnet param estimates (200)
-nIterations_estim_1_3 = 500 # number of subdirectories for the simulations used in the nnet param estimates (2000)
+nIterations_estim_1_3 = 1000 # number of subdirectories for the simulations used in the nnet param estimates (2000)
 ITERATIONS_ESTIMATES_1_3 = range(nIterations_estim_1_3)
 ITERATIONS_GOF = range(nIterations_gof)
-nPosterior1 = 2000
+nPosterior1 = 10000
 nPosterior3 = 10000
 
 # second estimation of parameters
-nIterations_estim_2 = 100 # number of subdirectories for the simulations used in the nnet param estimates (2000)
+nIterations_estim_2 = 500 # number of subdirectories for the simulations used in the nnet param estimates (2000)
 ITERATIONS_ESTIMATES_2 = range(nIterations_estim_2)
 ITERATIONS_GOF_2 = range(nIterations_gof)
 nPosterior2 = 2000
@@ -58,7 +58,6 @@ rho_over_theta = config['rho_over_theta']
 
 rule targets:
 	input:
-		expand("{timeStamp}/distribution_PCA.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/bpfile", timeStamp=timeStamp),
 		expand("{timeStamp}/Nref.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/config.yaml", timeStamp=timeStamp),
@@ -85,7 +84,9 @@ rule targets:
 #		expand("{timeStamp}/best_model_2/posterior_bestModel.pdf", timeStamp=timeStamp),
 		expand("{timeStamp}/gof_2/goodness_of_fit_test.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/gof_2/gof_sfs.txt", timeStamp=timeStamp),
-		expand("{timeStamp}/best_model_3/posterior_bestModel.txt", timeStamp=timeStamp)
+		expand("{timeStamp}/best_model_3/posterior_bestModel.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/table_coord_PCA_SS.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/table_contrib_PCA_SS.txt", timeStamp=timeStamp)
 	shell:
 		"""
 		tar -zcvf {timeStamp}.tar.gz {input}
@@ -401,4 +402,17 @@ rule gof_2:
 		
 		{binpath}/gof_2pop.R timeStamp={timeStamp} sub_dir=gof_2 nIterations_gof={nIterations_gof} writeDistribution=TRUE
 		"""
+
+rule PCA_SS:
+	input:
+		"{timeStamp}/distribution_PCA.txt"
+	output:
+		"{timeStamp}/table_coord_PCA_SS.txt",
+		"{timeStamp}/table_contrib_PCA_SS.txt"
+	shell:
+		"""
+		{binpath}/PCA.R timeStamp={timeStamp}
+		"""
+
+
 
