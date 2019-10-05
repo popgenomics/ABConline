@@ -1,6 +1,7 @@
 #!/shared/software/miniconda/envs/r-3.5.1/bin/Rscript
 library(FactoMineR)
 for(i in commandArgs()){
+	tmp = strsplit(i, '=')
 	if(tmp[[0]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] }
 }
 
