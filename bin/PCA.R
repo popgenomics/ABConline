@@ -26,4 +26,5 @@ output_contrib = data.frame(res.pca$var$contrib)
 # write the output file
 write.table(output_coord, paste( timeStamp, '/table_coord_PCA_SS.txt', sep=''), col.names=T, row.names=F, quote=F, sep='\t') # coordinates to plot the 3D PCA
 write.table(output_contrib, paste( timeStamp, '/table_contrib_PCA_SS.txt', sep=''), col.names=T, row.names=T, quote=F, sep='\t') # coordinates to plot the table of contributions
+write.table(res.pca$eig, paste( timeStamp, '/table_eigenvalues_PCA_SS.txt', sep=''), col.names=T, row.names=T, quote=F, sep='\t') # coordinates to plot the table of contributions
 

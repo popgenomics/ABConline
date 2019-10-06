@@ -59,9 +59,11 @@ rule targets:
 		expand("{timeStamp}/gof/gof_sfs.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/best_model_3/posterior_bestModel.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/best_model_3/report_{nameA}.txt", timeStamp=timeStamp, nameA=nameA),
-		expand("{timeStamp}/distribution_PCA.txt", timeStamp=timeStamp, nameA=nameA),
 		expand("{timeStamp}/gof_2/goodness_of_fit_test.txt", timeStamp=timeStamp),
-		expand("{timeStamp}/gof_2/gof_sfs.txt", timeStamp=timeStamp)
+		expand("{timeStamp}/gof_2/gof_sfs.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/table_coord_PCA_SS.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/table_contrib_PCA_SS.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/table_eigenvalues_PCA_SS.txt", timeStamp=timeStamp)
 	shell:
 		"""
 		tar -zcvf {timeStamp}.tar.gz {input}
@@ -319,4 +321,19 @@ rule gof_2:
 		"""
 		{binpath}/gof_1pop_v2.R timeStamp={timeStamp} nIterations_gof={nIterations_gof} sub_dir=gof_2
 		"""
+
+
+rule PCA_SS:
+	input:
+		"{timeStamp}/distribution_PCA.txt"
+	output:
+		"{timeStamp}/table_coord_PCA_SS.txt",
+		"{timeStamp}/table_contrib_PCA_SS.txt",
+		"{timeStamp}/table_eigenvalues_PCA_SS.txt"
+	shell:
+		"""
+		{binpath}/PCA.R timeStamp={timeStamp}
+		"""
+
+
 

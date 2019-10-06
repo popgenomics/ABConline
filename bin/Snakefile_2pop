@@ -86,7 +86,9 @@ rule targets:
 		expand("{timeStamp}/gof_2/gof_sfs.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/best_model_3/posterior_bestModel.txt", timeStamp=timeStamp),
 		expand("{timeStamp}/table_coord_PCA_SS.txt", timeStamp=timeStamp),
-		expand("{timeStamp}/table_contrib_PCA_SS.txt", timeStamp=timeStamp)
+		expand("{timeStamp}/table_contrib_PCA_SS.txt", timeStamp=timeStamp),
+		expand("{timeStamp}/table_eigenvalues_PCA_SS.txt", timeStamp=timeStamp)
+
 	shell:
 		"""
 		tar -zcvf {timeStamp}.tar.gz {input}
@@ -408,7 +410,8 @@ rule PCA_SS:
 		"{timeStamp}/distribution_PCA.txt"
 	output:
 		"{timeStamp}/table_coord_PCA_SS.txt",
-		"{timeStamp}/table_contrib_PCA_SS.txt"
+		"{timeStamp}/table_contrib_PCA_SS.txt",
+		"{timeStamp}/table_eigenvalues_PCA_SS.txt"
 	shell:
 		"""
 		{binpath}/PCA.R timeStamp={timeStamp}
