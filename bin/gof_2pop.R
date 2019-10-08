@@ -11,7 +11,10 @@ for(i in commandArgs()){
 
 ### Summary Stats
 # simulations
-x = read.table(paste(timeStamp, '/', sub_dir, '/simulations.txt', sep=''), h=T)
+x = NULL
+for(i in 0:(nIterations_gof-1)){
+        x = rbind(x, read.table(paste(timeStamp, '/', sub_dir, '/gof_', i, '/ABCstat.txt', sep=''), h=T))
+}
 
 # observation
 y = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
@@ -32,17 +35,18 @@ pvalue = function(distribution, obs){
 if( writeDistribution==TRUE){
 
 	### Summary Stats
-	prior_ss = gof1_ss = gof2_ss = NULL
-	prior_sfs = gof1_sfs = gof2_sfs = NULL
+	prior_ss = gof1_ss = gof2_ss =  gof3_ss = NULL
+	prior_sfs = gof1_sfs = gof2_sfs =  gof3_sfs = NULL
 	# simulations
 	for(i in 0:(nIterations_gof-1)){
 		prior_ss = rbind(prior_ss, read.table(paste(timeStamp, '/best_model/best_model_', i, '/ABCstat.txt', sep=''), h=T))
 		gof1_ss = rbind(gof1_ss, read.table(paste(timeStamp, '/gof/gof_', i, '/ABCstat.txt', sep=''), h=T))
 		gof2_ss = rbind(gof2_ss, read.table(paste(timeStamp, '/gof_2/gof_', i, '/ABCstat.txt', sep=''), h=T))
+		gof3_ss = rbind(gof3_ss, read.table(paste(timeStamp, '/gof_3/gof_', i, '/ABCstat.txt', sep=''), h=T))
 		prior_sfs = rbind(prior_sfs, read.table(paste(timeStamp, '/best_model/best_model_', i, '/ABCjsfs.txt', sep=''), h=T))
 		gof1_sfs = rbind(gof1_sfs, read.table(paste(timeStamp, '/gof/gof_', i, '/ABCjsfs.txt', sep=''), h=T))
 		gof2_sfs = rbind(gof2_sfs, read.table(paste(timeStamp, '/gof_2/gof_', i, '/ABCjsfs.txt', sep=''), h=T))
-
+		gof3_sfs = rbind(gof3_sfs, read.table(paste(timeStamp, '/gof_3/gof_', i, '/ABCjsfs.txt', sep=''), h=T))
 	}
 
 	# observation
@@ -50,8 +54,8 @@ if( writeDistribution==TRUE){
 	obs_sfs = read.table(paste( timeStamp, '/ABCjsfs.txt', sep=''), h=T)
 
 	# output for the web interface
-	origin = c('observed dataset', rep('prior', nrow(prior_ss)), rep('posterior', nrow(gof1_ss)), rep('optimized posterior', nrow(gof2_ss)))
-	PCA = rbind(cbind(obs_ss, obs_sfs), cbind(prior_ss, prior_sfs), cbind(gof1_ss, gof1_sfs), cbind(gof2_ss, gof2_sfs))
+	origin = c('observed dataset', rep('prior', nrow(prior_ss)), rep('posterior', nrow(gof1_ss)), rep('optimized posterior1', nrow(gof2_ss)), rep('optimized posterior2', nrow(gof3_ss)))
+	PCA = rbind(cbind(obs_ss, obs_sfs), cbind(prior_ss, prior_sfs), cbind(gof1_ss, gof1_sfs), cbind(gof2_ss, gof2_sfs), cbind(gof3_ss, gof3_sfs))
 	PCA = cbind(PCA, origin)
 	write.table(PCA, paste(timeStamp, '/distribution_PCA.txt', sep=''), col.names=T, row.names=F, quote=F, sep='\t')
 }
@@ -82,7 +86,10 @@ write.table(x=res, file=outfile, quote=FALSE, sep='\t', col.names=T, row.names=F
 
 ### jSFS
 # expected sfs
-exp_sfs = read.table(paste(timeStamp, '/', sub_dir, '/simulations_jsfs.txt', sep=''), h=T)
+exp_sfs = NULL
+for(i in 0:(nIterations_gof-1)){
+        exp_sfs = rbind(exp_sfs, read.table(paste(timeStamp, '/', sub_dir, '/gof_', i, '/ABCjsfs.txt', sep=''), h=T))
+}
 exp_sfs_2 = apply(exp_sfs, MARGIN=2, FUN="median")
 
 # observed sfs

@@ -90,7 +90,9 @@ abc_nnet_multivar <- function(target,x,sumstat,tol,gwt,rejmethod=F,noweight=F,tr
 				x.tmp.max <- max(x.tmp)
 				x[,i] <- ifelse(x[,i] >= bb[2,i], x.tmp.max,x[,i])
 			}
+			#print((x[,i]-bb[1,i])/(bb[2,i]-bb[1,i]))
 			x[,i] <- (x[,i]-bb[1,i])/(bb[2,i]-bb[1,i])
+			#print(log(x[,i]/(1-x[,i])))
 			x[,i] <- log(x[,i]/(1-x[,i]))
 		    }
 		}
@@ -235,7 +237,7 @@ babar<-function(a,b,space=2,breaks="auto",AL=0.5,nameA="A",nameB="B",xl="",yl=""
 #}
 
 
-get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPosterior, figure){
+get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPosterior, figure, transf){
 	library(data.table)
 	options(digits=5)
 	###################
@@ -333,7 +335,7 @@ get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPost
 	}
 		
 	x = matrix(as.numeric(unlist(params_sim)), byrow=F, ncol=ncol(params_sim))
-	transf_obs = rep("logit", ncol(params_sim))
+	transf_obs = rep(transf, ncol(params_sim))
 	bb = rbind(apply(x, MARGIN=2, FUN="min"), apply(x, MARGIN=2, FUN="max"))
 	#res2 = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=1000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=10*ncol(x), trace=T)
 	res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=nPosterior/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)

@@ -14,6 +14,7 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] } # name of timeStamp
 	if(tmp[[1]][1] == 'binpath'){ binpath = tmp[[1]][2] } # bin = path where to source get_parameters
 	if(tmp[[1]][1] == 'nPosterior'){ nPosterior = as.integer(tmp[[1]][2]) }
+	if(tmp[[1]][1] == 'transf'){ transf = tmp[[1]][2] } # c('none', 'log', 'logit')
 }
 
 outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '.txt', sep='')
@@ -33,7 +34,7 @@ options(digits=5)
 model_tmp = bestModel
 
 write(paste('\n#####\n\nparameters of model using neural_network (upper lines) and random_forest (lower lines): ', model_tmp, sep=''), outfile, append=T)
-posterior = get_posterior(nameA=nameA, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model='best_model', sub_dir_model='bestModel', nPosterior=nPosterior, figure=T)
+posterior = get_posterior(nameA=nameA, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model='best_model', sub_dir_model='bestModel', nPosterior=nPosterior, figure=T, transf=transf)
 write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
 for(i in 1:ncol(posterior[['neural_network']])){
 	param_i = colnames(posterior[['neural_network']])[i]
