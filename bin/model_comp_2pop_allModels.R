@@ -18,6 +18,7 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'population_growth'){ population_growth = tmp[[1]][2] } # constant; variable
 	if(tmp[[1]][1] == 'modeBarrier'){ modeBarrier = tmp[[1]][2] } # beta; bimodal
 	if(tmp[[1]][1] == 'binpath'){ binpath = tmp[[1]][2] } # path to the bin directory
+	if(tmp[[1]][1] == 'posterior2use'){ posterior2use = tmp[[1]][2] } # path to the posterior file used for the locus specific model comp
 }
 
 outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
@@ -372,176 +373,177 @@ write(paste(c(summary_bestModel), collapse='\t'), summary_outfile, append=T)
 write(paste(c(summary_proba), collapse='\t'), summary_outfile, append=T)
 
 
-### LOCUS SPECIFIC MODEL COMPARISON
-nrep = 10
-path = getwd()
-outfile = 'locus_specific_modelComp.txt'
-if(predicted_model_iso_mig$allocation=='migration'){
-	if(predicted_model_Mhomo_Mhetero$allocation=='Mhetero'){
-		# get the posterior
-		posterior_IM = read.table(paste(timeStamp, "/estim/posterior_IM_2M_2N.txt", sep=''), h=T)
-		
-		# get informations about loci 
-		bpfile = read.table(paste(timeStamp, "/bpfile", sep=''), skip=1, h=F)
-		L = median(as.numeric(bpfile[1,]))
-		nA = median(as.numeric(bpfile[2,]))
-		nB = median(as.numeric(bpfile[3,]))
-		theta = median(as.numeric(bpfile[4,]))
-		rho = median(as.numeric(bpfile[5,]))
-
-		# change directory
-		setwd(paste(timeStamp, '/modelComp', sep=''))
-
-		# write the monolocus bpfile
-		write(paste('#locus specific model comparison\n', L, '\n', nA, '\n', nB, '\n', theta, '\n', rho, sep=''), 'bpfile', append=F)
-		
-		## simulations
-		N1_mig = NULL
-		N2_mig = NULL
-		Na_mig = NULL
-		Tsplit_mig = NULL
-		M12_mig = NULL
-		M21_mig = NULL
-		
-		N1_iso = NULL
-		N2_iso = NULL
-		Na_iso = NULL
-		Tsplit_iso = NULL
-		M12_iso = NULL
-		M21_iso = NULL
-		
-		Tsplit = NULL
-		
-		if(population_growth=='variable'){
-			Tdem1_mig = NULL
-			Tdem2_mig = NULL
-			founders1_mig = NULL
-			founders2_mig = NULL
-			
-			Tdem1_iso = NULL
-			Tdem2_iso = NULL
-			founders1_iso = NULL
-			founders2_iso = NULL
-		}
-		
-		for(i in 1:nrow(posterior_IM)){
-			# population growth
-			if(population_growth=='variable'){
-				Tdem1_mig = c(Tdem1_mig, rep(posterior_IM$Tdem1[i], nrep))
-				Tdem2_mig = c(Tdem2_mig, rep(posterior_IM$Tdem2[i], nrep))
-				founders1_mig = c(founders1_mig, rep(posterior_IM$founders1[i], nrep))
-				founders2_mig = c(founders2_mig, rep(posterior_IM$founders2[i], nrep))
-				
-				Tdem1_iso = c(Tdem1_iso, rep(posterior_IM$Tdem1[i], nrep))
-				Tdem2_iso = c(Tdem2_iso, rep(posterior_IM$Tdem2[i], nrep))
-				founders1_iso = c(founders1_iso, rep(posterior_IM$founders1[i], nrep))
-				founders2_iso = c(founders2_iso, rep(posterior_IM$founders2[i], nrep))
-			}
-			
-			Tsplit = c(Tsplit, rep(posterior_IM$Tsplit[i], nrep))
-			
-			# migration
-			a_N = posterior_IM$shape_N_a[i]
-			b_N = posterior_IM$shape_N_b[i]
-			scalar_N = rbeta(nrep, a_N, b_N) / (a_N / (a_N + b_N))
-			N1_mig = c(N1_mig, scalar_N * posterior_IM$N1[i])
-			N2_mig = c(N2_mig, scalar_N * posterior_IM$N2[i])
-			Na_mig = c(Na_mig, scalar_N * posterior_IM$Na[i])
-		
-			if(modeBarrier == "beta"){
-				a_M1 = posterior_IM$shape_M12_a[i]
-				b_M1 = posterior_IM$shape_M12_b[i]
-				a_M2 = posterior_IM$shape_M21_a[i]
-				b_M2 = posterior_IM$shape_M21_b[i]
-				scalar_M12 = rbeta(nrep, a_M1, b_M1) / (a_M1 / (a_M1 + b_M1))
-				scalar_M21 = rbeta(nrep, a_M2, b_M2) / (a_M2 / (a_M2 + b_M2))
-			}else{
-				# bimodal
-				scalar_M12 = rep(1, nrep)
-				scalar_M21 = rep(1, nrep)
-			}
-			M12_mig = c(M12_mig, scalar_M12 * posterior_IM$M12[i])
-			M21_mig = c(M21_mig, scalar_M21 * posterior_IM$M21[i])
-			
-			# isolation
-			a_N = posterior_IM$shape_N_a[i]
-			b_N = posterior_IM$shape_N_b[i]
-			scalar_N = rbeta(nrep, posterior_IM$shape_N_a[i], posterior_IM$shape_N_b[i]) / (a_N / (a_N + b_N))
-			N1_iso = c(N1_iso, scalar_N * posterior_IM$N1[i])
-			N2_iso = c(N2_iso, scalar_N * posterior_IM$N2[i])
-			Na_iso = c(Na_iso, scalar_N * posterior_IM$Na[i])
-			
-			M12_iso = c(M12_iso, rep(0, nrep))
-			M21_iso = c(M21_iso, rep(0, nrep))
-		}
-		
-		theta_prior = rep(theta, length(Tsplit))
-		rho_prior = rep(rho, length(Tsplit))
-		L_prior = rep(L, length(Tsplit))
-		nA_prior = rep(nA, length(Tsplit))
-		nB_prior = rep(nB, length(Tsplit))
-		ntot = nA_prior + nB_prior
-		
-		if(population_growth=='variable'){
-			# msnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -en tbs 1 tbs -en tbs 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs
-			prior_mig = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_mig, N2_mig, Tdem1_mig, founders1_mig*Na_mig, Tdem2_mig, founders2_mig*Na_mig, M12_mig, M21_mig, Tsplit, Tsplit, Na_mig)
-			prior_iso = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_iso, N2_iso, Tdem1_iso, founders1_iso*Na_iso, Tdem2_iso, founders2_iso*Na_iso, M12_iso, M21_iso, Tsplit, Tsplit, Na_iso)
-		}else{
-			prior_mig = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_mig, N2_mig, M12_mig, M21_mig, Tsplit, Tsplit, Na_mig)
-			prior_iso = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_iso, N2_iso, M12_iso, M21_iso, Tsplit, Tsplit, Na_iso)
-		}
-		
-		# simulations of migration
-		# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
-		write.table(prior_mig, 'prior_mig.txt', sep='\t', col.names=F, row.names=F, quote=F)
-		if(population_growth=='variable'){
-			commande = paste('cat prior_mig.txt | ', binpath, '/msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -en tbs 1 tbs -en tbs 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | ', binpath, '/mscalc_2pop.py', sep='')
-		}else{
-			commande = paste('cat prior_mig.txt | ', binpath, '/msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | ', binpath, '/mscalc_2pop.py', sep='')
-		}
-		system(commande)
-		mig_ss = read.table('ABCstat.txt', h=T)
-		
-		# simulations of isolation
-		# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
-		write.table(prior_iso, 'prior_iso.txt', sep='\t', col.names=F, row.names=F, quote=F)
-		if(population_growth=='variable'){
-			commande = paste('cat prior_iso.txt | ', binpath, '/msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -en tbs 1 tbs -en tbs 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | ', binpath, '/mscalc_2pop.py', sep='')
-		}else{
-			commande = paste('cat prior_iso.txt | ', binpath, '/msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | ', binpath, '/mscalc_2pop.py', sep='')
-		}
-		system(commande)
-		iso_ss = read.table('ABCstat.txt', h=T)
-		
-		# locus_specific model comparison
-		stats_obs = c(3:15, 20:24)
-		stats_sim = c(4, 6, 8, 10, 12, 14, 16, 19, 21, 24, 26, 28, 30, 40, 45, 46, 47, 48)
-		modIndexes = c(rep('migration', nrow(mig_ss)), rep('isolation', nrow(iso_ss)))
-
-		mod_iso_mig = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(mig_ss, iso_ss)[, stats_sim]), ntree = ntree, paral = T, ncores = ncores)
-		predicted_model_iso_mig = predict(mod_iso_mig, data.frame(obs_loci[, stats_obs]), training=data.frame(modIndexes, rbind(mig_ss, iso_ss)[, stats_sim]), ntree = ntree, paral = T, ncores = ncores)
-
-		allocation = predicted_model_iso_mig$allocation
-		post_proba = predicted_model_iso_mig$post.prob
-		res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)
-		
-		write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
-	}else{ # if migration but homogeneous
-		# change directory
-		setwd(paste(timeStamp, '/modelComp', sep=''))
-		stats_obs = c(3:15, 20:24)
-		allocation = rep('migration', nrow(obs_loci))
-		post_proba = rep('1', nrow(obs_loci))
-		res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)
-		write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
-	}
-}else{
-	# change directory
-	setwd(paste(timeStamp, '/modelComp', sep=''))
-	stats_obs = c(3:15, 20:24)
-	allocation = rep('isolation', nrow(obs_loci))
-	post_proba = rep('1', nrow(obs_loci))
-	res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)
-	write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
-}
-
+#### LOCUS SPECIFIC MODEL COMPARISON
+#nrep = 10
+#path = getwd()
+#outfile = 'locus_specific_modelComp.txt'
+#if(predicted_model_iso_mig$allocation=='migration'){
+#	if(predicted_model_Mhomo_Mhetero$allocation=='Mhetero'){
+#		# get the posterior
+#		#posterior_IM = read.table(paste(timeStamp, "/estim/posterior_IM_2M_2N.txt", sep=''), h=T)
+#		posterior_IM = read.table(posterior2use, h=T) # usualy : posterior of an IM model
+#		
+#		# get informations about loci 
+#		bpfile = read.table(paste(timeStamp, "/bpfile", sep=''), skip=1, h=F)
+#		L = median(as.numeric(bpfile[1,]))
+#		nA = median(as.numeric(bpfile[2,]))
+#		nB = median(as.numeric(bpfile[3,]))
+#		theta = median(as.numeric(bpfile[4,]))
+#		rho = median(as.numeric(bpfile[5,]))
+#
+#		# change directory
+#		setwd(paste(timeStamp, '/modelComp', sep=''))
+#
+#		# write the monolocus bpfile
+#		write(paste('#locus specific model comparison\n', L, '\n', nA, '\n', nB, '\n', theta, '\n', rho, sep=''), 'bpfile', append=F)
+#		
+#		## simulations
+#		N1_mig = NULL
+#		N2_mig = NULL
+#		Na_mig = NULL
+#		Tsplit_mig = NULL
+#		M12_mig = NULL
+#		M21_mig = NULL
+#		
+#		N1_iso = NULL
+#		N2_iso = NULL
+#		Na_iso = NULL
+#		Tsplit_iso = NULL
+#		M12_iso = NULL
+#		M21_iso = NULL
+#		
+#		Tsplit = NULL
+#		
+#		if(population_growth=='variable'){
+#			Tdem1_mig = NULL
+#			Tdem2_mig = NULL
+#			founders1_mig = NULL
+#			founders2_mig = NULL
+#			
+#			Tdem1_iso = NULL
+#			Tdem2_iso = NULL
+#			founders1_iso = NULL
+#			founders2_iso = NULL
+#		}
+#		
+#		for(i in 1:nrow(posterior_IM)){
+#			# population growth
+#			if(population_growth=='variable'){
+#				Tdem1_mig = c(Tdem1_mig, rep(posterior_IM$Tdem1[i], nrep))
+#				Tdem2_mig = c(Tdem2_mig, rep(posterior_IM$Tdem2[i], nrep))
+#				founders1_mig = c(founders1_mig, rep(posterior_IM$founders1[i], nrep))
+#				founders2_mig = c(founders2_mig, rep(posterior_IM$founders2[i], nrep))
+#				
+#				Tdem1_iso = c(Tdem1_iso, rep(posterior_IM$Tdem1[i], nrep))
+#				Tdem2_iso = c(Tdem2_iso, rep(posterior_IM$Tdem2[i], nrep))
+#				founders1_iso = c(founders1_iso, rep(posterior_IM$founders1[i], nrep))
+#				founders2_iso = c(founders2_iso, rep(posterior_IM$founders2[i], nrep))
+#			}
+#			
+#			Tsplit = c(Tsplit, rep(posterior_IM$Tsplit[i], nrep))
+#			
+#			# migration
+#			a_N = posterior_IM$shape_N_a[i]
+#			b_N = posterior_IM$shape_N_b[i]
+#			scalar_N = rbeta(nrep, a_N, b_N) / (a_N / (a_N + b_N))
+#			N1_mig = c(N1_mig, scalar_N * posterior_IM$N1[i])
+#			N2_mig = c(N2_mig, scalar_N * posterior_IM$N2[i])
+#			Na_mig = c(Na_mig, scalar_N * posterior_IM$Na[i])
+#		
+#			if(modeBarrier == "beta"){
+#				a_M1 = posterior_IM$shape_M12_a[i]
+#				b_M1 = posterior_IM$shape_M12_b[i]
+#				a_M2 = posterior_IM$shape_M21_a[i]
+#				b_M2 = posterior_IM$shape_M21_b[i]
+#				scalar_M12 = rbeta(nrep, a_M1, b_M1) / (a_M1 / (a_M1 + b_M1))
+#				scalar_M21 = rbeta(nrep, a_M2, b_M2) / (a_M2 / (a_M2 + b_M2))
+#			}else{
+#				# bimodal
+#				scalar_M12 = rep(1, nrep)
+#				scalar_M21 = rep(1, nrep)
+#			}
+#			M12_mig = c(M12_mig, scalar_M12 * posterior_IM$M12[i])
+#			M21_mig = c(M21_mig, scalar_M21 * posterior_IM$M21[i])
+#			
+#			# isolation
+#			a_N = posterior_IM$shape_N_a[i]
+#			b_N = posterior_IM$shape_N_b[i]
+#			scalar_N = rbeta(nrep, posterior_IM$shape_N_a[i], posterior_IM$shape_N_b[i]) / (a_N / (a_N + b_N))
+#			N1_iso = c(N1_iso, scalar_N * posterior_IM$N1[i])
+#			N2_iso = c(N2_iso, scalar_N * posterior_IM$N2[i])
+#			Na_iso = c(Na_iso, scalar_N * posterior_IM$Na[i])
+#			
+#			M12_iso = c(M12_iso, rep(0, nrep))
+#			M21_iso = c(M21_iso, rep(0, nrep))
+#		}
+#		
+#		theta_prior = rep(theta, length(Tsplit))
+#		rho_prior = rep(rho, length(Tsplit))
+#		L_prior = rep(L, length(Tsplit))
+#		nA_prior = rep(nA, length(Tsplit))
+#		nB_prior = rep(nB, length(Tsplit))
+#		ntot = nA_prior + nB_prior
+#		
+#		if(population_growth=='variable'){
+#			# msnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -en tbs 1 tbs -en tbs 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs
+#			prior_mig = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_mig, N2_mig, Tdem1_mig, founders1_mig*Na_mig, Tdem2_mig, founders2_mig*Na_mig, M12_mig, M21_mig, Tsplit, Tsplit, Na_mig)
+#			prior_iso = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_iso, N2_iso, Tdem1_iso, founders1_iso*Na_iso, Tdem2_iso, founders2_iso*Na_iso, M12_iso, M21_iso, Tsplit, Tsplit, Na_iso)
+#		}else{
+#			prior_mig = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_mig, N2_mig, M12_mig, M21_mig, Tsplit, Tsplit, Na_mig)
+#			prior_iso = cbind(ntot, theta_prior, rho_prior, L_prior, nA_prior, nB_prior, N1_iso, N2_iso, M12_iso, M21_iso, Tsplit, Tsplit, Na_iso)
+#		}
+#		
+#		# simulations of migration
+#		# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
+#		write.table(prior_mig, 'prior_mig.txt', sep='\t', col.names=F, row.names=F, quote=F)
+#		if(population_growth=='variable'){
+#			commande = paste('cat prior_mig.txt | ', binpath, '/msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -en tbs 1 tbs -en tbs 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | ', binpath, '/mscalc_2pop.py', sep='')
+#		}else{
+#			commande = paste('cat prior_mig.txt | ', binpath, '/msnsam tbs ', nrow(prior_mig), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | ', binpath, '/mscalc_2pop.py', sep='')
+#		}
+#		system(commande)
+#		mig_ss = read.table('ABCstat.txt', h=T)
+#		
+#		# simulations of isolation
+#		# "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
+#		write.table(prior_iso, 'prior_iso.txt', sep='\t', col.names=F, row.names=F, quote=F)
+#		if(population_growth=='variable'){
+#			commande = paste('cat prior_iso.txt | ', binpath, '/msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -en tbs 1 tbs -en tbs 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | ', binpath, '/mscalc_2pop.py', sep='')
+#		}else{
+#			commande = paste('cat prior_iso.txt | ', binpath, '/msnsam tbs ', nrow(prior_iso), ' -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs | ', binpath, '/mscalc_2pop.py', sep='')
+#		}
+#		system(commande)
+#		iso_ss = read.table('ABCstat.txt', h=T)
+#		
+#		# locus_specific model comparison
+#		stats_obs = c(3:15, 20:24)
+#		stats_sim = c(4, 6, 8, 10, 12, 14, 16, 19, 21, 24, 26, 28, 30, 40, 45, 46, 47, 48)
+#		modIndexes = c(rep('migration', nrow(mig_ss)), rep('isolation', nrow(iso_ss)))
+#
+#		mod_iso_mig = abcrf(modIndexes~., data = data.frame(modIndexes, rbind(mig_ss, iso_ss)[, stats_sim]), ntree = ntree, paral = T, ncores = ncores)
+#		predicted_model_iso_mig = predict(mod_iso_mig, data.frame(obs_loci[, stats_obs]), training=data.frame(modIndexes, rbind(mig_ss, iso_ss)[, stats_sim]), ntree = ntree, paral = T, ncores = ncores)
+#
+#		allocation = predicted_model_iso_mig$allocation
+#		post_proba = predicted_model_iso_mig$post.prob
+#		res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)
+#		
+#		write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
+#	}else{ # if migration but homogeneous
+#		# change directory
+#		setwd(paste(timeStamp, '/modelComp', sep=''))
+#		stats_obs = c(3:15, 20:24)
+#		allocation = rep('migration', nrow(obs_loci))
+#		post_proba = rep('1', nrow(obs_loci))
+#		res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)
+#		write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
+#	}
+#}else{
+#	# change directory
+#	setwd(paste(timeStamp, '/modelComp', sep=''))
+#	stats_obs = c(3:15, 20:24)
+#	allocation = rep('isolation', nrow(obs_loci))
+#	post_proba = rep('1', nrow(obs_loci))
+#	res = data.frame(obs_loci[, c(1, stats_obs)], allocation, post_proba)
+#	write.table(res, outfile, col.names=T, row.names=F, quote=F, sep='\t', append=F)
+#}
+#
