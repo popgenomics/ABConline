@@ -22,6 +22,7 @@ library(tidyr)
 library(RColorBrewer)
 library(yaml)
 library(ggpubr)
+library(FactoMineR)
 
 
 pvalue = function(distribution, obs){
@@ -1293,6 +1294,7 @@ server <- function(input, output, session = session) {
 				tabPanel("Locus specific model comparison", numericInput("threshold_locus_specific_model_comp", label = h3("Posterior probability threshold value below which an inference is considered ambiguous"), width = (0.25*as.numeric(input$dimension[1])), value = 0.9, min = 0, max = 1, step = 0.005), hr(), plotlyOutput("locus_specific_model_comparison", height = 'auto', width = 'auto')),
 				tabPanel("Estimated parameters", uiOutput("parameters_estimates")),
 				tabPanel("Goodness-of-fit test", uiOutput("gof"))
+			#	tabPanel("Goodness-of-fit test", selectInput("PCA_gof_choice", label = h4("PCA on summary statistics"), choices = list("Plot" = 1, "Table" = 2), selected = 1), hr(), uiOutput("display_PCA_gof"))
 				)
 			}else{
 				if(users_infos()[1,2]==1){
@@ -1302,6 +1304,7 @@ server <- function(input, output, session = session) {
 					tabPanel("Multilocus model comparison", uiOutput("display_modComp")),
 					tabPanel("Estimated parameters", uiOutput("parameters_estimates")),
 					tabPanel("Goodness-of-fit test", uiOutput("gof"))
+			#		tabPanel("Goodness-of-fit test", selectInput("PCA_gof_choice", label = h4("PCA on summary statistics"), choices = list("Plot" = 1, "Table" = 2), selected = 1), hr(), uiOutput("display_PCA_gof"))
 					)
 				}
 			}
@@ -1432,6 +1435,7 @@ server <- function(input, output, session = session) {
 			Nref = as.numeric(read.table(paste(rootName, '/Nref.txt', sep='')))
 			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T)
 			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
+			res3 = read.table(paste(rootName, '/best_model_5/posterior_bestModel.txt', sep=''), h=T)
 			
 			# remove the temporary unarchived results
 			system(paste('rm -rf ', rootName, sep=''))
@@ -1509,12 +1513,14 @@ server <- function(input, output, session = session) {
 			posterior1 = res1[,which(colnames(res1)==param_name)] * scale
 			posterior1 = data.frame(x = posterior1, distribution=rep('Posterior', length(posterior1)))
 			posterior2 = res2[,which(colnames(res1)==param_name)] * scale
-			posterior2 = data.frame(x = posterior2, distribution=rep('Optimized posterior', length(posterior2)))
+			posterior2 = data.frame(x = posterior2, distribution=rep('First optimized posterior', length(posterior2)))
+			posterior3 = res3[,which(colnames(res1)==param_name)] * scale
+			posterior3 = data.frame(x = posterior3, distribution=rep('Second optimized posterior', length(posterior3)))
 			#	df=rbind(prior, posterior)
-			df=rbind(prior, posterior1, posterior2)
+			df=rbind(prior, posterior1, posterior2, posterior3)
 
 
-			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", rev(viridis_pal(option="D")(2)))) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
+			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", viridis_pal(option="D")(4)[1:3])) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
 			p <- ggplotly(p, width = 0.55*as.numeric(input$dimension[1]), height = 0.55*as.numeric(input$dimension[2]))
 
 			figure_estimations = ggplotly(p)
@@ -1539,6 +1545,7 @@ server <- function(input, output, session = session) {
 			yaml = read_yaml(paste(rootName, '/config.yaml', sep=''))
 			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T)
 			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
+			res3 = read.table(paste(rootName, '/best_model_5/posterior_bestModel.txt', sep=''), h=T)
 			
 			# remove the temporary unarchived results
 			system(paste('rm -rf ', rootName, sep=''))
@@ -1574,11 +1581,13 @@ server <- function(input, output, session = session) {
 			posterior1 = data.frame(x = posterior1, distribution=rep('Posterior', length(posterior1)))
 			posterior2 = res2[,which(colnames(res1)==param_name)]
 			posterior2 = data.frame(x = posterior2, distribution=rep('Optimized posterior', length(posterior2)))
+			posterior3 = res3[,which(colnames(res1)==param_name)]
+			posterior3 = data.frame(x = posterior3, distribution=rep('Optimized posterior', length(posterior3)))
 			#	df=rbind(prior, posterior)
-			df=rbind(prior, posterior1, posterior2)
+			df=rbind(prior, posterior1, posterior2, posterior3)
 
 
-			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", rev(viridis_pal(option="D")(2)))) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
+			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", viridis_pal(option="D")(4)[1:3])) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
 			p <- ggplotly(p, width = 0.55*as.numeric(input$dimension[1]), height = 0.55*as.numeric(input$dimension[2]))
 
 			figure_estimations = ggplotly(p)
@@ -1602,8 +1611,9 @@ server <- function(input, output, session = session) {
 
 			# read informations
 			Nref = as.numeric(read.table(paste(rootName, '/Nref.txt', sep='')))
-			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T)
-			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
+			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T) # first posterior
+			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T) # first optimized posterior
+			res3 = read.table(paste(rootName, '/best_model_5/posterior_bestModel.txt', sep=''), h=T) # second optimized posterior
 			
 			# remove the temporary unarchived results
 			system(paste('rm -rf ', rootName, sep=''))
@@ -1616,6 +1626,9 @@ server <- function(input, output, session = session) {
 			post2_Q1 = NULL
 			post2_median = NULL
 			post2_Q2 = NULL
+			post3_Q1 = NULL
+			post3_median = NULL
+			post3_Q2 = NULL
 
 			nparams = ncol(res1)
 			for(i in 1:nparams){
@@ -1634,6 +1647,8 @@ server <- function(input, output, session = session) {
 				posterior1 = data.frame(x = posterior1, label=rep('Posterior', length(posterior1)))
 				posterior2 = res2[,i] * scale
 				posterior2 = data.frame(x = posterior2, label=rep('Optimized posterior', length(posterior2)))
+				posterior3 = res3[,i] * scale
+				posterior3 = data.frame(x = posterior3, label=rep('Optimized posterior', length(posterior3)))
 				
 				# table
 				param_names = c(param_names, param_name)
@@ -1644,6 +1659,9 @@ server <- function(input, output, session = session) {
 					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 0), format='d', big.mark=' ')
 					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 0), format='d', big.mark=' ')
 					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 0), format='d', big.mark=' ')
+					post3_Q1_tmp = formatC(round(quantile(posterior3$x, 0.025), 0), format='d', big.mark=' ')
+					post3_median_tmp = formatC(round(quantile(posterior3$x, 0.5), 0), format='d', big.mark=' ')
+					post3_Q2_tmp = formatC(round(quantile(posterior3$x, 0.975), 0), format='d', big.mark=' ')
 				}else{
 					post1_Q1_tmp = formatC(round(quantile(posterior1$x, 0.025), 5), format="f", big.mark=" ", digits=5)
 					post1_median_tmp = formatC(round(quantile(posterior1$x, 0.5), 5), format="f", big.mark=" ", digits=5)
@@ -1651,6 +1669,9 @@ server <- function(input, output, session = session) {
 					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 5), format="f", big.mark=" ", digits=5)
 					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 5), format="f", big.mark=" ", digits=5)
 					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 5), format="f", big.mark=" ", digits=5)
+					post3_Q1_tmp = formatC(round(quantile(posterior3$x, 0.025), 5), format="f", big.mark=" ", digits=5)
+					post3_median_tmp = formatC(round(quantile(posterior3$x, 0.5), 5), format="f", big.mark=" ", digits=5)
+					post3_Q2_tmp = formatC(round(quantile(posterior3$x, 0.975), 5), format="f", big.mark=" ", digits=5)
 				}
 					
 				post1_Q1 = c(post1_Q1, post1_Q1_tmp)
@@ -1659,26 +1680,31 @@ server <- function(input, output, session = session) {
 				post2_Q1 = c(post2_Q1, post2_Q1_tmp)
 				post2_median = c(post2_median, post2_median_tmp)
 				post2_Q2 = c(post2_Q2, post2_Q2_tmp)
+				post3_Q1 = c(post3_Q1, post3_Q1_tmp)
+				post3_median = c(post3_median, post3_median_tmp)
+				post3_Q2 = c(post3_Q2, post3_Q2_tmp)
 			}
 
 			# print table
-			col_tmp = rev(viridis_pal(option="D", alpha=1)(2))
+			col_tmp = viridis_pal(option="D", alpha=1)(4)
 			col_post1_header = col_tmp[1]
 			col_post2_header = col_tmp[2]
-			col_tmp = rev(viridis_pal(option="D", alpha=0.4)(2))
+			col_post3_header = col_tmp[3]
+			col_tmp = viridis_pal(option="D", alpha=0.4)(4)
 			col_post1 = col_tmp[1]
 			col_post2 = col_tmp[2]
+			col_post3 = col_tmp[3]
 			green = "#C7F464"
 			dark_grey = "#1e2b37"
 			light_grey = "#556270"
 
 			table_estimations = plot_ly( type = 'table',
 				header = list(
-					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median (posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (optimized posterior)</b>", "<b>HPD 0.975</b>"),
+					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median (posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (first optimized posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median ( second optimized posterior)</b>", "<b>HPD 0.975</b>"),
 					line = list(color = dark_grey),
-					fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post2_header, col_post2_header, col_post2_header)),
+					fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post2_header, col_post2_header, col_post2_header, col_post3_header, col_post3_header, col_post3_header)),
 					align = c('left','center'),
-					font = list(color = c(green, dark_grey, dark_grey, dark_grey, "white", "white", "white", size = 30))
+					font = list(color = c(green, rep("white", 9), size = 30))
 				),
 				cells = list(
 					values = rbind(
@@ -1688,10 +1714,13 @@ server <- function(input, output, session = session) {
 						post1_Q2,
 						post2_Q1,
 						paste('<b>', post2_median, '</b>', sep=''),
-						post2_Q2
+						post2_Q2,
+						post3_Q1,
+						paste('<b>', post3_median, '</b>', sep=''),
+						post3_Q2
 					),
 					line = list(color = dark_grey),
-					fill = list(color = c(light_grey, col_post1, col_post1, col_post1, col_post2, col_post2, col_post2)),
+					fill = list(color = c(light_grey, col_post1, col_post1, col_post1, col_post2, col_post2, col_post2, col_post3, col_post3, col_post3)),
 					align = c('left', 'center'),
 					font = list(color = c(green, dark_grey,  size = 30))
 				), 
@@ -1812,8 +1841,18 @@ server <- function(input, output, session = session) {
 	}else{
 		untar(fileName$datapath, exdir = getwd())
 		rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
-	
-		gof_table_name = paste(rootName, "/gof_2/goodness_of_fit_test.txt", sep='')
+		
+		if( input$posterior_choice == 1){
+			# if interested by the posterior
+			gof_table_name = paste(rootName, "/gof/goodness_of_fit_test.txt", sep='')
+		}else{
+			if( input$posterior_choice == 2){
+			# if interested by the optimized posterior
+				gof_table_name = paste(rootName, "/gof_2/goodness_of_fit_test.txt", sep='')
+			}else{
+				gof_table_name = paste(rootName, "/gof_3/goodness_of_fit_test.txt", sep='')
+			}
+		}
 		#read.table("/home/croux/Documents/ABConline/data_visualization/oKybz73JWT/gof/goodness_of_fit_test.txt", header = TRUE)
 		x = read.table(gof_table_name, h=T)
 		system(paste('rm -rf ', rootName, sep=''))
@@ -1842,14 +1881,23 @@ server <- function(input, output, session = session) {
 
 	## plot the SFS : get the table
 	table_sfs <- reactive({
-		# 2 pops
 		fileName = input$results
 		if(is.null(fileName)){
 			return (NULL)
 		}else{
 			untar(fileName$datapath, exdir = getwd())
 			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
-			sfs_name = paste(rootName, "/gof_2/gof_sfs.txt", sep='')
+			if( input$posterior_choice == 1){
+				# if interested by the posterior
+				sfs_name = paste(rootName, "/gof/gof_sfs.txt", sep='')
+			}else{
+				if( input$posterior_choice == 1){
+					# if interested by the optimized posterior
+					sfs_name = paste(rootName, "/gof_2/gof_sfs.txt", sep='')
+				}else{
+					sfs_name = paste(rootName, "/gof_3/gof_sfs.txt", sep='')
+				}
+			}
 			
 			table_sfs = read.table(sfs_name, h=T)
 
@@ -2087,11 +2135,8 @@ server <- function(input, output, session = session) {
 			nClasses <- as.numeric(matrix(unlist(strsplit(colnames(table_sfs()), 'A')), ncol=2, byrow=T)[,2])
 			observed <- as.numeric(table_sfs()[1,])
 			expected <- as.numeric(table_sfs()[2,])
-#			nSNPs = sum(expected)
-#			expected_constant = (nSNPs/sum(1/nClasses))/nClasses # vector of expected SFS for a given observed total number of SNPs
-#			data_sfs <- data.frame(nClasses, observed, expected, expected_constant)
+			
 			data_sfs <- data.frame(nClasses, observed, expected)
-
 			data_sfs_reshape <- data_sfs %>%
 			  gather(sfs, Count, observed:expected)
 
@@ -2100,7 +2145,7 @@ server <- function(input, output, session = session) {
 					x = ~nClasses,
 					y = ~Count,
 					color = ~sfs,
-					colors = viridis_pal(option = "D")(2), width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>%
+					colors = viridis_pal(option = "D")(2), width = (0.75*as.numeric(input$dimension[1])), height = 0.65*as.numeric(input$dimension[2])) %>%
 					layout(xaxis=xlab, yaxis=ylab, legend=list(orientation = 'h', y=1.05, font=f_legend), hoverlabel = list(font=list(size=20)))
 		}
 	})
@@ -2112,20 +2157,19 @@ server <- function(input, output, session = session) {
 			if(users_infos()[1,2]==2){
 				# if nSpecies == 2
 				tabsetPanel(
-					#tabPanel("Posterior", selectInput('param_name', 'Select: ', ''), plotlyOutput(outputId = "posterior_parameters_2pops")),
 					tabPanel("Posterior", uiOutput("output_posterior_2pops")),
-					tabPanel("Highest Posterior Density", plotlyOutput(outputId = "table_parameters_2pops"))
+					tabPanel("Highest Posterior Density", plotlyOutput(outputId = "table_parameters_2pops")),
+					tabPanel("PCA", selectInput("PCA_parameters_choice", label = h4("PCA on parameters"), choices = list("Plot" = 1, "Table" = 2), selected = 1), hr(), uiOutput("display_PCA_parameter"))
 				)
 			}else{
 				if(users_infos()[1,2]==1){
 					# if nSpecies == 2
 					tabsetPanel(
-						#tabPanel("Posterior", selectInput('param_name', 'Select: ', ''), plotlyOutput(outputId = "posterior_parameters_2pops")),
 						tabPanel("Posterior", uiOutput("output_posterior_1pop")),
-						tabPanel("Highest Posterior Density", plotlyOutput(outputId = "table_parameters_1pop"))
+						tabPanel("Highest Posterior Density", plotlyOutput(outputId = "table_parameters_1pop")),
+						tabPanel("PCA", selectInput("PCA_parameters_choice", label = h4("PCA on parameters"), choices = list("Plot" = 1, "Table" = 2), selected = 1), hr(), uiOutput("display_PCA_parameter"))
 					)
 				}
-
 			}
 		}
 	})
@@ -2137,18 +2181,17 @@ server <- function(input, output, session = session) {
 			if(users_infos()[1,2]==2){
 				# if nSpecies == 2
 				tabsetPanel(
-					#tabPanel("Posterior", selectInput('param_name', 'Select: ', ''), plotlyOutput(outputId = "posterior_parameters_2pops")),
-					tabPanel("Statistics", uiOutput("display_gof_table")),
-					tabPanel("SFS", uiOutput("display_sfs_table"))
+					tabPanel("Statistics", selectInput("posterior_choice", label = h4("Select the parameters estimate"), choices = list("Posterior" = 1, "First optimized posterior" = 2, "Second optimized posterior" = 3), selected = 1), hr(), uiOutput("display_gof_table")),
+					tabPanel("SFS", h4(textOutput("selected_output")), uiOutput("display_sfs_table")),
+					tabPanel("PCA", selectInput("PCA_gof_choice", label = h4("PCA on summary statistics"), choices = list("Plot" = 1, "Table" = 2), selected = 1), hr(), uiOutput("display_PCA_gof"))
 				)
 			}else{
 				if(users_infos()[1,2]==1){
 					# if nSpecies == 2
 					tabsetPanel(
-						#tabPanel("Posterior", selectInput('param_name', 'Select: ', ''), plotlyOutput(outputId = "posterior_parameters_2pops")),
-						tabPanel("Statistics", uiOutput("display_gof_table")),
-						tabPanel("SFS", uiOutput("display_sfs_table")),
-						tabPanel("PCA", uiOutput("display_PCA"))
+						tabPanel("Statistics", selectInput("posterior_choice", label = h4("Select the parameters estimate"), choices = list("Posterior" = 1, "First optimized posterior" = 2, "Second optimized posterior" = 3), selected = 1), hr(), uiOutput("display_gof_table")),
+						tabPanel("SFS", h4(textOutput("selected_output")), uiOutput("display_sfs_table")),
+						tabPanel("PCA", selectInput("PCA_gof_choice", label = h4("PCA on summary statistics"), choices = list("Plot" = 1, "Table" = 2), selected = 1), hr(), uiOutput("display_PCA_gof"))
 					)
 				}
 
@@ -2156,97 +2199,285 @@ server <- function(input, output, session = session) {
 		}
 	})
 
-	
-	output$display_PCA <- renderUI({
-		fluidRow( width = 12, column(width=12, offset = 0, style='padding:30px;', plotlyOutput(outputId = "plot_PCA")))
+
+	output$selected_output <- renderText({
+		if( input$posterior_choice == 1 ){
+			posterior = 'posterior'
+		}else{
+			posterior = 'optimized posterior'
+		}
+		paste('Selected parameters estimate', posterior, sep=' : ' )
 	})
 
+	
+	output$display_PCA_gof <- renderUI({
+		if(is.null(input$PCA_gof_choice)){
+			return(NULL)
+		}else{
+			if(input$PCA_gof_choice == 1){
+				fluidRow( width = 12, plotlyOutput(outputId = "plot_PCA_gof"))
+			}else if(input$PCA_gof_choice == 2){
+				fluidRow( width = 12, plotlyOutput(outputId = "table_PCA_gof"))
+			}
+		}
+	})
 
-	output$plot_PCA <- renderPlotly({
+	
+	output$display_PCA_parameter <- renderUI({
+		if(is.null(input$PCA_parameters_choice)){
+			return(NULL)
+		}else{
+			if(input$PCA_parameters_choice == 1){
+				fluidRow( width = 12, plotlyOutput(outputId = "plot_PCA_parameters"))
+			}else if(input$PCA_parameters_choice == 2){
+				fluidRow( width = 12, plotlyOutput(outputId = "table_PCA_parameters"))
+			}
+		}
+	})
+
+	
+	output$plot_PCA_parameters <- renderPlotly({
 		fileName = input$results
 		
 		if (is.null(fileName)){
 			return(NULL)
 		}else{
-			library(FactoMineR)
+			green = "#C7F464"
+			dark_grey = "#1e2b37"
+			light_grey = "#556270"
+			
 			untar(fileName$datapath, exdir = getwd())
 			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
-			x = read.table(paste(rootName, "/distribution_PCA.txt", sep=''), h=T, sep='\t')
-			y = rbind(x[1,], x[which(x$origin=='prior')[1:20000],], x[which(x$origin=='posterior')[1:20000],], x[which(x$origin=='optimized posterior')[1:20000],])
 
-			toRemove = c(1)
-			for(i in 1:(ncol(y)-1)){
-				if(sd(y[,i]) < 0.00001){
-					toRemove = c(toRemove, i)
-				}
-			}
+			x=read.table(paste(rootName, "/best_model/posterior_bestModel.txt", sep=''), h=T)
+			y=read.table(paste(rootName, "/best_model_3/posterior_bestModel.txt", sep=''), h=T)
+			y2=read.table(paste(rootName, "/best_model_5/posterior_bestModel.txt", sep=''), h=T)
 			
-			toRemove = unique(toRemove)
-			y = y[, -toRemove]
+			# delete the untar results
+			system(paste('rm -rf ', rootName, sep=''))
+		
+			origin = c(rep("posterior", nrow(x)), rep("first optimized posterior", nrow(y)), rep("second optimized posterior", nrow(y2)))
 
-			res.pca <- PCA(y[, -ncol(y)], graph = FALSE, ncp=3)
+			posterior = which(origin == "posterior")
+			optimized = which(origin == "first optimized posterior")
+			optimized2 = which(origin == "second optimized posterior")
 
-			observed = which(y$origin == 'observed dataset')
-			prior = which(y$origin == 'prior')
-			posterior = which(y$origin == 'posterior')
-			optimized_posterior = which(y$origin == 'optimized posterior')
+			data = rbind(x, y, y2)
+			data = cbind(data, origin)
+
+			res.pca <- PCA(data[, -ncol(data)], graph = FALSE, ncp=3)
+
+			l <- list( font = list( family = "sans-serif", size = 18 ), orientation = 'v' )
 
 			trace1 <- list(
 				mode = "markers", 
-				name = "prior", 
-				type = "scatter3d", 
-				x = res.pca$ind$coord[,1][prior],
-				y = res.pca$ind$coord[,2][prior],
-				z = res.pca$ind$coord[,3][prior]
-			)
-
-			trace2 <- list(
-				mode = "markers", 
-				name = "estimated model", 
+				name = "posterior", 
 				type = "scatter3d", 
 				x = res.pca$ind$coord[,1][posterior],
 				y = res.pca$ind$coord[,2][posterior],
 				z = res.pca$ind$coord[,3][posterior]
 			)
+
+			trace2 <- list(
+				mode = "markers", 
+				name = "first optimized posterior", 
+				type = "scatter3d", 
+				x = res.pca$ind$coord[,1][optimized],
+				y = res.pca$ind$coord[,2][optimized],
+				z = res.pca$ind$coord[,3][optimized]
+			)
+
 			trace3 <- list(
 				mode = "markers", 
-				name = "optimized estimation", 
+				name = "second optimized posterior", 
 				type = "scatter3d", 
-				x = res.pca$ind$coord[,1][optimized_posterior],
-				y = res.pca$ind$coord[,2][optimized_posterior],
-				z = res.pca$ind$coord[,3][optimized_posterior]
+				x = res.pca$ind$coord[,1][optimized2],
+				y = res.pca$ind$coord[,2][optimized2],
+				z = res.pca$ind$coord[,3][optimized2]
 			)
-
-			trace4 <- list(
-				mode = "markers", 
-				name = "observed dataset", 
-				type = "scatter3d",
-				x = res.pca$ind$coord[,1][observed],
-				y = res.pca$ind$coord[,2][observed],
-				z = res.pca$ind$coord[,3][observed]
-			)
-
-			l <- list( font = list( family = "sans-serif", size = 18 ), orientation = 'h' )
-
-
+			
 			layout <- list(
 				scene = list(
 					xaxis = list(title = paste("PC1 (", round(res.pca$eig[,2][1], 2), "%)", sep=''), showline = FALSE), 
 					yaxis = list(title = paste("PC2 (", round(res.pca$eig[,2][2], 2), "%)", sep=''), showline = FALSE), 
 					zaxis = list(title = paste("PC3 (", round(res.pca$eig[,2][3], 2), "%)", sep=''), showline = FALSE)
 				), 
+				title = "PCA of posteriors (3D)"
+			)
+
+			p1 <- plot_ly(type = 'scatter', mode = 'markers', width = (0.75*as.numeric(input$dimension[1])), height = 0.5*as.numeric(input$dimension[2])) %>%
+				add_trace( mode=trace1$mode, name=trace1$name, type=trace1$type, x=trace1$x, y=trace1$y, z=trace1$z, marker = list(size = 10, color = viridis_pal(option='D')(4)[1]), alpha=0.8) %>%
+				add_trace( mode=trace2$mode, name=trace2$name, type=trace2$type, x=trace2$x, y=trace2$y, z=trace2$z, marker = list(size = 11, color = viridis_pal(option='D')(4)[2])) %>%
+				add_trace( mode=trace3$mode, name=trace3$name, type=trace3$type, x=trace3$x, y=trace3$y, z=trace2$z, marker = list(size = 11, color = viridis_pal(option='D')(4)[3])) %>%
+				layout( scene=layout$scene, title=layout$title, legend=l, xaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F), yaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F), legend=list(size=12) )
+			
+			return( p1 )
+		}
+	})
+
+
+	output$table_PCA_parameters <- renderPlotly({
+		fileName = input$results
+		
+		if (is.null(fileName)){
+			return(NULL)
+		}else{
+			green = "#C7F464"
+			dark_grey = "#1e2b37"
+			light_grey = "#556270"
+			
+			untar(fileName$datapath, exdir = getwd())
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+
+			x=read.table(paste(rootName, "/best_model/posterior_bestModel.txt", sep=''), h=T)
+			y=read.table(paste(rootName, "/best_model_3/posterior_bestModel.txt", sep=''), h=T)
+			
+			# delete the untar results
+			system(paste('rm -rf ', rootName, sep=''))
+		
+			origin = c(rep("posterior", nrow(x)), rep("optimized posterior", nrow(y)))
+
+			posterior = which(origin == "posterior")
+			optimized = which(origin == "optimized posterior")
+
+			data = rbind(x, y)
+			data = cbind(data, origin)
+
+			res.pca <- PCA(data[, -ncol(data)], graph = FALSE, ncp=3)
+
+			x = t(round(res.pca$var$contrib, 2))
+			x = rbind( paste('<b>', rownames(res.pca$var$contrib), '</b>', sep=''), x)
+			p1 <- plot_ly(type = 'table',
+				header = list(values = c('<b>Parameters</b>', '<b>Dim. 1</b>', '<b>Dim. 2</b>', '<b>Dim. 3</b>'), line = list(color = dark_grey), fill = list(color = dark_grey), align = c('left','center'), font = list(color = green, size = 15)),
+				cells = list( values=x, line = list(color = dark_grey), fill = list(color = c(light_grey, 'GhostWhite')), align = c('left','center'), font = list(color = c(green, dark_grey), size = 15)), width = (0.75*as.numeric(input$dimension[1])), height = 0.5*as.numeric(input$dimension[2])
+			)
+		
+			return( p1 )
+		}
+	})
+
+
+	output$plot_PCA_gof <- renderPlotly({
+		fileName = input$results
+		
+		if (is.null(fileName)){
+			return(NULL)
+		}else{
+			untar(fileName$datapath, exdir = getwd())
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+			
+			coord_PCA_SS = read.table(paste(rootName, "/table_coord_PCA_SS.txt", sep=''), h=T, sep='\t')
+			contrib_PCA_SS = read.table(paste(rootName, "/table_contrib_PCA_SS.txt", sep=''), h=T, sep='\t')
+			eigen = read.table(paste(rootName, "/table_eigenvalues_PCA_SS.txt", sep=''), h=T, sep='\t')
+				
+			# delete the untar results
+			system(paste('rm -rf ', rootName, sep=''))
+		
+			observed = which(coord_PCA_SS$origin == 'observed dataset')
+			prior = which(coord_PCA_SS$origin == 'prior')
+			posterior = which(coord_PCA_SS$origin == 'posterior')
+			optimized_posterior1 = which(coord_PCA_SS$origin == 'optimized posterior1')
+			optimized_posterior2 = which(coord_PCA_SS$origin == 'optimized posterior2')
+
+			trace1 <- list(
+				mode = "markers", 
+				name = "prior", 
+				type = "scatter3d", 
+				x = coord_PCA_SS[,1][prior],
+				y = coord_PCA_SS[,2][prior],
+				z = coord_PCA_SS[,3][prior]
+			)
+
+			trace2 <- list(
+				mode = "markers", 
+				name = "estimated model", 
+				type = "scatter3d", 
+				x = coord_PCA_SS[,1][posterior],
+				y = coord_PCA_SS[,2][posterior],
+				z = coord_PCA_SS[,3][posterior]
+			)
+			
+			trace3 <- list(
+				mode = "markers", 
+				name = "first parameter optimization", 
+				type = "scatter3d", 
+				x = coord_PCA_SS[,1][optimized_posterior1],
+				y = coord_PCA_SS[,2][optimized_posterior1],
+				z = coord_PCA_SS[,3][optimized_posterior1]
+			)
+			
+			trace4 <- list(
+				mode = "markers", 
+				name = "second parameter optimization", 
+				type = "scatter3d", 
+				x = coord_PCA_SS[,1][optimized_posterior2],
+				y = coord_PCA_SS[,2][optimized_posterior2],
+				z = coord_PCA_SS[,3][optimized_posterior2]
+			)
+
+			trace5 <- list(
+				mode = "markers", 
+				name = "observed dataset", 
+				type = "scatter3d",
+				x = coord_PCA_SS[,1][observed],
+				y = coord_PCA_SS[,2][observed],
+				z = coord_PCA_SS[,3][observed]
+			)
+
+			l <- list( font = list( family = "sans-serif", size = 19 ), orientation = 'v', marker = list( size = c(30,30,30,30,30) ))
+
+
+			layout <- list(
+				scene = list(
+					xaxis = list(title = paste("PC1 (", round(eigen[,2][1], 2), "%)", sep=''), showline = FALSE), 
+					yaxis = list(title = paste("PC2 (", round(eigen[,2][2], 2), "%)", sep=''), showline = FALSE), 
+					zaxis = list(title = paste("PC3 (", round(eigen[,2][3], 2), "%)", sep=''), showline = FALSE)
+				), 
 				title = "PCA of goodness-of-fit (3D)"
 			)
 
-			p <- plot_ly(type = 'scatter', mode = 'markers', width = (0.75*as.numeric(input$dimension[1])), height = 0.75*as.numeric(input$dimension[2])) %>%
-				add_trace( mode=trace1$mode, name=trace1$name, type=trace1$type, x=trace1$x, y=trace1$y, z=trace1$z, marker = list(size = 6, color = viridis_pal(option='D')(4)[1])) %>%
-				add_trace( mode=trace2$mode, name=trace2$name, type=trace2$type, x=trace2$x, y=trace2$y, z=trace2$z, marker = list(size = 6, color = viridis_pal(option='D')(4)[2])) %>%
-				add_trace( mode=trace3$mode, name=trace3$name, type=trace3$type, x=trace3$x, y=trace3$y, z=trace3$z, marker = list(size = 6, color = viridis_pal(option='D')(4)[3])) %>%
-				add_trace( mode=trace4$mode, name=trace4$name, type=trace4$type, x=trace4$x, y=trace4$y, z=trace4$z, marker = list(size = 10, color = viridis_pal(option='D')(4)[4])) %>%
-				layout( scene=layout$scene, title=layout$title, legend=l, xaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F), yaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F), legend=list(size=10) )
+			p <- plot_ly(type = 'scatter', mode = 'markers', width = (0.75*as.numeric(input$dimension[1])), height = 0.65*as.numeric(input$dimension[2])) %>%
+				add_trace( mode=trace1$mode, name=trace1$name, type=trace1$type, x=trace1$x, y=trace1$y, z=trace1$z, marker = list(size = 6, color = rgb(1, 1, 1, 0), line = list(color='darkgray', width=0.1))) %>%
+				add_trace( mode=trace2$mode, name=trace2$name, type=trace2$type, x=trace2$x, y=trace2$y, z=trace2$z, marker = list(size = 8, color = viridis_pal(option='D')(4)[1])) %>%
+				add_trace( mode=trace3$mode, name=trace3$name, type=trace3$type, x=trace3$x, y=trace3$y, z=trace3$z, marker = list(size = 8, color = viridis_pal(option='D')(4)[2])) %>%
+				add_trace( mode=trace4$mode, name=trace4$name, type=trace4$type, x=trace4$x, y=trace4$y, z=trace4$z, marker = list(size = 8, color = viridis_pal(option='D')(4)[3])) %>%
+				add_trace( mode=trace5$mode, name=trace5$name, type=trace5$type, x=trace5$x, y=trace5$y, z=trace5$z, marker = list(size = 10, color = viridis_pal(option='D')(4)[4])) %>%
+				layout( scene=layout$scene, title=layout$title, legend=l, xaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F), yaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F))
 			return(p)
 	}})
 	
+	
+	output$table_PCA_gof <- renderPlotly({
+		fileName = input$results
+		
+		if (is.null(fileName)){
+			return(NULL)
+		}else{
+			green = "#C7F464"
+			dark_grey = "#1e2b37"
+			light_grey = "#556270"
+			
+			untar(fileName$datapath, exdir = getwd())
+			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
+			data = read.table( paste(rootName, "/table_contrib_PCA_SS.txt", sep=''), h=T, sep='\t')
+			
+			data = data[ order(data[,1], decreasing=T), ]
+				
+			# delete the untar results
+			system(paste('rm -rf ', rootName, sep=''))
+			
+			x = t(round(data, 2))
+			x = rbind( paste('<b>', rownames(data), '</b>', sep=''), x)
+			p1 <- plot_ly(type = 'table',
+				header = list(values = c('<b>Parameters</b>', '<b>Dim. 1</b>', '<b>Dim. 2</b>', '<b>Dim. 3</b>'), line = list(color = dark_grey), fill = list(color = dark_grey), align = c('left','center'), font = list(color = green, size = 15)),
+				cells = list( values=x, line = list(color = dark_grey), fill = list(color = c(light_grey, 'GhostWhite')), align = c('left','center'), font = list(color = c(green, dark_grey), size = 15)), width = (0.75*as.numeric(input$dimension[1])), height = 0.5*as.numeric(input$dimension[2])
+				#cells = list( values=x, line = list(color = dark_grey), fill = list(color = c(light_grey, 'GhostWhite')), align = c('left','center'), font = list(color = c(green, dark_grey), size = 15))
+			)
+			return( p1 )
+
+	}})
+
+
 	
 	output$display_sfs_table <- renderUI({
 		if(is.null(table_sfs())){
