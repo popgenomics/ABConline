@@ -54,7 +54,7 @@ else:
 #	print("You specified a wrong model: SI_x, AM_x, AM_x or SC_x\n")
 #	sys.exit()
 
-if mscommand = "":
+if mscommand == "":
 	# if model of isolation
 	os.system("touch {0}/locus_modelComp/isolation/ABCstat.tx".format(path))
 	os.system("touch {0}/locus_modelComp/migration/ABCstat.tx".format(path))
