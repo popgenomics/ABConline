@@ -23,6 +23,7 @@ help += "\n\n"
 help += "\t\033[1;32;40m#SI\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -ej tbs 2 1 -eN tbs tbs\n"
 help += "\t\033[1;32;40m#AM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -ema tbs 2 0 tbs tbs 0 -ej tbs 2 1 -eN tbs tbs\n"
 help += "\t\033[1;32;30m#PAM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 0 -m 2 1 0 -ema tbs 2 0 tbs tbs 0 -ema tbs 2 0 0 0 0 -ema tbs 2 0 tbs tbs 0 -ej tbs 2 1 -eN tbs tbs\n"
+help += "\t\033[1;32;40m#PAN\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -eN 0 tbs\n"
 help += "\t\033[1;32;40m#IM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs\n"
 help += "\t\033[1;32;40m#SC\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -n 1 tbs -n 2 tbs -eM tbs 0 -ej tbs 2 1 -eN tbs tbs\n"
 help += "\t\033[1;32;40m#PSC\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ema tbs 2 0 0 0 0 -ema tbs 2 0 tbs tbs 0 -ema tbs 2 0 0 0 0 -ej tbs 2 1 -eN tbs tbs\n\n"
@@ -734,6 +735,45 @@ if sys.argv[1] == "SI_2N":
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
+	outfile = open("priorfile.txt", "w")
+	outfile.write(priorfile)
+	outfile.close()
+
+
+if sys.argv[1] == "PAN_1N":
+	# PAN : msnsam tbs 10000 -t tbs -r tbs tbs -eN 0 tbs"
+	# param multilocus: values that will be printed in priorfile.txt
+	N1 = uniform(low = N_bound[0], high = N_bound[1], size = nMultilocus)
+
+	# param monolocus: values that will be read by ms
+	priorfile = "N1\n"
+	for sim in range(nMultilocus):
+		priorfile += "{0:.5f}\n".format(N1[sim])
+		
+		for locus in range(nLoci):
+			print("{0}\t{1}\t{2}\t{3}\t{4}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], N1[sim]))
+	outfile = open("priorfile.txt", "w")
+	outfile.write(priorfile)
+	outfile.close()
+
+
+if sys.argv[1] == "PAN_2N":
+	# PAN : msnsam tbs 10000 -t tbs -r tbs tbs -eN 0 tbs"
+	# param multilocus: values that will be printed in priorfile.txt
+	N1 = uniform(low = N_bound[0], high = N_bound[1], size = nMultilocus)
+
+        shape_N_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
+        shape_N_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
+	# param monolocus: values that will be read by ms
+	priorfile = "N1\tshape_N_a\tshape_N_b\n"
+	for sim in range(nMultilocus):
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\n".format(N1[sim], shape_N_a[sim], shape_N_b[sim])
+                scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
+		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim])
+                N1_vec = [ N1[sim]*i/rescale for i in scalar_N ]
+		
+		for locus in range(nLoci):
+			print("{0}\t{1}\t{2}\t{3}\t{4}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], N1_vec[sim]))
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
 	outfile.close()
