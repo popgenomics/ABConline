@@ -56,8 +56,8 @@ else:
 
 if mscommand == "":
 	# if model of isolation
-	os.system("touch {0}/locus_modelComp/isolation/ABCstat.tx".format(path))
-	os.system("touch {0}/locus_modelComp/migration/ABCstat.tx".format(path))
+	os.system("touch {0}/locus_modelComp/isolation/ABCstat.txt".format(path))
+	os.system("touch {0}/locus_modelComp/migration/ABCstat.txt".format(path))
 	sys.exit()
 else:
 	# migration
