@@ -66,7 +66,6 @@ else:
 	tmp_migration += "cd {0}/locus_modelComp/{1}/; ".format(path, sub_dir_model)
 	tmp_migration += "{0}/priorgen_gof_2pop_test_monolocus.py {1} {2} {3} {4} migration {5} | {0}/msnsam tbs {6} {7} >tmp.ms ;".format(binpath, model, nmultilocus, posterior_file, modeBarrier, population_growth, nmultilocus*nlocus, mscommand, outgroup)
 	tmp_migration += "cat tmp.ms | {0}/mscalc_2pop_SFS.py {1}; ".format(binpath, outgroup)
-	tmp_migration += "rm tmp.ms bpfile priorfile.txt seedms ABCjsfs.txt"
 	print(tmp_migration)
 	os.system(tmp_migration)
 
@@ -76,7 +75,6 @@ else:
 	tmp_isolation += "cd {0}/locus_modelComp/{1}/; ".format(path, sub_dir_model)
 	tmp_isolation += "{0}/priorgen_gof_2pop_test_monolocus.py {1} {2} {3} {4} isolation {5} | {0}/msnsam tbs {6} {7} >tmp.ms ;".format(binpath, model, nmultilocus, posterior_file, modeBarrier, population_growth, nmultilocus*nlocus, mscommand, outgroup)
 	tmp_isolation += "cat tmp.ms | {0}/mscalc_2pop_SFS.py {1}; ".format(binpath, outgroup)
-	tmp_isolation += "rm tmp.ms bpfile priorfile.txt seedms ABCjsfs.txt"
 	print(tmp_isolation)
 	os.system(tmp_isolation)
 
