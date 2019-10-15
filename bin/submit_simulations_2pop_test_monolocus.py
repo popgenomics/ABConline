@@ -50,29 +50,33 @@ else:
 	if "IM" in model:
 		mscommand = "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -en tbs 1 tbs -en tbs 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
 
-if mscommand == "":
-	print("You specified a wrong model: SI_x, AM_x, AM_x or SC_x\n")
+#if mscommand == "":
+#	print("You specified a wrong model: SI_x, AM_x, AM_x or SC_x\n")
+#	sys.exit()
+
+if mscommand = "":
+	# if model of isolation
+	os.system("touch {0}/locus_modelComp/isolation/ABCstat.tx".format(path))
+	os.system("touch {0}/locus_modelComp/migration/ABCstat.tx".format(path))
 	sys.exit()
+else:
+	# migration
+	sub_dir_model='migration'
+	tmp_migration = "cp {0}/bpfile {0}/locus_modelComp/{1}/; ".format(path, sub_dir_model)
+	tmp_migration += "cd {0}/locus_modelComp/{1}/; ".format(path, sub_dir_model)
+	tmp_migration += "{0}/priorgen_gof_2pop_test_monolocus.py {1} {2} {3} {4} migration {5} | {0}/msnsam tbs {6} {7} >tmp.ms ;".format(binpath, model, nmultilocus, posterior_file, modeBarrier, population_growth, nmultilocus*nlocus, mscommand, outgroup)
+	tmp_migration += "cat tmp.ms | {0}/mscalc_2pop_SFS.py {1}; ".format(binpath, outgroup)
+	tmp_migration += "rm tmp.ms bpfile priorfile.txt seedms ABCjsfs.txt"
+	print(tmp_migration)
+	os.system(tmp_migration)
 
-
-
-# migration
-sub_dir_model='migration'
-tmp_migration = "cp {0}/bpfile {0}/locus_modelComp/{1}/; ".format(path, sub_dir_model)
-tmp_migration += "cd {0}/locus_modelComp/{1}/; ".format(path, sub_dir_model)
-tmp_migration += "{0}/priorgen_gof_2pop_test_monolocus.py {1} {2} {3} {4} migration {5} | {0}/msnsam tbs {6} {7} >tmp.ms ;".format(binpath, model, nmultilocus, posterior_file, modeBarrier, population_growth, nmultilocus*nlocus, mscommand, outgroup)
-tmp_migration += "cat tmp.ms | {0}/mscalc_2pop_SFS.py {1}; ".format(binpath, outgroup)
-tmp_migration += "rm tmp.ms bpfile priorfile.txt seedms ABCjsfs.txt"
-print(tmp_migration)
-os.system(tmp_migration)
-
-# isolation 
-sub_dir_model='isolation'
-tmp_isolation = "cp {0}/bpfile {0}/locus_modelComp/{1}/; ".format(path, sub_dir_model)
-tmp_isolation += "cd {0}/locus_modelComp/{1}/; ".format(path, sub_dir_model)
-tmp_isolation += "{0}/priorgen_gof_2pop_test_monolocus.py {1} {2} {3} {4} isolation {5} | {0}/msnsam tbs {6} {7} >tmp.ms ;".format(binpath, model, nmultilocus, posterior_file, modeBarrier, population_growth, nmultilocus*nlocus, mscommand, outgroup)
-tmp_isolation += "cat tmp.ms | {0}/mscalc_2pop_SFS.py {1}; ".format(binpath, outgroup)
-tmp_isolation += "rm tmp.ms bpfile priorfile.txt seedms ABCjsfs.txt"
-print(tmp_isolation)
-os.system(tmp_isolation)
+	# isolation 
+	sub_dir_model='isolation'
+	tmp_isolation = "cp {0}/bpfile {0}/locus_modelComp/{1}/; ".format(path, sub_dir_model)
+	tmp_isolation += "cd {0}/locus_modelComp/{1}/; ".format(path, sub_dir_model)
+	tmp_isolation += "{0}/priorgen_gof_2pop_test_monolocus.py {1} {2} {3} {4} isolation {5} | {0}/msnsam tbs {6} {7} >tmp.ms ;".format(binpath, model, nmultilocus, posterior_file, modeBarrier, population_growth, nmultilocus*nlocus, mscommand, outgroup)
+	tmp_isolation += "cat tmp.ms | {0}/mscalc_2pop_SFS.py {1}; ".format(binpath, outgroup)
+	tmp_isolation += "rm tmp.ms bpfile priorfile.txt seedms ABCjsfs.txt"
+	print(tmp_isolation)
+	os.system(tmp_isolation)
 
