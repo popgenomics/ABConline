@@ -768,12 +768,12 @@ if sys.argv[1] == "PAN_2N":
 	priorfile = "N1\tshape_N_a\tshape_N_b\n"
 	for sim in range(nMultilocus):
 		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\n".format(N1[sim], shape_N_a[sim], shape_N_b[sim])
-                scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
-		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim])
-                N1_vec = [ N1[sim]*i/rescale for i in scalar_N ]
+                scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci) # beta distribution of scalars (size = nLoci)
+		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # rescaling factor in order to centered the beta distribution around 1
+                N1_vec = [ N1[sim]*i/rescale for i in scalar_N ] # local theta for eahc of the nLoci locus
 		
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], N1_vec[sim]))
+			print("{0}\t{1}\t{2}\t{3}\t{4}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], N1_vec[locus]))
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
 	outfile.close()
