@@ -791,7 +791,7 @@ if sys.argv[1] == "PAN_1N":
 		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\n".format(N1[sim], founders1[sim], Tdem1[sim])
 		
 		for locus in range(nLoci):
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], N1[sim]), Tdem1[sim], N1[sim]/founders1[sim])
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], N1[sim], Tdem1[sim], N1[sim]*founders1[sim]))
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
 	outfile.close()
@@ -817,9 +817,8 @@ if sys.argv[1] == "PAN_2N":
 		
 		for locus in range(nLoci):
 			# PAN : msnsam tbs 10000 -t tbs -r tbs tbs -eN 0 tbs -eN tbs tbs
-			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], N1[sim]*N1_vec[locus], Tdem1[sim], N1[sim]*N1_vec[locus]/founders1[sim])
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(nsam_tot[locus], float(theta[locus])*N1_vec[locus], rho[locus], L[locus], N1[sim], Tdem1[sim], N1[sim]*founders1[sim]))
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
 	outfile.close()
-
 
