@@ -64,5 +64,6 @@ tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration
 tmp += "{0}/priorgen_gof_2pop.py {1} {2} {3} {4} {5} | {0}/msnsam tbs {6} {7} | {0}/mscalc_2pop_SFS.py {8}".format(binpath, model, nmultilocus, posterior_file, modeBarrier, modePrior, nmultilocus*nlocus, mscommand, outgroup)
 #tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=02:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, iteration, tmp)
 
+print(tmp)
 os.system(tmp) # to submit the job using slurm
 
