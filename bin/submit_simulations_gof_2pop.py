@@ -38,6 +38,7 @@ else:
 	tmp = infile.readline().strip().split('\t')
 	nlocus = len(tmp)
 	infile.close()
+
 mscommand = ""
 if "SI" in model:
 	mscommand = "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -ej tbs 2 1 -eN tbs tbs"
@@ -47,13 +48,11 @@ if "SC" in model:
 	mscommand = "-t tbs -r tbs tbs -I 2 tbs tbs 0 -m 1 2 tbs -m 2 1 tbs -n 1 tbs -n 2 tbs -eM tbs 0 -ej tbs 2 1 -eN tbs tbs"
 if "IM" in model:
 	mscommand = "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ej tbs 2 1 -eN tbs tbs"
-if "PSC" in model:
-	mscommand = "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 tbs -m 2 1 tbs -ema tbs 2 0 0 0 0 -ema tbs 2 0 tbs tbs 0 -ema tbs 2 0 0 0 0 -ej tbs 2 1 -eN tbs tbs"
-if "PAM" in model:
-	mscommand = "-t tbs -r tbs tbs -I 2 tbs tbs 0 -n 1 tbs -n 2 tbs -m 1 2 0 -m 2 1 0 -ema tbs 2 0 tbs tbs 0 -ema tbs 2 0 0 0 0 -ema tbs 2 0 tbs tbs 0 -ej tbs 2 1 -eN tbs tbs"
+if "PAN" in model:
+	mscommand = "-t tbs -r tbs tbs -eN 0 tbs"
 
 if mscommand == "":
-	print("You specified a wrong model: SI_x, AM_x, AM_x or SC_x\n")
+	print("You specified a wrong model: SI_x, AM_x, AM_x, SC_x, PAN_x\n")
 	sys.exit()
 
 #tmp = "mkdir {0}/{1}; ".format(path, sub_dir_sim)
@@ -61,12 +60,9 @@ if mscommand == "":
 tmp = "cp {0}/bpfile {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 
-
-#tmp += "module load python/2.7.12; "
-#tmp += "module load java; "
-#tmp += "priorgen_gof_2pop.py {0} {1} {2} | msnsam tbs {3} {4} | mscalc_2pop.py".format(model, nmultilocus, posterior_file, nmultilocus*nlocus, mscommand)
-tmp += "{8}/priorgen_gof_2pop.py {0} {1} {2} {6} {7} | {8}/msnsam tbs {3} {4} | {8}/mscalc_2pop_SFS.py {5}".format(model, nmultilocus, posterior_file, nmultilocus*nlocus, mscommand, outgroup, modeBarrier, modePrior, binpath)
-tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=02:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, iteration, tmp)
+#tmp += "{8}/priorgen_gof_2pop.py {0} {1} {2} {6} {7} | {8}/msnsam tbs {3} {4} | {8}/mscalc_2pop_SFS.py {5}".format(model, nmultilocus, posterior_file, nmultilocus*nlocus, mscommand, outgroup, modeBarrier, modePrior, binpath)
+tmp += "{0}/priorgen_gof_2pop.py {1} {2} {3} {4} {5} | {0}/msnsam tbs {6} {7} | {0}/mscalc_2pop_SFS.py {8}".format(binpath, model, nmultilocus, posterior_file, modeBarrier, modePrior, nmultilocus*nlocus, mscommand, outgroup)
+#tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=02:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, iteration, tmp)
 
 os.system(tmp) # to submit the job using slurm
 

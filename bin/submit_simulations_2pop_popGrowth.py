@@ -53,9 +53,7 @@ if mscommand == "":
 #tmp += "mkdir {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 tmp = "cp {0}/bpfile {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
-#tmp += "priorgen_2pop.py {0} {1} {2} | msnsam tbs {3} {4} | mscalc_2pop_SFS.py {5}".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand, outgroup)
-tmp += "{7}/priorgen_2pop_popGrowth.py {0} {1} {2} {6} | {7}/msnsam tbs {3} {4} | {7}/mscalc_2pop_SFS.py {5}".format(model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand, outgroup, modeBarrier, binpath)
-tmp2 = 'sbatch --nodes=1 --ntasks-per-node=1 --time=02:00:00 -J {0}_{1} --wrap="{2}"\n'.format(model, iteration, tmp)
+tmp += "{0}/priorgen_2pop_popGrowth.py {1} {2} {3} | {0}/msnsam tbs {4} {5} | {0}/mscalc_2pop_SFS.py {6}".format(binpath, model, nmultilocus, config_yaml, nmultilocus*nlocus, mscommand, outgroup)
 
 print(tmp)
 os.system(tmp) # to submit the job using slurm

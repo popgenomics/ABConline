@@ -42,7 +42,7 @@ def produceBarriers(nLoci, nBarriers):
 
 
 help = "\t\033[1;31;40mTakes one model specifier, a number of multilocus simulations and a config.yaml file containing prior boundaries as arguments:\033[0m\n\t\t"
-help += "\n\t\t".join(["SC_1M_1N", "SC_1M_2N", "SC_2M_1N", "SC_2M_2N", "AM_1M_1N", "AM_1M_2N", "AM_2M_1N", "AM_2M_2N", "IM_1M_1N", "IM_1M_2N", "IM_2M_1N", "IM_2M_2N", "SI_1N", "SI_2N"])
+help += "\n\t\t".join(["SC_1M_1N", "SC_1M_2N", "SC_2M_1N", "SC_2M_2N", "AM_1M_1N", "AM_1M_2N", "AM_2M_1N", "AM_2M_2N", "IM_1M_1N", "IM_1M_2N", "IM_2M_1N", "IM_2M_2N", "SI_1N", "SI_2N", "PAN_1N", "PAN_2N"])
 help += "\n\n"
 help += "\t\033[1;32;40m#SI\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs\n"
 help += "\t\033[1;32;40m#AM\033[0m\n\tmsnsam tbs 10000 -t tbs -r tbs tbs -I 2 tbs tbs 0 -ema tbs 2 0 tbs tbs 0 -ej tbs 2 1 -eN tbs tbs -g 1 tbs -g 2 tbs\n"
@@ -587,6 +587,37 @@ if sys.argv[1] == "SI_2N":
 		for locus in range(nLoci):
 			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:.5f}\t{7:.5f}\t{8:.5f}\t{9:.5f}\t{10:.5f}\t{11:.5f}\t{12:.5f}\t{13:.5f}\t{14:.5f}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], nsamA[locus], nsamB[locus], N1_vec[locus], N2_vec[locus], Tdem1[sim], founders1[sim]*Na_vec[locus], Tdem2[sim], founders2[sim]*Na_vec[locus], Tsplit[sim], Tsplit[sim], Na_vec[locus]))
 
+	outfile = open("priorfile.txt", "w")
+	outfile.write(priorfile)
+	outfile.close()
+
+
+if sys.argv[1] == "PAN_1N":
+	# PAN : msnsam tbs 10000 -t tbs -r tbs tbs -eN 0 tbs -eN tbs tbs
+	# param monolocus: values that will be read by ms
+	priorfile = "N1\tfounders1\tTdem1\n"
+	for sim in range(nMultilocus):
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\n".format(N1[sim], founders1[sim], Tdem1[sim])
+		
+		for locus in range(nLoci):
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(nsam_tot[locus], theta[locus], rho[locus], L[locus], N1[sim], Tdem1[sim], N1[sim]*founders1[sim]))
+	outfile = open("priorfile.txt", "w")
+	outfile.write(priorfile)
+	outfile.close()
+
+
+if sys.argv[1] == "PAN_2N":
+	# param monolocus: values that will be read by ms
+	priorfile = "N1\tfounders1\tTdem1\tshape_N_a\tshape_N_b\n"
+	for sim in range(nMultilocus):
+		priorfile += "{0:.5f}\t{1:.5f}\t{2:.5f}\t{3:.5f}\t{4:.5f}\n".format(N1[sim], founders1[sim], Tdem1[sim], shape_N_a[sim], shape_N_b[sim])
+                scalar_N = beta(shape_N_a[sim], shape_N_b[sim], size=nLoci)
+		rescale = shape_N_a[sim] / (shape_N_a[sim] + shape_N_b[sim]) # to centerize the beta distribution around 1
+                N1_vec = [ i/rescale for i in scalar_N ]
+		
+		for locus in range(nLoci):
+			# PAN : msnsam tbs 10000 -t tbs -r tbs tbs -eN 0 tbs -eN tbs tbs
+			print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(nsam_tot[locus], float(theta[locus])*N1_vec[locus], rho[locus], L[locus], N1[sim], Tdem1[sim], N1[sim]*founders1[sim]))
 	outfile = open("priorfile.txt", "w")
 	outfile.write(priorfile)
 	outfile.close()
