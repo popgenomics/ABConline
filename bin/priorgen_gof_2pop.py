@@ -104,9 +104,11 @@ migration_models = ['SC_1M_1N', 'SC_2M_1N', 'SC_1M_2N', 'SC_2M_2N', 'AM_1M_1N', 
 if modePrior == "joint": # modePrior in {joint; disjoint; randomBeta}, where joint takes the exact joint values of the posterior as a prior; disjoint takes random associations of parameter values from posterior; randombeta simulates a beta distribution around the median of the posterior
 	used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
-	N2 = [ posterior['N2'][i] for i in used_posterior ]
-	Na = [ posterior['Na'][i] for i in used_posterior ]
-	Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
+	
+	if 'PAN' not in sys.argv[1]:
+		N2 = [ posterior['N2'][i] for i in used_posterior ]
+		Na = [ posterior['Na'][i] for i in used_posterior ]
+		Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 
 	if '2N' in sys.argv[1]:
 		shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
@@ -134,12 +136,13 @@ else:
 	if modePrior == "disjoint":
 		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
 		N1 = [ posterior['N1'][i] for i in used_posterior ]
-		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
-		N2 = [ posterior['N2'][i] for i in used_posterior ]
-		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
-		Na = [ posterior['Na'][i] for i in used_posterior ]
-		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
-		Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
+		if 'PAN' not in sys.argv[1]:
+			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			N2 = [ posterior['N2'][i] for i in used_posterior ]
+			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			Na = [ posterior['Na'][i] for i in used_posterior ]
+			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
 
 		if '2N' in sys.argv[1]:
 			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
@@ -176,9 +179,10 @@ else:
 					nBarriersM21 = [ i if i <= nLoci else nLoci for i in nBarriersM21 ]
 	else: # if modeprior == 'randombeta'
 		N1 = randomBeta(posterior['N1'], nMultilocus)
-		N2 = randomBeta(posterior['N2'], nMultilocus)
-		Na = randomBeta(posterior['Na'], nMultilocus)
-		Tsplit = randomBeta(posterior['Tsplit'], nMultilocus)
+		if 'PAN' not in sys.argv[1]:
+			N2 = randomBeta(posterior['N2'], nMultilocus)
+			Na = randomBeta(posterior['Na'], nMultilocus)
+			Tsplit = randomBeta(posterior['Tsplit'], nMultilocus)
 		
 		if '2N' in sys.argv[1]:
 			shape_N_a = randomBeta(posterior['shape_N_a'], nMultilocus)
