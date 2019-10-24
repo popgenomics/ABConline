@@ -2,7 +2,8 @@
 nmultilocus = 1000 # number of multilocus simulations per iteration (500)
 
 # links to the codes
-binpath = "/shared/mfs/data/home/croux/softwares/ABConline/bin"
+#binpath = "/shared/mfs/data/home/croux/softwares/ABConline/bin"
+binpath = "/home/croux/Documents/ABConline/bin"
 
 # model comparison
 nCPU_R = 8 # number of CPUs for the model comp for the model forest R functions
