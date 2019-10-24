@@ -101,7 +101,7 @@ rule targets:
 		tar -zcvf {timeStamp}.tar.gz {input}
 		touch slurm_tmp.out
 		rm slurm*out
-		rm -rf {timeStamp}		
+#		rm -rf {timeStamp}		
 		"""
 
 
@@ -332,7 +332,7 @@ rule estimation_best_model:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2} bin={binpath}
+		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2} binpath={binpath} path2observation={timeStamp}
 		"""
 
 # First optimization
@@ -363,7 +363,7 @@ rule estimation_best_model_2:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_2 nSubdir={nIterations_estim_2} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2} bin={binpath}
+		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_2 nSubdir={nIterations_estim_2} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2} binpath={binpath} path2observation={timeStamp}
 		"""
 
 rule simulation_best_model_3:
@@ -393,7 +393,7 @@ rule estimation_best_model_3:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_3 nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior3} bin={binpath}
+		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_3 nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior3} binpath={binpath} path2observation={timeStamp}
 		"""
 # Second optimization
 rule simulation_best_model_4:
@@ -423,7 +423,7 @@ rule estimation_best_model_4:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_4 nSubdir={nIterations_estim_2} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2} bin={binpath}
+		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_4 nSubdir={nIterations_estim_2} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2} binpath={binpath} path2observation={timeStamp}
 		"""
 
 rule simulation_best_model_5:
@@ -453,7 +453,7 @@ rule estimation_best_model_5:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_5 nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior3} bin={binpath}
+		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_5 nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior3} binpath={binpath} path2observation={timeStamp}
 		"""
 
 # Third optimization
@@ -484,7 +484,7 @@ rule estimation_best_model_6:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_6 nSubdir={nIterations_estim_2} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2} bin={binpath}
+		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_6 nSubdir={nIterations_estim_2} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior2} binpath={binpath} path2observation={timeStamp}
 		"""
 
 rule simulation_best_model_7:
@@ -514,7 +514,7 @@ rule estimation_best_model_7:
 	shell:
 		"""
 		best_model=$(cat {input.best})
-		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_7 nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior3} bin={binpath}
+		{binpath}/estimates_2pop_best.R Nref={Nref} nameA={nameA} nameB={nameB} nMin={nMin} sub_dir_sim=best_model_7 nSubdir={nIterations_estim_1_3} ntree={ntree} ncores={nCPU_R} outgroup={outgroup} bestModel=${{best_model}} timeStamp={timeStamp} nPosterior={nPosterior3} binpath={binpath} path2observation={timeStamp}
 		"""
 
 

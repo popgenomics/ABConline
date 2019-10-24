@@ -15,7 +15,8 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'bestModel'){ bestModel = tmp[[1]][2] } # name of the best model
 	if(tmp[[1]][1] == 'timeStamp'){ timeStamp = tmp[[1]][2] } # name of timeStamp
 	if(tmp[[1]][1] == 'nPosterior'){ nPosterior = as.integer(tmp[[1]][2]) }
-	if(tmp[[1]][1] == 'bin'){ bin = tmp[[1]][2] } # bin = path where to source get_parameters
+	if(tmp[[1]][1] == 'binpath'){ binpath = tmp[[1]][2] } # binpath = path where to source get_parameters
+	if(tmp[[1]][1] == 'path2observation'){ path2observation = tmp[[1]][2] } # path2observation = path where the observed data to fit can be found
 }
 
 outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.txt', sep='')
@@ -24,14 +25,9 @@ outfile = paste(timeStamp, '/', sub_dir_sim, '/report_', nameA, '_', nameB, '.tx
 coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
 coul = colorRampPalette(coul)
 
-# observed data
-obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
-obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
-obs_ss = obs_ss[, -grep('max', colnames(obs_ss))]
-
 ######################################################
 # parameters of the best model, IM_2M_2N and SI_2N
-source(paste(bin, '/get_parameters_2pop.R', sep=''))
+source(paste(binpath, '/get_parameters_2pop.R', sep=''))
 
 # SI_2N; IM_2M_2N; AM_2M_2N; SC_2M_2N
 options(digits=5)
@@ -39,7 +35,7 @@ options(digits=5)
 list_models_param = c(bestModel)
 for(model_tmp in list_models_param){
 	write(paste('\n#####\n\nparameters of model using neural_network (upper lines) and random_forest (lower lines): ', model_tmp, sep=''), outfile, append=T)
-	posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model='best_model', sub_dir_model='bestModel', nPosterior=nPosterior, figure=T)
+	posterior = get_posterior(nameA=nameA, nameB=nameB, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model='best_model', sub_dir_model='bestModel', nPosterior=nPosterior, figure=T, timeStamp=timeStamp, path2observation=path2observation)
 	write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
 	for(i in 1:ncol(posterior[['neural_network']])){
 		param_i = colnames(posterior[['neural_network']])[i]

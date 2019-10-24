@@ -234,7 +234,7 @@ babar<-function(a,b,space=2,breaks="auto",AL=0.5,nameA="A",nameB="B",xl="",yl=""
 #}
 
 
-get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model, nPosterior, figure){
+get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model, nPosterior, figure, timeStamp, path2observation){
 	library(data.table)
 	options(digits=5)
 	###################
@@ -243,7 +243,8 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 	coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
 	coul = colorRampPalette(coul)
 
-	obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
+	#obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
+	obs_ss = read.table(paste(path2observation, '/ABCstat_global.txt', sep=''), h=T)
 
 	# remove stats
 	obs_ss = obs_ss[, -grep('min', colnames(obs_ss))]
@@ -259,7 +260,8 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 	ss_obs = obs_ss
 
 
-	sfs_obs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)
+	#sfs_obs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)
+	sfs_obs = read.table(paste(path2observation, '/ABCjsfs.txt', sep=''), h=T)
 	sfs_obs = sfs_obs[, -c(which(colnames(sfs_obs)=='fA0_fB0'), which(colnames(sfs_obs)=='fA1_fB0'), which(colnames(sfs_obs)=='fA0_fB1'))] # remove the singletons and the (0,0)
 	header_obs = colnames(sfs_obs) # get the names of the columns
 	header_obs = matrix(unlist(strsplit(header_obs, '_')), byrow=T, ncol=2) # converts the fAx_fBy format into a manipulable matrix
@@ -401,7 +403,7 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 	# RANDOM FOREST	
 	library(abcrf)
 	sim_training = 1:5000 # in case of debug
-	params_model_rf = params_sim[[model]][sim_training,] # in case of debug
+	params_model_rf = as.matrix(params_sim[[model]][sim_training,]) # in case of debug
 	stats_model_rf = ss_sim[[model]][sim_training, ss] # in case of debug
 
 	res_rf = list()
