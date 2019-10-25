@@ -406,6 +406,9 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 	params_model_rf = as.matrix(params_sim[[model]][sim_training,]) # in case of debug
 	stats_model_rf = ss_sim[[model]][sim_training, ss] # in case of debug
 
+	
+	
+	write("param\tHPD2.5%\tmedian\tHPD%97.5", paste(timeStamp, '/', sub_dir_sim, '/posterior_RandomForest_', sub_dir_model, '.txt', sep=''), append=F)
 	res_rf = list()
 	for(i in 1:nparams){
 		parameter = params_model_rf[,i]
@@ -419,9 +422,11 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 		res_rf[[param_name]][['variance']] = estimate$variance
 		res_rf[[param_name]][['quantile025']] = estimate$quantiles[1]
 		res_rf[[param_name]][['quantile975']] = estimate$quantiles[2] 
+		write(paste(c(param_name, round(estimate$quantiles[1],5), round(estimate$expectation, 5), estimate$quantiles[2]), collapse="\t"), paste(timeStamp, '/', sub_dir_sim, '/posterior_RandomForest_', sub_dir_model, '.txt', sep=''), append=T)
 	}	
 		
 
+	
 	# NEURAL NETWORK
 	library('nnet')
 #	target = matrix(as.numeric(unlist(ss_obs[, ss])),nrow=1) # without SFS
@@ -430,6 +435,18 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 	#sumstat = matrix(as.numeric(unlist(ss_sim[[model]][,ss])), byrow=F, ncol=ncol(ss_sim[[model]][,ss])) # without SFS
 	sumstat = cbind(matrix(as.numeric(unlist(ss_sim[[model]][,ss])), byrow=F, ncol=ncol(ss_sim[[model]][,ss])), sfs_sim_A_tmp, sfs_sim_B_tmp) # with SFS
 	transf_obs = rep("logit", ncol(params_sim[[model]]))
+	
+	for(param_i in 1:ncol(x)){
+		prior_values = sample(x[,param_i], 1000, replace=T)
+		if(length(table(prior_values)) <= 3){
+			if(min(prior_values) <= 0){
+				transf_obs[param_i] = 'none'	
+			}else{
+				transf_obs[param_i] = 'log'
+			}
+		}
+	}
+	
 	bb = rbind(apply(x, MARGIN=2, FUN="min"), apply(x, MARGIN=2, FUN="max"))
 	
 	#res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=nPosterior/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)

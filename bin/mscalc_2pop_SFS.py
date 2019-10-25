@@ -14,6 +14,8 @@ outgroup = int(sys.argv[1]) # if 0: no outgroup, and so, no SFS. If 1: outgroup,
 
 def cr_sqrt(x):
 	# returns the square root of a variable x
+	if x < 0.0:
+		x = -1*x
 	if x == 0.0:
 		return 0.0
 	else:
