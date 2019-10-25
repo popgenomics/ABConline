@@ -422,7 +422,7 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 		res_rf[[param_name]][['variance']] = estimate$variance
 		res_rf[[param_name]][['quantile025']] = estimate$quantiles[1]
 		res_rf[[param_name]][['quantile975']] = estimate$quantiles[2] 
-		write(paste(c(param_name, round(estimate$quantiles[1],5), round(estimate$expectation, 5), estimate$quantiles[2]), collapse="\t"), paste(timeStamp, '/', sub_dir_sim, '/posterior_RandomForest_', sub_dir_model, '.txt', sep=''), append=T)
+		write(paste(c(param_name, round(estimate$quantiles[1],5), round(estimate$expectation, 5), round(estimate$quantiles[2],5)), collapse="\t"), paste(timeStamp, '/', sub_dir_sim, '/posterior_RandomForest_', sub_dir_model, '.txt', sep=''), append=T)
 	}	
 		
 
