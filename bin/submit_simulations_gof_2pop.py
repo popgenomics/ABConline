@@ -56,8 +56,8 @@ if mscommand == "":
 	sys.exit()
 
 #tmp = "mkdir {0}/{1}; ".format(path, sub_dir_sim)
-#tmp += "mkdir {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
-tmp = "cp {0}/bpfile {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
+tmp = "mkdir {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
+tmp += "cp {0}/bpfile {0}/{1}/{2}_{3}/; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 tmp += "cd {0}/{1}/{2}_{3}; ".format(path, sub_dir_sim, sub_dir_model, iteration)
 
 #tmp += "{8}/priorgen_gof_2pop.py {0} {1} {2} {6} {7} | {8}/msnsam tbs {3} {4} | {8}/mscalc_2pop_SFS.py {5}".format(model, nmultilocus, posterior_file, nmultilocus*nlocus, mscommand, outgroup, modeBarrier, modePrior, binpath)
