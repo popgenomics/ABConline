@@ -234,7 +234,7 @@ babar<-function(a,b,space=2,breaks="auto",AL=0.5,nameA="A",nameB="B",xl="",yl=""
 #}
 
 
-get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model, nPosterior, figure, timeStamp, path2observation){
+get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model, nPosterior, figure, timeStamp, path2observation, do_nnet){
 	library(data.table)
 	options(digits=5)
 	###################
@@ -408,8 +408,10 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 
 	
 	
-	write("param\tHPD2.5%\tmedian\tHPD%97.5", paste(timeStamp, '/', sub_dir_sim, '/posterior_RandomForest_', sub_dir_model, '.txt', sep=''), append=F)
+	write("param\tHPD2.5%\tmedian\tHPD%97.5", paste(timeStamp, '/', sub_dir_sim, '/posterior_summary_RandomForest_', sub_dir_model, '.txt', sep=''), append=F)
 	res_rf = list()
+	header_RF = NULL # contains the header of the file posterior_RandomForest
+	estimates_RF = NULL # contains the point estimates of the posterior_RandomForest
 	for(i in 1:nparams){
 		parameter = params_model_rf[,i]
 		data = data.frame(parameter, stats_model_rf)
@@ -420,48 +422,55 @@ get_posterior<-function(nameA, nameB, nSubdir, sub_dir_sim, model, sub_dir_model
 		res_rf[[param_name]] = list()
 		res_rf[[param_name]][['expectation']] = estimate$expectation
 		res_rf[[param_name]][['variance']] = estimate$variance
-		res_rf[[param_name]][['quantile025']] = estimate$quantiles[1]
-		res_rf[[param_name]][['quantile975']] = estimate$quantiles[2] 
-		write(paste(c(param_name, round(estimate$quantiles[1],5), round(estimate$expectation, 5), round(estimate$quantiles[2],5)), collapse="\t"), paste(timeStamp, '/', sub_dir_sim, '/posterior_RandomForest_', sub_dir_model, '.txt', sep=''), append=T)
-	}	
+		res_rf[[param_name]][['quantile025']] = estimate$quantiles[,1]
+		res_rf[[param_name]][['quantile975']] = estimate$quantiles[,2] 
+		write(paste(c(param_name, round(estimate$quantiles[1],5), round(estimate$expectation, 5), round(estimate$quantiles[2],5)), collapse="\t"), paste(timeStamp, '/', sub_dir_sim, '/posterior_summary_RandomForest_', sub_dir_model, '.txt', sep=''), append=T)
 		
+		header_RF = c(header_RF, param_name)
+		estimates_RF = cbind(estimates_RF, estimate$expectation)
+	}
 
+	colnames(estimates_RF) = header_RF	
+	write.table(estimates_RF, paste(timeStamp, '/', sub_dir_sim, '/posterior_RandomForest_', sub_dir_model, '.txt', sep=''), sep="\t", col.names=T, row.names=F, quote=F )
+#	write(paste(header_RF, collapse="\t"), paste(timeStamp, '/', sub_dir_sim, '/posterior_RandomForest_', sub_dir_model, '.txt', sep=''), append=F)
+#	write(paste(estimates_RF, collapse="\t"), paste(timeStamp, '/', sub_dir_sim, '/posterior_RandomForest_', sub_dir_model, '.txt', sep=''), append=T)
+		
+	res_tot = list()
 	
-	# NEURAL NETWORK
-	library('nnet')
-#	target = matrix(as.numeric(unlist(ss_obs[, ss])),nrow=1) # without SFS
-	target = matrix(as.numeric(unlist(cbind(ss_obs[, ss], sfs_obs_A, sfs_obs_B))),nrow=1) # with SFS
-	x = matrix(as.numeric(unlist(params_sim[[model]])), byrow=F, ncol=ncol(params_sim[[model]]))
-	#sumstat = matrix(as.numeric(unlist(ss_sim[[model]][,ss])), byrow=F, ncol=ncol(ss_sim[[model]][,ss])) # without SFS
-	sumstat = cbind(matrix(as.numeric(unlist(ss_sim[[model]][,ss])), byrow=F, ncol=ncol(ss_sim[[model]][,ss])), sfs_sim_A_tmp, sfs_sim_B_tmp) # with SFS
-	transf_obs = rep("logit", ncol(params_sim[[model]]))
-	
-	for(param_i in 1:ncol(x)){
-		prior_values = sample(x[,param_i], 1000, replace=T)
-		if(length(table(prior_values)) <= 3){
-			if(min(prior_values) <= 0){
-				transf_obs[param_i] = 'none'	
-			}else{
-				transf_obs[param_i] = 'log'
+	if(do_nnet == TRUE){	
+		# NEURAL NETWORK
+		library('nnet')
+	#	target = matrix(as.numeric(unlist(ss_obs[, ss])),nrow=1) # without SFS
+		target = matrix(as.numeric(unlist(cbind(ss_obs[, ss], sfs_obs_A, sfs_obs_B))),nrow=1) # with SFS
+		x = matrix(as.numeric(unlist(params_sim[[model]])), byrow=F, ncol=ncol(params_sim[[model]]))
+		#sumstat = matrix(as.numeric(unlist(ss_sim[[model]][,ss])), byrow=F, ncol=ncol(ss_sim[[model]][,ss])) # without SFS
+		sumstat = cbind(matrix(as.numeric(unlist(ss_sim[[model]][,ss])), byrow=F, ncol=ncol(ss_sim[[model]][,ss])), sfs_sim_A_tmp, sfs_sim_B_tmp) # with SFS
+		transf_obs = rep("logit", ncol(params_sim[[model]]))
+		
+		for(param_i in 1:ncol(x)){
+			prior_values = sample(x[,param_i], 1000, replace=T)
+			if(min(x[,param_i]) <= 0){
+				transf_obs[param_i] = 'none'
+			}else if(length(table(prior_values)) <= 3){
+					transf_obs[param_i] = 'log'
 			}
 		}
+		
+		bb = rbind(apply(x, MARGIN=2, FUN="min"), apply(x, MARGIN=2, FUN="max"))
+		
+		#res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=nPosterior/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
+		res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=nPosterior/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=10, size.nnet=10, trace=T)
+	
+		posterior = res$x
+		colnames(posterior) = colnames(params_sim[[model]])
+		write.table(posterior, paste(timeStamp, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
+		res_tot[['neural_network']] = posterior	
 	}
 	
-	bb = rbind(apply(x, MARGIN=2, FUN="min"), apply(x, MARGIN=2, FUN="max"))
-	
-	#res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=nPosterior/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
-	res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=nPosterior/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=10, size.nnet=10, trace=T)
-
-	posterior = res$x
-	colnames(posterior) = colnames(params_sim[[model]])
-	write.table(posterior, paste(timeStamp, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
-
-	res_tot = list()
 	res_tot[['random_forest']] = res_rf
-	res_tot[['neural_network']] = posterior	
 
 	# plot pdf
-	if(figure==T){
+	if(figure==T && do_nnet==T){
 		library(ggplot2)
 		library(ggpubr)
 		theme_set(theme_classic())

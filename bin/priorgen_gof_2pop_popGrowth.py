@@ -85,7 +85,9 @@ for i in header:
 	params_posterior.append(i)
 	if i not in posterior:
 		posterior[i] = []
+nLines = 0
 for line in infile:
+	nLines += 1
 	line = line.strip().split('\t')
 	cnt=0
 	for i in line:
@@ -99,7 +101,7 @@ migration_models = ['SC_1M_1N', 'SC_2M_1N', 'SC_1M_2N', 'SC_2M_2N', 'AM_1M_1N', 
 #used_posterior = randint(cnt, size=nMultilocus)
 
 if modePrior == "joint": # modePrior in {joint; disjoint; randomBeta}, where joint takes the exact joint values of the posterior as a prior; disjoint takes random associations of parameter values from posterior; randombeta simulates a beta distribution around the median of the posterior
-	used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+	used_posterior = [ randint(0, nLines-1) if nLines>1 else 0 for i in range(nMultilocus) ]
 	N1 = [ posterior['N1'][i] for i in used_posterior ]
 	if 'PAN' not in sys.argv[1]:
 		N2 = [ posterior['N2'][i] for i in used_posterior ]
@@ -135,33 +137,33 @@ if modePrior == "joint": # modePrior in {joint; disjoint; randomBeta}, where joi
 				nBarriersM21 = [ i if i <= nLoci else nLoci for i in nBarriersM21 ]
 else:
 	if modePrior == "disjoint":
-		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+		used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 		N1 = [ posterior['N1'][i] for i in used_posterior ]
 		if 'PAN' not in sys.argv[1]:
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 			N2 = [ posterior['N2'][i] for i in used_posterior ]
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 			Na = [ posterior['Na'][i] for i in used_posterior ]
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 			Tsplit = [ posterior['Tsplit'][i] for i in used_posterior ]
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 			founders2 = [ posterior['founders2'][i] for i in used_posterior ]
 			Tdem2 = provideTimes(Tsplit=Tsplit, Tsmall=posterior['Tdem2'], nMultilocus=nMultilocus)
 		
-		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+		used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 		founders1 = [ posterior['founders1'][i] for i in used_posterior ]	
 		Tdem1 = provideTimes(Tsplit=Tsplit, Tsmall=posterior['Tdem1'], nMultilocus=nMultilocus)
 		
 		if '2N' in sys.argv[1]:
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 			shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 			shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 		
 		if sys.argv[1] in migration_models:
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 			M12 = [ posterior['M12'][i] for i in used_posterior ]
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 			M21 = [ posterior['M21'][i] for i in used_posterior ]
 			if 'SC' in sys.argv[1]:
 				Tsc = provideTimes(Tsplit=Tsplit, Tsmall=posterior['Tsc'], nMultilocus=nMultilocus)
@@ -170,18 +172,18 @@ else:
 				#Tam = [ posterior['Tam'][randint(0, cnt-1)] if posterior['Tam'][i]<posterior['Tsplit'][i] else posterior['Tsplit'][i]*0.999 for i in range(nMultilocus) ]
 			if '2M' in sys.argv[1]:
 				if modeBarrier == "beta":
-					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 					shape_M12_a = [ posterior['shape_M12_a'][i] for i in used_posterior ]
-					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 					shape_M12_b = [ posterior['shape_M12_b'][i] for i in used_posterior ]
-					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 					shape_M21_a = [ posterior['shape_M21_a'][i] for i in used_posterior ]
-					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 					shape_M21_b = [ posterior['shape_M21_b'][i] for i in used_posterior ]
 				else:
-					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 					nBarriersM12 = [ int(posterior['nBarriersM12'][i]) for i in used_posterior ]
-					used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+					used_posterior = [ randint(0, nLines-1) if nLines>1 else 0  for i in range(nMultilocus) ]
 					nBarriersM21 = [ int(posterior['nBarriersM21'][i]) for i in used_posterior ]
 					nBarriersM12 = [ i if i <= nLoci else nLoci for i in nBarriersM12 ]
 					nBarriersM21 = [ i if i <= nLoci else nLoci for i in nBarriersM21 ]
@@ -218,7 +220,7 @@ else:
 					shape_M21_a = randomBeta(posterior['shape_M21_a'], nMultilocus)
 					shape_M21_b = randomBeta(posterior['shape_M21_b'], nMultilocus)
 				else:
-					for post in range(cnt):
+					for post in range(nLines):
 						posterior['nBarriersM12'][post] = int(posterior['nBarriersM12'][post])
 						posterior['nBarriersM21'][post] = int(posterior['nBarriersM21'][post])
 					nBarriersM12 = randomBeta(posterior['nBarriersM12'], nMultilocus)
