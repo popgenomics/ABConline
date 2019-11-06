@@ -1,8 +1,6 @@
 #!/shared/mfs/data/software/miniconda/envs/pypy-2.7-5.10.0/bin/pypy
 # #!/usr/local/bin/pypy
-# #!/usr/local/bin/pypy
-
-# #!/gepv/home2/croux/bin/pypy
+# #!/usr/local/bin/pypy # #!/gepv/home2/croux/bin/pypy
 
 # #!/usr/bin/python
 
@@ -46,7 +44,7 @@ def cr_mean(x):
 def cr_std(x, exp_X):
 	# returns the standard variation of a list
 	nElement = len(x)
-	if nElement == 0:
+	if nElement <= 2:
 		return(0)
 	else:
 		if sum(x) == 0:

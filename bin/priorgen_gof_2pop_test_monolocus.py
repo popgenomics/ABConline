@@ -91,16 +91,21 @@ infile = open(sys.argv[3], 'r')
 posterior = {}
 params_posterior = []
 header = infile.readline().strip().split('\t')
+nLines = 0
 for i in header:
 	params_posterior.append(i)
 	if i not in posterior:
 		posterior[i] = []
 for line in infile:
+	nLines += 1
 	line = line.strip().split('\t')
 	cnt=0
 	for i in line:
 		cnt += 1
-		posterior[ params_posterior[cnt-1] ].append(float(i))
+		posterior_value = float(i)
+		if(posterior_value)<0:
+			posterior_value = 0.00001
+		posterior[ params_posterior[cnt-1] ].append(posterior_value)
 infile.close()
 
 migration_models = ['SC_2M_1N', 'SC_2M_2N', 'IM_2M_1N', 'IM_2M_2N']
@@ -108,7 +113,7 @@ migration_models = ['SC_2M_1N', 'SC_2M_2N', 'IM_2M_1N', 'IM_2M_2N']
 # get the lines of the posterior used for the simulations: vector of length nMultilocus
 # used_posterior = randint(cnt, size=nMultilocus)
 
-used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+used_posterior = [ randint(0, nLines-1) for i in range(nMultilocus) ]
 N1 = [ posterior['N1'][i] for i in used_posterior ]
 N2 = [ posterior['N2'][i] for i in used_posterior ]
 Na = [ posterior['Na'][i] for i in used_posterior ]

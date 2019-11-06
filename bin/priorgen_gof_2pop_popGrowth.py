@@ -92,7 +92,13 @@ for line in infile:
 	cnt=0
 	for i in line:
 		cnt += 1
-		posterior[ params_posterior[cnt-1] ].append(float(i))
+		posterior_value = float(i)
+		if(posterior_value)<0:
+			posterior_value = 0.00001
+		posterior[ params_posterior[cnt-1] ].append(posterior_value)
+#	for i in line:
+#		cnt += 1
+#		posterior[ params_posterior[cnt-1] ].append(float(i))
 infile.close()
 
 migration_models = ['SC_1M_1N', 'SC_2M_1N', 'SC_1M_2N', 'SC_2M_2N', 'AM_1M_1N', 'AM_2M_1N', 'AM_1M_2N', 'AM_2M_2N', 'IM_1M_1N', 'IM_2M_1N', 'IM_1M_2N', 'IM_2M_2N']

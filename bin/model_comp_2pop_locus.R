@@ -11,6 +11,8 @@ for(i in commandArgs()){
 	if(tmp[[1]][1] == 'ncores'){ ncores = as.integer(tmp[[1]][2]) } # number of cores for the random forest
 	if(tmp[[1]][1] == 'ntree'){ ntree = as.integer(tmp[[1]][2]) }
 }
+# rejected statistics
+rejected_statistics = c('minDivAB_avg', 'minDivAB_std', 'maxDivAB_avg', 'maxDivAB_std', 'Gmin_avg', 'Gmin_std', 'Gmax_avg', 'Gmax_std') 
 
 # colors
 coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
@@ -39,16 +41,33 @@ if(model_demographic == 'migration'){
 			modIndexes = c(rep('migration', nrow(mig_ss)), rep('isolation', nrow(iso_ss)))
 
 			data_ss = bind_rows(obs_ss, mig_ss, iso_ss)
+			
+			# remove unused statistics
 			toRemove = c(1)
 			for(i in 1:ncol(data_ss)){
-				if( anyNA(data_ss[,i], recursive=T) || sd(data_ss[(2:nrow(mig_ss)),i], na.rm=T)<1e-5  || sd(data_ss[(1+nrow(mig_ss)):(nrow(1+nrow(mig_ss)+iso_ss)),i], na.rm=T)<1e-5 ){
+				if( anyNA(data_ss[,i], recursive=T) || sd(data_ss[-1,i], na.rm=T)<1e-5 || colnames(data_ss)[i]%in%rejected_statistics  ){
 					toRemove=c(toRemove, i)
 				}
 			}
+			std_stats = grep('std', colnames(data_ss))
+			if( length(std_stats)>0 ){
+				toRemove = c(toRemove, std_stats)
+			}
+			pearson_stats = grep('pearson', colnames(data_ss))
+			if( length(pearson_stats)>0 ){
+				toRemove = c(toRemove, pearson_stats)
+			}
 			toRemove = unique(toRemove)
 
+			# keep the same observed stats that the ones retained on simulations
+			obs_stat=NULL
+			for(stat in colnames(data_ss)[-toRemove]){
+				obs_stat = c(obs_stat, which(colnames(obs_loci)==stat))
+			}
+
 			mod_iso_mig = abcrf(modIndexes~., data = data.frame(modIndexes, data_ss[-1, -toRemove]), ntree = ntree, paral = T, ncores = ncores)
-			predicted_model_iso_mig = predict(mod_iso_mig, data.frame(data_ss[1, -toRemove]), training=data.frame(modIndexes, data_ss[-1, -toRemove]), ntree = ntree, paral = T, ncores = ncores)
+			#predicted_model_iso_mig = predict(mod_iso_mig, data.frame(data_ss[1, -toRemove]), training=data.frame(modIndexes, data_ss[-1, -toRemove]), ntree = ntree, paral = T, ncores = ncores)
+			predicted_model_iso_mig = predict(mod_iso_mig, data.frame(obs_loci[, obs_stat]), training=data.frame(modIndexes, data_ss[-1, -toRemove]), ntree = ntree, paral = T, ncores = ncores)
 
 			allocation = predicted_model_iso_mig$allocation
 			post_proba = predicted_model_iso_mig$post.prob
