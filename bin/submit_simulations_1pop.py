@@ -4,7 +4,7 @@ import os
 import time
 
 if len(sys.argv) != 11:
-	print("\n\tsubmit_simulations_1pop.py [outgroup] [nmultilocus] [iteration] [model: Constant_x; Discrete_x; Expo_x] [nameA] [sub_dir_sim] [sub_dir_model] [config_yaml] [project's directory name, i.e, timeStamp] [pathway to the bin")
+	print("\n\tsubmit_simulations_1pop.py [outgroup] [nmultilocus] [iteration] [model: Constant_x; Discrete_x; Expo_x] [nameA] [sub_dir_sim] [sub_dir_model] [config_yaml] [project's directory name, i.e, timeStamp] [pathway to the bin]")
 	print("\n\tex: submit_simulations_1pop.py 1 1000 2 Constant_1N flo sim_Constant_1N Constant_1N config.yaml Ng4PymB1dy\n\tto simulate 1000 multilocus simulations at the second iteration, in the folder sim_Constant_1N, with outgroup") 
 	sys.exit(0)
 

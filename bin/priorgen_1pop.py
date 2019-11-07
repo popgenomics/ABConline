@@ -26,7 +26,7 @@ if len(sys.argv) != 4:
 # Configuration of the prior distribution
 nMultilocus = int(sys.argv[2])
 
-shape_bound = [1, 20]
+shape_bound = [1, 5]
 N_bound = [0, 0] # number of diploid individuals in the population
 T_bound = [0, 10]
 config_yaml = open(sys.argv[3], 'r')
@@ -123,10 +123,11 @@ if sys.argv[1] == "Expansion_1N":
 	theta = [ 4*L[i]*mu[i] for i in range(nLoci) ] # vector of theta/N
 	rho = [ 4*L[i]*rec[i] for i in range(nLoci) ] # vector of rho/N
 	
-	T = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-#	T = [ uniform(low = T_bound[0], high = 2*i, size = 1)[0] for i in N ]
+#	T = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
+	T = [ uniform(low = 0.1*i, high = 4*i, size = 1)[0] for i in N ]
 	
-	Nanc = [ uniform(low = N_bound[0], high = 0.5*i, size = 1)[0] for i in N ]
+#	Nanc = [ uniform(low = N_bound[0], high = 0.5*i, size = 1)[0] for i in N ]
+	Nanc = [ uniform(low = 0, high = 0.5*i, size = 1)[0] for i in N ]
 	
 	# param monolocus: values that will be read by ms
 	priorfile = "N\tNpast\tTdem\n"
@@ -156,9 +157,11 @@ if sys.argv[1] == "Expansion_2N":
         shape_N_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         shape_N_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
 	
-	T = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
+#	T = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
 #	T = [ uniform(low = T_bound[0], high = 2*i, size = 1)[0] for i in N ]
-	Nanc = [ uniform(low = N_bound[0], high = 0.5*i, size = 1)[0] for i in N ]
+	T = [ uniform(low = 0.1*i, high = 4*i, size = 1)[0] for i in N ]
+#	Nanc = [ uniform(low = N_bound[0], high = 0.5*i, size = 1)[0] for i in N ]
+	Nanc = [ uniform(low = 0, high = 0.5*i, size = 1)[0] for i in N ]
 	
 	# param monolocus: values that will be read by ms
 	priorfile = "N\tNpast\tshape_N_a\tshape_N_b\tTdem\n"
@@ -188,8 +191,8 @@ if sys.argv[1] == "Contraction_1N":
 	
 	Nanc = uniform(low = N_bound[0], high = N_bound[1], size = nMultilocus)
 	N = [ uniform(low = N_bound[0], high = 0.25*i, size = 1)[0] for i in Nanc ]
-	T = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
-#	T = [ uniform(low = T_bound[0], high = 2*i, size = 1)[0] for i in N ]
+#	T = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
+	T = [ uniform(low = 0.1*i, high = 4*i, size = 1)[0] for i in N ]
 	
 	
 	# param monolocus: values that will be read by ms
@@ -221,8 +224,9 @@ if sys.argv[1] == "Contraction_2N":
 	shape_N_a = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
         shape_N_b = uniform(low = shape_bound[0], high=shape_bound[1], size = nMultilocus)
 	
-	T = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
+#	T = uniform(low = T_bound[0], high = T_bound[1], size = nMultilocus)
 #	T = [ uniform(low = T_bound[0], high = 2*i, size = 1)[0] for i in N ]
+	T = [ uniform(low = 0.1*i, high = 4*i, size = 1)[0] for i in N ]
 	
 	# param monolocus: values that will be read by ms
 	priorfile = "N\tNpast\tshape_N_a\tshape_N_b\tTdem\n"

@@ -15,7 +15,7 @@ MODELS_COMP = ['PAN_1N', 'PAN_2N', 'SC_1M_1N', 'SC_1M_2N', 'SC_2M_1N', 'SC_2M_2N
 # first and second estimation of parameters
 MODELS_ESTIM = ['IM_2M_2N'] #MODELS_ESTIM = ['SC_2M_2N', 'AM_2M_2N', 'IM_2M_2N', 'SI_2N', 'SI_1N']
 nIterations_gof = 50 # number of subdirectories for the simulations used in the nnet param estimates (200)
-nIterations_estim_1_3 = 1000 # number of subdirectories for the simulations used in the nnet param estimates (2000)
+nIterations_estim_1_3 = 300 # number of subdirectories for the simulations used in the nnet param estimates (2000)
 ITERATIONS_ESTIMATES_1_3 = range(nIterations_estim_1_3)
 ITERATIONS_GOF = range(nIterations_gof)
 nPosterior1 = 10000
@@ -657,7 +657,7 @@ rule simulation_locus_modelComp:
 		niterations=1
 	input:
 		best="{timeStamp}/modelComp/best_model.txt",
-		posterior="{timeStamp}/best_model_7/posterior_bestModel.txt"
+		posterior="{timeStamp}/best_model/posterior_bestModel.txt"
 	output:
 		"{timeStamp}/locus_modelComp/isolation/ABCstat.txt",
 		"{timeStamp}/locus_modelComp/migration/ABCstat.txt"

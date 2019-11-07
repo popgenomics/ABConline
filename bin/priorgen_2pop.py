@@ -34,7 +34,7 @@ if len(sys.argv) != 4:
 # Configuration of the prior distribution
 nMultilocus = int(sys.argv[2])
 
-shape_bound = [0.01, 50]
+shape_bound = [0.01, 5]
 N_bound = [0, 0] # number of diploid individuals in the population
 T_bound = [0, 0] # number of generations
 M_bound = [0, 0] # 4.N.m , so the number of diploid migrant copies is 2.N.m
