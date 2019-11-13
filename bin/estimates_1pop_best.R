@@ -24,16 +24,15 @@ coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2
 coul = colorRampPalette(coul)
 
 # observed data
-obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
-obs_sfs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)[-1]
+#obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
+#obs_sfs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)[-1]
 
 ######################################################
 source(paste(binpath, "/get_parameters_1pop.R", sep=''))
 
 options(digits=5)
-model_tmp = bestModel
 
-write(paste('\n#####\n\nparameters of model using neural_network (upper lines) and random_forest (lower lines): ', model_tmp, sep=''), outfile, append=T)
+write(paste('\n#####\n\nparameters of model using neural_network (upper lines) and random_forest (lower lines): ', bestModel, sep=''), outfile, append=T)
 posterior = get_posterior(nameA=nameA, nSubdir=nSubdir, sub_dir_sim=sub_dir_sim, model='best_model', sub_dir_model='bestModel', nPosterior=nPosterior, figure=T, transf=transf)
 write('param\tHPD2.5%\tmedian\tHPD%97.5', outfile, append=T)
 for(i in 1:ncol(posterior[['neural_network']])){

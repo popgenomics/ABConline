@@ -65,12 +65,18 @@ for i in header:
 	params_posterior.append(i)
 	if i not in posterior:
 		posterior[i] = []
+
+nLines = 0
 for line in infile:
+	nLines += 1
 	line = line.strip().split('\t')
 	cnt=0
 	for i in line:
 		cnt += 1
-		posterior[ params_posterior[cnt-1] ].append(float(i))
+		posterior_value = float(i)
+		if(posterior_value)<0:
+			posterior_value = 0.00001
+		posterior[ params_posterior[cnt-1] ].append(posterior_value)
 infile.close()
 
 # get the lines of the posterior used for the simulations: vector of length nMultilocus
@@ -79,7 +85,7 @@ infile.close()
 model_changes = ['Contraction_1N', 'Contraction_2N', 'Expansion_1N', 'Expansion_2N']
 
 if modePrior == "joint": # modePrior in {joint; disjoint; randomBeta}, where joint takes the exact joint values of the posterior as a prior; disjoint takes random associations of parameter values from posterior; randombeta simulates a beta distribution around the median of the posterior
-	used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+	used_posterior = [ randint(0, nLines-1) for i in range(nMultilocus) ]
 	N = [ posterior['N'][i] for i in used_posterior ]
 	
 	if sys.argv[1] in model_changes:
@@ -90,18 +96,18 @@ if modePrior == "joint": # modePrior in {joint; disjoint; randomBeta}, where joi
 		shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 else:
 	if modePrior == "disjoint":
-		used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+		used_posterior = [ randint(0, nLines-1) for i in range(nMultilocus) ]
 		N = [ posterior['N'][i] for i in used_posterior ]
 		
 		if sys.argv[1] in model_changes:
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) for i in range(nMultilocus) ]
 			Npast = [ posterior['Npast'][i] for i in used_posterior ]
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) for i in range(nMultilocus) ]
 			Tdem = [ posterior['Tdem'][i] for i in used_posterior ]
 		if '2N' in sys.argv[1]:
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) for i in range(nMultilocus) ]
 			shape_N_a = [ posterior['shape_N_a'][i] for i in used_posterior ]
-			used_posterior = [ randint(0, cnt-1) for i in range(nMultilocus) ]
+			used_posterior = [ randint(0, nLines-1) for i in range(nMultilocus) ]
 			shape_N_b = [ posterior['shape_N_b'][i] for i in used_posterior ]
 
 	else: # if modeprior == 'randombeta'

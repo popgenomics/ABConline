@@ -237,7 +237,7 @@ babar<-function(a,b,space=2,breaks="auto",AL=0.5,nameA="A",nameB="B",xl="",yl=""
 #}
 
 
-get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPosterior, figure, transf){
+get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPosterior, figure, transf, do_nnet=T){
 	library(data.table)
 	options(digits=5)
 	###################
@@ -246,14 +246,14 @@ get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPost
 	coul = c('#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#0c2c84')
 	coul = colorRampPalette(coul)
 
-	obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)[-1]
-	sfs_obs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)[-1]
+	obs_ss = read.table(paste(timeStamp, '/ABCstat_global.txt', sep=''), h=T)
+	obs_sfs = read.table(paste(timeStamp, '/ABCjsfs.txt', sep=''), h=T)
 
-	obs = as.vector(unlist(c(obs_ss, sfs_obs)))	
-	names(obs) = names(unlist(c(obs_ss, sfs_obs))) 
+	obs = as.vector(unlist(c(obs_ss, obs_sfs)))	
+	names(obs) = names(unlist(c(obs_ss, obs_sfs))) 
 	
 	# get the number of statistics, number of simulations and number of parameters
-	tmp = read.table(paste(timeStamp, '/', sub_dir_sim, '/', model, '_0/ABCstat.txt', sep=''), h=T)[,-1]
+	tmp = read.table(paste(timeStamp, '/', sub_dir_sim, '/', model, '_0/ABCstat.txt', sep=''), h=T)
 	nSimulations = nrow(tmp)
 	nStats = ncol(tmp)
 	ss_sim_tmp = matrix(NA, nrow=nSimulations*nSubdir, ncol=nStats)
@@ -264,7 +264,7 @@ get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPost
 	params_sim = matrix(NA, nrow=nSimulations*nSubdir, ncol=nParams)
 	colnames(params_sim) = colnames(tmp)
 	
-	tmp = read.table(paste(timeStamp, '/', sub_dir_sim, '/', model, '_0/ABCjsfs.txt', sep=''), h=T)[, -1]
+	tmp = read.table(paste(timeStamp, '/', sub_dir_sim, '/', model, '_0/ABCjsfs.txt', sep=''), h=T)
 	nBins = ncol(tmp)
 	sfs_sim_tmp = matrix(NA, nrow=nSimulations*nSubdir, ncol=nBins)
 	colnames(sfs_sim_tmp) = colnames(tmp)
@@ -272,11 +272,11 @@ get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPost
 	for(rep in seq(0, nSubdir-1, 1)){
 		# statistics
 		#tmp_ss = read.table(paste(timeStamp, '/', sub_dir_sim, '/', model, '_', rep, '/ABCstat.txt', sep=''), h=T)
-		tmp_ss = as.matrix(fread(paste(timeStamp, '/', sub_dir_sim, '/', model, '_', rep, '/ABCstat.txt', sep=''), h=T))[,-1]
+		tmp_ss = as.matrix(fread(paste(timeStamp, '/', sub_dir_sim, '/', model, '_', rep, '/ABCstat.txt', sep=''), h=T))
 		ss_sim_tmp[(rep*nSimulations+1):((rep+1)*nSimulations),] = as.matrix(tmp_ss)
 		
 		# sfs
-		tmp_sfs = as.matrix(fread(paste(timeStamp, '/', sub_dir_sim, '/', model, '_', rep, '/ABCjsfs.txt', sep=''), h=T))[, -1]
+		tmp_sfs = as.matrix(fread(paste(timeStamp, '/', sub_dir_sim, '/', model, '_', rep, '/ABCjsfs.txt', sep=''), h=T))
 		sfs_sim_tmp[(rep*nSimulations+1):((rep+1)*nSimulations),] = as.matrix(tmp_sfs)
 
 		# params
@@ -288,6 +288,14 @@ get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPost
 	
 	# statistics
 	ss_sim = cbind(ss_sim_tmp, sfs_sim_tmp)  # with SFS
+	toRemove=1
+	for(i in 1:ncol(ss_sim)){
+		if(sd(ss_sim[,i])==0){
+			toRemove = c(toRemove, i)
+		}
+	}
+	toRemove = unique(toRemove)
+
 
 	##############
 	# inferences
@@ -302,9 +310,9 @@ get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPost
 	res_rf = list()
 	for(i in 1:nParams){
 		parameter = params_model_rf[,i]
-		data = data.frame(parameter, stats_model_rf)
+		data = data.frame(parameter, stats_model_rf[, -toRemove])
 		mod = regAbcrf(parameter~., data, ntree=1000)
-		estimate = predict(mod, target_rf, data)
+		estimate = predict(mod, target_rf[-toRemove], data)
 
 		param_name = colnames(params_sim)[i]
 		res_rf[[param_name]] = list()
@@ -315,40 +323,33 @@ get_posterior<-function(nameA, nSubdir, sub_dir_sim, model, sub_dir_model, nPost
 	}	
 		
 
-	# NEURAL NETWORK
-	library('nnet')
-	
-	target = matrix(obs, nrow=1, ncol=length(obs))
-	sumstat = cbind(ss_sim_tmp, sfs_sim_tmp) # with SFS
-
-	
-	toRemove=NULL
-	for(i in 1:ncol(sumstat)){
-		if(sd(sumstat[,i])==0){
-			toRemove = c(toRemove, i)
-		}
-	}
-	
-	if(is.null(toRemove)==FALSE){
-		target = matrix(target[, -toRemove], nrow=1)
-		sumstat = sumstat[, -toRemove]
-	}
+	if( do_nnet == T ){
+		# NEURAL NETWORK
+		library('nnet')
 		
-	x = matrix(as.numeric(unlist(params_sim)), byrow=F, ncol=ncol(params_sim))
-	transf_obs = rep(transf, ncol(params_sim))
-	bb = rbind(apply(x, MARGIN=2, FUN="min"), apply(x, MARGIN=2, FUN="max"))
-	#res2 = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=1000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=10*ncol(x), trace=T)
-	res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=nPosterior/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
+		target = matrix(obs[-toRemove], nrow=1, ncol=length(obs)-length(toRemove))
+		sumstat = ss_sim[, -toRemove] # with SFS
+		
+		x = matrix(as.numeric(unlist(params_sim)), byrow=F, ncol=ncol(params_sim))
+		transf_obs = rep(transf, ncol(params_sim))
+		bb = rbind(apply(x, MARGIN=2, FUN="min"), apply(x, MARGIN=2, FUN="max"))
+		#res2 = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=1000/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=10*ncol(x), trace=T)
+		res = abc_nnet_multivar(target=target, x=x, sumstat=sumstat, tol=nPosterior/nrow(x), rejmethod=F, noweight=F, transf=transf_obs, bb=bb, nb.nnet=2*ncol(x), size.nnet=2*ncol(x), trace=T)
 
-	posterior = res$x
-	colnames(posterior) = colnames(params_sim)
-	write.table(posterior, paste(timeStamp, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
+		posterior = res$x
+		colnames(posterior) = colnames(params_sim)
+		write.table(posterior, paste(timeStamp, '/', sub_dir_sim, '/posterior_', sub_dir_model, '.txt', sep=''), row.names=F, col.names=T, sep='\t', quote=F)
+	}
+
 	res_tot = list()
 	res_tot[['random_forest']] = res_rf
-	res_tot[['neural_network']] = posterior	
+
+	if( do_nnet == T ){
+		res_tot[['neural_network']] = posterior	
+	}
 
 	# plot pdf
-	if(figure==T){
+	if(figure==T & do_nnet ==T ){
 		library(ggplot2)
 		library(ggpubr)
 		theme_set(theme_classic())
