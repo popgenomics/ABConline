@@ -1514,20 +1514,23 @@ server <- function(input, output, session = session) {
 			posterior1 = res1[,which(colnames(res1)==param_name)] * scale
 			posterior1 = data.frame(x = posterior1, distribution=rep('Posterior', length(posterior1)))
 			
-			posterior2 = res2[,which(colnames(res1)==param_name)] * scale
-			posterior2 = data.frame(x = posterior2, distribution=rep('First optimization', length(posterior2)))
-			
-			posterior3 = res3[,which(colnames(res1)==param_name)] * scale
-			posterior3 = data.frame(x = posterior3, distribution=rep('Second optimization', length(posterior3)))
+#			posterior2 = res2[,which(colnames(res1)==param_name)] * scale
+#			posterior2 = data.frame(x = posterior2, distribution=rep('First optimization', length(posterior2)))
+#			
+#			posterior3 = res3[,which(colnames(res1)==param_name)] * scale
+#			posterior3 = data.frame(x = posterior3, distribution=rep('Second optimization', length(posterior3)))
 			
 			posterior4 = res4[,which(colnames(res1)==param_name)] * scale
-			posterior4 = data.frame(x = posterior4, distribution=rep('Third optimization', length(posterior4)))
+#			posterior4 = data.frame(x = posterior4, distribution=rep('Third optimization', length(posterior4)))
+			posterior4 = data.frame(x = posterior4, distribution=rep('Optimized posterior', length(posterior4)))
 			
 			#	df=rbind(prior, posterior)
-			df=rbind(prior, posterior1, posterior2, posterior3, posterior4)
+#			df=rbind(prior, posterior1, posterior2, posterior3, posterior4)
+			df=rbind(prior, posterior1, posterior4)
 
 
-			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", viridis_pal(option="D")(5)[1:4])) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
+#			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", viridis_pal(option="D")(5)[1:4])) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
+			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", viridis_pal(option="D")(5)[c(1,4)])) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
 			p <- ggplotly(p, width = 0.55*as.numeric(input$dimension[1]), height = 0.55*as.numeric(input$dimension[2]))
 
 			figure_estimations = ggplotly(p)
@@ -1551,8 +1554,8 @@ server <- function(input, output, session = session) {
 			bpfile = read.table(paste(rootName, '/bpfile', sep=''), h=F, skip=1); nLoci = ncol(bpfile)
 			yaml = read_yaml(paste(rootName, '/config.yaml', sep=''))
 			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T)
-			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
-			res3 = read.table(paste(rootName, '/best_model_5/posterior_bestModel.txt', sep=''), h=T)
+#			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
+#			res3 = read.table(paste(rootName, '/best_model_5/posterior_bestModel.txt', sep=''), h=T)
 			res4 = read.table(paste(rootName, '/best_model_7/posterior_bestModel.txt', sep=''), h=T)
 			
 			# remove the temporary unarchived results
@@ -1588,19 +1591,20 @@ server <- function(input, output, session = session) {
 			posterior1 = res1[,which(colnames(res1)==param_name)]
 			posterior1 = data.frame(x = posterior1, distribution=rep('Posterior', length(posterior1)))
 			
-			posterior2 = res2[,which(colnames(res1)==param_name)]
-			posterior2 = data.frame(x = posterior2, distribution=rep('First optimization', length(posterior2)))
-			
-			posterior3 = res3[,which(colnames(res1)==param_name)]
-			posterior3 = data.frame(x = posterior3, distribution=rep('Second optimization', length(posterior3)))
+#			posterior2 = res2[,which(colnames(res1)==param_name)]
+#			posterior2 = data.frame(x = posterior2, distribution=rep('First optimization', length(posterior2)))
+#			
+#			posterior3 = res3[,which(colnames(res1)==param_name)]
+#			posterior3 = data.frame(x = posterior3, distribution=rep('Second optimization', length(posterior3)))
 			
 			posterior4 = res4[,which(colnames(res1)==param_name)]
-			posterior4 = data.frame(x = posterior4, distribution=rep('Third optimization', length(posterior4)))
+			posterior4 = data.frame(x = posterior4, distribution=rep('Optimized posterior', length(posterior4)))
 			#	df=rbind(prior, posterior)
-			df=rbind(prior, posterior1, posterior2, posterior3, posterior4)
+			#df=rbind(prior, posterior1, posterior2, posterior3, posterior4)
+			df=rbind(prior, posterior1, posterior4)
 
 
-			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", viridis_pal(option="D")(5)[1:4])) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
+			p <- ggplot(df, aes(x, fill = distribution)) + geom_density(alpha = 0.7, size = 0.25) + scale_fill_manual(values=c("white", viridis_pal(option="D")(5)[c(1,4)])) + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14), legend.text = element_text(size = 15)) + scale_x_continuous(name = param_name)
 			p <- ggplotly(p, width = 0.55*as.numeric(input$dimension[1]), height = 0.55*as.numeric(input$dimension[2]))
 
 			figure_estimations = ggplotly(p)
@@ -1625,8 +1629,8 @@ server <- function(input, output, session = session) {
 			# read informations
 			Nref = as.numeric(read.table(paste(rootName, '/Nref.txt', sep='')))
 			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T) # first posterior
-			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T) # first optimization
-			res3 = read.table(paste(rootName, '/best_model_5/posterior_bestModel.txt', sep=''), h=T) # second optimization
+#			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T) # first optimization
+#			res3 = read.table(paste(rootName, '/best_model_5/posterior_bestModel.txt', sep=''), h=T) # second optimization
 			res4 = read.table(paste(rootName, '/best_model_7/posterior_bestModel.txt', sep=''), h=T) # second optimization
 			
 			# remove the temporary unarchived results
@@ -1637,12 +1641,12 @@ server <- function(input, output, session = session) {
 			post1_Q1 = NULL
 			post1_median = NULL
 			post1_Q2 = NULL
-			post2_Q1 = NULL
-			post2_median = NULL
-			post2_Q2 = NULL
-			post3_Q1 = NULL
-			post3_median = NULL
-			post3_Q2 = NULL
+#			post2_Q1 = NULL
+#			post2_median = NULL
+#			post2_Q2 = NULL
+#			post3_Q1 = NULL
+#			post3_median = NULL
+#			post3_Q2 = NULL
 			post4_Q1 = NULL
 			post4_median = NULL
 			post4_Q2 = NULL
@@ -1663,29 +1667,29 @@ server <- function(input, output, session = session) {
 				posterior1 = res1[,i] * scale
 				posterior1 = data.frame(x = posterior1, label=rep('Posterior', length(posterior1)))
 
-				posterior2 = res2[,i] * scale
-				posterior2 = data.frame(x = posterior2, label=rep('First optimization', length(posterior2)))
-
-				posterior3 = res3[,i] * scale
-				posterior3 = data.frame(x = posterior3, label=rep('Second optimization', length(posterior3)))
+#				posterior2 = res2[,i] * scale
+#				posterior2 = data.frame(x = posterior2, label=rep('First optimization', length(posterior2)))
+#
+#				posterior3 = res3[,i] * scale
+#				posterior3 = data.frame(x = posterior3, label=rep('Second optimization', length(posterior3)))
 
 				posterior4 = res4[,i] * scale
 				posterior4 = data.frame(x = posterior4, label=rep('Third optimization', length(posterior4)))
 				
 				# table
 				param_names = c(param_names, param_name)
-				if(param_name%in%c('N1', 'N2', 'Na', 'Tsplit', 'Tsc', 'Tmin', 'Tdem1', 'Tdem2', 'nBarriersM12', 'nBarriersM21')){
+				if(param_name%in%c('N1', 'N2', 'Na', 'Tsplit', 'Tsc', 'Tam', 'Tmin', 'Tdem1', 'Tdem2', 'nBarriersM12', 'nBarriersM21')){
 					post1_Q1_tmp = formatC(round(quantile(posterior1$x, 0.025), 0), format='d', big.mark=' ')
 					post1_median_tmp = formatC(round(quantile(posterior1$x, 0.5), 0), format='d', big.mark=' ')
 					post1_Q2_tmp = formatC(round(quantile(posterior1$x, 0.975), 0), format='d', big.mark=' ')
 
-					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 0), format='d', big.mark=' ')
-					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 0), format='d', big.mark=' ')
-					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 0), format='d', big.mark=' ')
-
-					post3_Q1_tmp = formatC(round(quantile(posterior3$x, 0.025), 0), format='d', big.mark=' ')
-					post3_median_tmp = formatC(round(quantile(posterior3$x, 0.5), 0), format='d', big.mark=' ')
-					post3_Q2_tmp = formatC(round(quantile(posterior3$x, 0.975), 0), format='d', big.mark=' ')
+#					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 0), format='d', big.mark=' ')
+#					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 0), format='d', big.mark=' ')
+#					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 0), format='d', big.mark=' ')
+#
+#					post3_Q1_tmp = formatC(round(quantile(posterior3$x, 0.025), 0), format='d', big.mark=' ')
+#					post3_median_tmp = formatC(round(quantile(posterior3$x, 0.5), 0), format='d', big.mark=' ')
+#					post3_Q2_tmp = formatC(round(quantile(posterior3$x, 0.975), 0), format='d', big.mark=' ')
 					
 					post4_Q1_tmp = formatC(round(quantile(posterior4$x, 0.025), 0), format='d', big.mark=' ')
 					post4_median_tmp = formatC(round(quantile(posterior4$x, 0.5), 0), format='d', big.mark=' ')
@@ -1695,13 +1699,13 @@ server <- function(input, output, session = session) {
 					post1_median_tmp = formatC(round(quantile(posterior1$x, 0.5), 5), format="f", big.mark=" ", digits=5)
 					post1_Q2_tmp = formatC(round(quantile(posterior1$x, 0.975), 5), format="f", big.mark=" ", digits=5)
 					
-					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 5), format="f", big.mark=" ", digits=5)
-					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 5), format="f", big.mark=" ", digits=5)
-					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 5), format="f", big.mark=" ", digits=5)
-					
-					post3_Q1_tmp = formatC(round(quantile(posterior3$x, 0.025), 5), format="f", big.mark=" ", digits=5)
-					post3_median_tmp = formatC(round(quantile(posterior3$x, 0.5), 5), format="f", big.mark=" ", digits=5)
-					post3_Q2_tmp = formatC(round(quantile(posterior3$x, 0.975), 5), format="f", big.mark=" ", digits=5)
+#					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 5), format="f", big.mark=" ", digits=5)
+#					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 5), format="f", big.mark=" ", digits=5)
+#					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 5), format="f", big.mark=" ", digits=5)
+#					
+#					post3_Q1_tmp = formatC(round(quantile(posterior3$x, 0.025), 5), format="f", big.mark=" ", digits=5)
+#					post3_median_tmp = formatC(round(quantile(posterior3$x, 0.5), 5), format="f", big.mark=" ", digits=5)
+#					post3_Q2_tmp = formatC(round(quantile(posterior3$x, 0.975), 5), format="f", big.mark=" ", digits=5)
 					
 					post4_Q1_tmp = formatC(round(quantile(posterior4$x, 0.025), 5), format="f", big.mark=" ", digits=5)
 					post4_median_tmp = formatC(round(quantile(posterior4$x, 0.5), 5), format="f", big.mark=" ", digits=5)
@@ -1712,13 +1716,13 @@ server <- function(input, output, session = session) {
 				post1_median = c(post1_median, post1_median_tmp)
 				post1_Q2 = c(post1_Q2, post1_Q2_tmp)
 				
-				post2_Q1 = c(post2_Q1, post2_Q1_tmp)
-				post2_median = c(post2_median, post2_median_tmp)
-				post2_Q2 = c(post2_Q2, post2_Q2_tmp)
-				
-				post3_Q1 = c(post3_Q1, post3_Q1_tmp)
-				post3_median = c(post3_median, post3_median_tmp)
-				post3_Q2 = c(post3_Q2, post3_Q2_tmp)
+#				post2_Q1 = c(post2_Q1, post2_Q1_tmp)
+#				post2_median = c(post2_median, post2_median_tmp)
+#				post2_Q2 = c(post2_Q2, post2_Q2_tmp)
+#				
+#				post3_Q1 = c(post3_Q1, post3_Q1_tmp)
+#				post3_median = c(post3_median, post3_median_tmp)
+#				post3_Q2 = c(post3_Q2, post3_Q2_tmp)
 				
 				post4_Q1 = c(post4_Q1, post4_Q1_tmp)
 				post4_median = c(post4_median, post4_median_tmp)
@@ -1728,13 +1732,13 @@ server <- function(input, output, session = session) {
 			# print table
 			col_tmp = viridis_pal(option="D", alpha=1)(5)
 			col_post1_header = col_tmp[1]
-			col_post2_header = col_tmp[2]
-			col_post3_header = col_tmp[3]
+#			col_post2_header = col_tmp[2]
+#			col_post3_header = col_tmp[3]
 			col_post4_header = col_tmp[4]
 			col_tmp = viridis_pal(option="D", alpha=0.4)(5)
 			col_post1 = col_tmp[1]
-			col_post2 = col_tmp[2]
-			col_post3 = col_tmp[3]
+#			col_post2 = col_tmp[2]
+#			col_post3 = col_tmp[3]
 			col_post4 = col_tmp[4]
 			green = "#C7F464"
 			dark_grey = "#1e2b37"
@@ -1742,11 +1746,13 @@ server <- function(input, output, session = session) {
 
 			table_estimations = plot_ly( type = 'table',
 				header = list(
-					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median (posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (first optimization)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (second optimization)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (third optimization)</b>", "<b>HPD 0.975</b>"),
+#					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median (posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (first optimization)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (second optimization)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (third optimization)</b>", "<b>HPD 0.975</b>"),
+					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median (posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (optimized posterior)</b>", "<b>HPD 0.975</b>"),
 					line = list(color = dark_grey),
-					fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post2_header, col_post2_header, col_post2_header, col_post3_header, col_post3_header, col_post3_header, col_post4_header, col_post4_header, col_post4_header)),
+					#fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post2_header, col_post2_header, col_post2_header, col_post3_header, col_post3_header, col_post3_header, col_post4_header, col_post4_header, col_post4_header)),
+					fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post4_header, col_post4_header, col_post4_header)),
 					align = c('left','center'),
-					font = list(color = c(green, rep("white", 12), size = 30))
+					font = list(color = c(green, rep("white", 6), size = 30))
 				),
 				cells = list(
 					values = rbind(
@@ -1755,20 +1761,21 @@ server <- function(input, output, session = session) {
 						paste('<b>', post1_median, '</b>', sep=''),
 						post1_Q2,
 						
-						post2_Q1,
-						paste('<b>', post2_median, '</b>', sep=''),
-						post2_Q2,
-						
-						post3_Q1,
-						paste('<b>', post3_median, '</b>', sep=''),
-						post3_Q2,
+#						post2_Q1,
+#						paste('<b>', post2_median, '</b>', sep=''),
+#						post2_Q2,
+#						
+#						post3_Q1,
+#						paste('<b>', post3_median, '</b>', sep=''),
+#						post3_Q2,
 						
 						post4_Q1,
 						paste('<b>', post4_median, '</b>', sep=''),
 						post4_Q2
 					),
 					line = list(color = dark_grey),
-					fill = list(color = c(light_grey, col_post1, col_post1, col_post1, col_post2, col_post2, col_post2, col_post3, col_post3, col_post3, col_post4, col_post4, col_post4)),
+#					fill = list(color = c(light_grey, col_post1, col_post1, col_post1, col_post2, col_post2, col_post2, col_post3, col_post3, col_post3, col_post4, col_post4, col_post4)),
+					fill = list(color = c(light_grey, col_post1, col_post1, col_post1, col_post4, col_post4, col_post4)),
 					align = c('left', 'center'),
 					font = list(color = c(green, dark_grey,  size = 30))
 				), 
@@ -1792,8 +1799,8 @@ server <- function(input, output, session = session) {
 
 			# read informations
 			res1 = read.table(paste(rootName, '/best_model/posterior_bestModel.txt', sep=''), h=T)
-			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
-			res3 = read.table(paste(rootName, '/best_model_5/posterior_bestModel.txt', sep=''), h=T)
+#			res2 = read.table(paste(rootName, '/best_model_3/posterior_bestModel.txt', sep=''), h=T)
+#			res3 = read.table(paste(rootName, '/best_model_5/posterior_bestModel.txt', sep=''), h=T)
 			res4 = read.table(paste(rootName, '/best_model_7/posterior_bestModel.txt', sep=''), h=T)
 			
 			# remove the temporary unarchived results
@@ -1805,13 +1812,13 @@ server <- function(input, output, session = session) {
 			post1_median = NULL
 			post1_Q2 = NULL
 			
-			post2_Q1 = NULL
-			post2_median = NULL
-			post2_Q2 = NULL
-			
-			post3_Q1 = NULL
-			post3_median = NULL
-			post3_Q2 = NULL
+#			post2_Q1 = NULL
+#			post2_median = NULL
+#			post2_Q2 = NULL
+#			
+#			post3_Q1 = NULL
+#			post3_median = NULL
+#			post3_Q2 = NULL
 			
 			post4_Q1 = NULL
 			post4_median = NULL
@@ -1824,14 +1831,14 @@ server <- function(input, output, session = session) {
 				posterior1 = res1[,i]
 				posterior1 = data.frame(x = posterior1, label=rep('Posterior', length(posterior1)))
 			
-				posterior2 = res2[,i]
-				posterior2 = data.frame(x = posterior2, label=rep('First optimization', length(posterior2)))
-		
-				posterior3 = res3[,i]
-				posterior3 = data.frame(x = posterior3, label=rep('Second optimization', length(posterior3)))
+#				posterior2 = res2[,i]
+#				posterior2 = data.frame(x = posterior2, label=rep('First optimization', length(posterior2)))
+#		
+#				posterior3 = res3[,i]
+#				posterior3 = data.frame(x = posterior3, label=rep('Second optimization', length(posterior3)))
 				
 				posterior4 = res4[,i]
-				posterior4 = data.frame(x = posterior4, label=rep('Third optimization', length(posterior4)))
+				posterior4 = data.frame(x = posterior4, label=rep('Optimized posterior', length(posterior4)))
 				# table
 				param_names = c(param_names, param_name)
 				if(param_name%in%c('N', 'Npast', 'Tdem')){
@@ -1839,13 +1846,13 @@ server <- function(input, output, session = session) {
 					post1_median_tmp = formatC(round(quantile(posterior1$x, 0.5), 0), format='d', big.mark=' ')
 					post1_Q2_tmp = formatC(round(quantile(posterior1$x, 0.975), 0), format='d', big.mark=' ')
 					
-					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 0), format='d', big.mark=' ')
-					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 0), format='d', big.mark=' ')
-					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 0), format='d', big.mark=' ')
-					
-					post3_Q1_tmp = formatC(round(quantile(posterior3$x, 0.025), 0), format='d', big.mark=' ')
-					post3_median_tmp = formatC(round(quantile(posterior3$x, 0.5), 0), format='d', big.mark=' ')
-					post3_Q2_tmp = formatC(round(quantile(posterior3$x, 0.975), 0), format='d', big.mark=' ')
+#					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 0), format='d', big.mark=' ')
+#					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 0), format='d', big.mark=' ')
+#					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 0), format='d', big.mark=' ')
+#					
+#					post3_Q1_tmp = formatC(round(quantile(posterior3$x, 0.025), 0), format='d', big.mark=' ')
+#					post3_median_tmp = formatC(round(quantile(posterior3$x, 0.5), 0), format='d', big.mark=' ')
+#					post3_Q2_tmp = formatC(round(quantile(posterior3$x, 0.975), 0), format='d', big.mark=' ')
 					
 					post4_Q1_tmp = formatC(round(quantile(posterior4$x, 0.025), 0), format='d', big.mark=' ')
 					post4_median_tmp = formatC(round(quantile(posterior4$x, 0.5), 0), format='d', big.mark=' ')
@@ -1855,13 +1862,13 @@ server <- function(input, output, session = session) {
 					post1_median_tmp = formatC(round(quantile(posterior1$x, 0.5), 5), format="f", big.mark=" ", digits=5)
 					post1_Q2_tmp = formatC(round(quantile(posterior1$x, 0.975), 5), format="f", big.mark=" ", digits=5)
 					
-					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 5), format="f", big.mark=" ", digits=5)
-					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 5), format="f", big.mark=" ", digits=5)
-					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 5), format="f", big.mark=" ", digits=5)
-					
-					post3_Q1_tmp = formatC(round(quantile(posterior3$x, 0.025), 5), format="f", big.mark=" ", digits=5)
-					post3_median_tmp = formatC(round(quantile(posterior3$x, 0.5), 5), format="f", big.mark=" ", digits=5)
-					post3_Q2_tmp = formatC(round(quantile(posterior3$x, 0.975), 5), format="f", big.mark=" ", digits=5)
+#					post2_Q1_tmp = formatC(round(quantile(posterior2$x, 0.025), 5), format="f", big.mark=" ", digits=5)
+#					post2_median_tmp = formatC(round(quantile(posterior2$x, 0.5), 5), format="f", big.mark=" ", digits=5)
+#					post2_Q2_tmp = formatC(round(quantile(posterior2$x, 0.975), 5), format="f", big.mark=" ", digits=5)
+#					
+#					post3_Q1_tmp = formatC(round(quantile(posterior3$x, 0.025), 5), format="f", big.mark=" ", digits=5)
+#					post3_median_tmp = formatC(round(quantile(posterior3$x, 0.5), 5), format="f", big.mark=" ", digits=5)
+#					post3_Q2_tmp = formatC(round(quantile(posterior3$x, 0.975), 5), format="f", big.mark=" ", digits=5)
 					
 					post4_Q1_tmp = formatC(round(quantile(posterior4$x, 0.025), 5), format="f", big.mark=" ", digits=5)
 					post4_median_tmp = formatC(round(quantile(posterior4$x, 0.5), 5), format="f", big.mark=" ", digits=5)
@@ -1872,13 +1879,13 @@ server <- function(input, output, session = session) {
 				post1_median = c(post1_median, post1_median_tmp)
 				post1_Q2 = c(post1_Q2, post1_Q2_tmp)
 				
-				post2_Q1 = c(post2_Q1, post2_Q1_tmp)
-				post2_median = c(post2_median, post2_median_tmp)
-				post2_Q2 = c(post2_Q2, post2_Q2_tmp)
-				
-				post3_Q1 = c(post3_Q1, post3_Q1_tmp)
-				post3_median = c(post3_median, post3_median_tmp)
-				post3_Q2 = c(post3_Q2, post3_Q2_tmp)
+#				post2_Q1 = c(post2_Q1, post2_Q1_tmp)
+#				post2_median = c(post2_median, post2_median_tmp)
+#				post2_Q2 = c(post2_Q2, post2_Q2_tmp)
+#				
+#				post3_Q1 = c(post3_Q1, post3_Q1_tmp)
+#				post3_median = c(post3_median, post3_median_tmp)
+#				post3_Q2 = c(post3_Q2, post3_Q2_tmp)
 				
 				post4_Q1 = c(post4_Q1, post4_Q1_tmp)
 				post4_median = c(post4_median, post4_median_tmp)
@@ -1888,13 +1895,13 @@ server <- function(input, output, session = session) {
 			# print table
 			col_tmp = viridis_pal(option="D", alpha=1)(5)
 			col_post1_header = col_tmp[1]
-			col_post2_header = col_tmp[2]
-			col_post3_header = col_tmp[3]
+#			col_post2_header = col_tmp[2]
+#			col_post3_header = col_tmp[3]
 			col_post4_header = col_tmp[4]
 			col_tmp = viridis_pal(option="D", alpha=0.4)(5)
 			col_post1 = col_tmp[1]
-			col_post2 = col_tmp[2]
-			col_post3 = col_tmp[3]
+#			col_post2 = col_tmp[2]
+#			col_post3 = col_tmp[3]
 			col_post4 = col_tmp[4]
 			green = "#C7F464"
 			dark_grey = "#1e2b37"
@@ -1902,11 +1909,14 @@ server <- function(input, output, session = session) {
 
 			table_estimations = plot_ly( type = 'table',
 				header = list(
-					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median (posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (first optimization)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (second optimization)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (third optimization)</b>", "<b>HPD 0.975</b>"),
+#					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median (posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (first optimization)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (second optimization)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (third optimization)</b>", "<b>HPD 0.975</b>"),
+					values = c("<b>Parameter</b>", "<b>HPD 0.025</b>", "<b>HPD median (posterior)</b>", "<b>HPD 0.975</b>", "<b>HPD 0.025</b>", "<b>HPD median (optimized posterior)</b>", "<b>HPD 0.975</b>"),
 					line = list(color = dark_grey),
-					fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post2_header, col_post2_header, col_post2_header, col_post3_header, col_post3_header, col_post3_header, col_post4_header, col_post4_header, col_post4_header)),
+					#fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post2_header, col_post2_header, col_post2_header, col_post3_header, col_post3_header, col_post3_header, col_post4_header, col_post4_header, col_post4_header)),
+					fill = list(color = c(dark_grey, col_post1_header, col_post1_header, col_post1_header, col_post4_header, col_post4_header, col_post4_header)),
 					align = c('left','center'),
-					font = list(color = c(green, rep("white", 12), size = 30))
+#					font = list(color = c(green, rep("white", 12), size = 30))
+					font = list(color = c(green, rep("white", 6), size = 30))
 				),
 				cells = list(
 					values = rbind(
@@ -1915,13 +1925,13 @@ server <- function(input, output, session = session) {
 						paste('<b>', post1_median, '</b>', sep=''),
 						post1_Q2,
 						
-						post2_Q1,
-						paste('<b>', post2_median, '</b>', sep=''),
-						post2_Q2,
-						
-						post3_Q1,
-						paste('<b>', post3_median, '</b>', sep=''),
-						post3_Q2,
+#						post2_Q1,
+#						paste('<b>', post2_median, '</b>', sep=''),
+#						post2_Q2,
+#						
+#						post3_Q1,
+#						paste('<b>', post3_median, '</b>', sep=''),
+#						post3_Q2,
 						
 						post4_Q1,
 						paste('<b>', post4_median, '</b>', sep=''),
@@ -1929,7 +1939,8 @@ server <- function(input, output, session = session) {
 
 					),
 					line = list(color = dark_grey),
-					fill = list(color = c(light_grey, col_post1, col_post1, col_post1, col_post2, col_post2, col_post2, col_post3, col_post3, col_post3, col_post4, col_post4, col_post4)),
+#					fill = list(color = c(light_grey, col_post1, col_post1, col_post1, col_post2, col_post2, col_post2, col_post3, col_post3, col_post3, col_post4, col_post4, col_post4)),
+					fill = list(color = c(light_grey, col_post1, col_post1, col_post1, col_post4, col_post4, col_post4)),
 					align = c('left', 'center'),
 					font = list(color = c(green, dark_grey,  size = 30))
 				), 
@@ -1952,15 +1963,19 @@ server <- function(input, output, session = session) {
 			# if interested by the posterior
 			gof_table_name = paste(rootName, "/gof/goodness_of_fit_test.txt", sep='')
 		}else{
+#			if( input$posterior_choice == 2){
+#				# if interested by the first optimized posterior
+#				gof_table_name = paste(rootName, "/gof_2/goodness_of_fit_test.txt", sep='')
+#			}
+#			if( input$posterior_choice == 3){
+#				# if interested by the second optimized posterior
+#				gof_table_name = paste(rootName, "/gof_3/goodness_of_fit_test.txt", sep='')
+#			}
+#			if( input$posterior_choice == 4){
+#				# if interested by the third optimized posterior
+#				gof_table_name = paste(rootName, "/gof_4/goodness_of_fit_test.txt", sep='')
+#			}
 			if( input$posterior_choice == 2){
-				# if interested by the first optimized posterior
-				gof_table_name = paste(rootName, "/gof_2/goodness_of_fit_test.txt", sep='')
-			}
-			if( input$posterior_choice == 3){
-				# if interested by the second optimized posterior
-				gof_table_name = paste(rootName, "/gof_3/goodness_of_fit_test.txt", sep='')
-			}
-			if( input$posterior_choice == 4){
 				# if interested by the third optimized posterior
 				gof_table_name = paste(rootName, "/gof_4/goodness_of_fit_test.txt", sep='')
 			}
@@ -2004,17 +2019,21 @@ server <- function(input, output, session = session) {
 				# if interested by the posterior
 				sfs_name = paste(rootName, "/gof/gof_sfs.txt", sep='')
 			}else{
-				if( input$posterior_choice == 2){
+#				if( input$posterior_choice == 2){
 					# if interested by the first optimized posterior
-					sfs_name = paste(rootName, "/gof_2/gof_sfs.txt", sep='')
-				}
+#					sfs_name = paste(rootName, "/gof_2/gof_sfs.txt", sep='')
+#				}
 				
-				if( input$posterior_choice == 3){
-					# if interested by the second optimized posterior
-					sfs_name = paste(rootName, "/gof_3/gof_sfs.txt", sep='')
-				}
-				
-				if( input$posterior_choice == 4){
+#				if( input$posterior_choice == 3){
+#					# if interested by the second optimized posterior
+#					sfs_name = paste(rootName, "/gof_3/gof_sfs.txt", sep='')
+#				}
+#				
+#				if( input$posterior_choice == 4){
+#					# if interested by the third optimized posterior
+#					sfs_name = paste(rootName, "/gof_4/gof_sfs.txt", sep='')
+#				}
+				if( input$posterior_choice == 2){
 					# if interested by the third optimized posterior
 					sfs_name = paste(rootName, "/gof_4/gof_sfs.txt", sep='')
 				}
@@ -2302,7 +2321,8 @@ server <- function(input, output, session = session) {
 			if(users_infos()[1,2]==2){
 				# if nSpecies == 2
 				tabsetPanel(
-					tabPanel("Statistics", selectInput("posterior_choice", label = h4("Select the parameters estimate"), choices = list("Posterior" = 1, "First optimization" = 2, "Second optimization" = 3, "Third optimization" = 4), selected = 1), hr(), uiOutput("display_gof_table")),
+#					tabPanel("Statistics", selectInput("posterior_choice", label = h4("Select the parameters estimate"), choices = list("Posterior" = 1, "First optimization" = 2, "Second optimization" = 3, "Third optimization" = 4), selected = 1), hr(), uiOutput("display_gof_table")),
+					tabPanel("Statistics", selectInput("posterior_choice", label = h4("Select the parameters estimate"), choices = list("Posterior" = 1, "Optimized posterior" = 2), selected = 1), hr(), uiOutput("display_gof_table")),
 					tabPanel("SFS", h4(textOutput("selected_output")), uiOutput("display_sfs_table")),
 					tabPanel("PCA", selectInput("PCA_gof_choice", label = h4("PCA on summary statistics"), choices = list("Plot" = 1, "Table" = 2), selected = 1), hr(), uiOutput("display_PCA_gof"))
 				)
@@ -2310,7 +2330,8 @@ server <- function(input, output, session = session) {
 				if(users_infos()[1,2]==1){
 					# if nSpecies == 2
 					tabsetPanel(
-						tabPanel("Statistics", selectInput("posterior_choice", label = h4("Select the parameters estimate"), choices = list("Posterior" = 1, "First optimization" = 2, "Second optimization" = 3, "Third optimization" = 4), selected = 1), hr(), uiOutput("display_gof_table")),
+#						tabPanel("Statistics", selectInput("posterior_choice", label = h4("Select the parameters estimate"), choices = list("Posterior" = 1, "First optimization" = 2, "Second optimization" = 3, "Third optimization" = 4), selected = 1), hr(), uiOutput("display_gof_table")),
+						tabPanel("Statistics", selectInput("posterior_choice", label = h4("Select the parameters estimate"), choices = list("Posterior" = 1, "Optimized posterior" = 2), selected = 1), hr(), uiOutput("display_gof_table")),
 						tabPanel("SFS", h4(textOutput("selected_output")), uiOutput("display_sfs_table")),
 						tabPanel("PCA", selectInput("PCA_gof_choice", label = h4("PCA on summary statistics"), choices = list("Plot" = 1, "Table" = 2), selected = 1), hr(), uiOutput("display_PCA_gof"))
 					)
@@ -2325,14 +2346,17 @@ server <- function(input, output, session = session) {
 		if( input$posterior_choice == 1 ){
 			posterior = 'posterior'
 		}else{
+#			if( input$posterior_choice == 2 ){
+#				posterior = 'first optimization'
+#			}
+#			if( input$posterior_choice == 3 ){
+#				posterior = 'second optimization'
+#			}
+#			if( input$posterior_choice == 4 ){
+#				posterior = 'third optimization'
+#			}
 			if( input$posterior_choice == 2 ){
-				posterior = 'first optimization'
-			}
-			if( input$posterior_choice == 3 ){
-				posterior = 'second optimization'
-			}
-			if( input$posterior_choice == 4 ){
-				posterior = 'third optimization'
+				posterior = 'optimized posterior'
 			}
 		}
 		paste('Selected parameters estimate', posterior, sep=' : ' )
@@ -2379,21 +2403,23 @@ server <- function(input, output, session = session) {
 			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
 
 			x=read.table(paste(rootName, "/best_model/posterior_bestModel.txt", sep=''), h=T)
-			y=read.table(paste(rootName, "/best_model_3/posterior_bestModel.txt", sep=''), h=T)
-			y2=read.table(paste(rootName, "/best_model_5/posterior_bestModel.txt", sep=''), h=T)
+#			y=read.table(paste(rootName, "/best_model_3/posterior_bestModel.txt", sep=''), h=T)
+#			y2=read.table(paste(rootName, "/best_model_5/posterior_bestModel.txt", sep=''), h=T)
 			y3=read.table(paste(rootName, "/best_model_7/posterior_bestModel.txt", sep=''), h=T)
 			
 			# delete the untar results
 			system(paste('rm -rf ', rootName, sep=''))
 		
-			origin = c(rep("posterior", nrow(x)), rep("first optimization", nrow(y)), rep("second optimization", nrow(y2)), rep("third optimization", nrow(y3)))
+#			origin = c(rep("posterior", nrow(x)), rep("first optimization", nrow(y)), rep("second optimization", nrow(y2)), rep("third optimization", nrow(y3)))
+			origin = c(rep("posterior", nrow(x)), rep("optimized posterior", nrow(y3)))
 
 			posterior = which(origin == "posterior")
-			optimized = which(origin == "first optimization")
-			optimized2 = which(origin == "second optimization")
-			optimized3 = which(origin == "third optimization")
+#			optimized = which(origin == "first optimization")
+#			optimized2 = which(origin == "second optimization")
+			optimized3 = which(origin == "optimized posterior")
 
-			data = rbind(x, y, y2, y3)
+#			data = rbind(x, y, y2, y3)
+			data = rbind(x, y3)
 			data = cbind(data, origin)
 
 			res.pca <- PCA(data[, -ncol(data)], graph = FALSE, ncp=3)
@@ -2409,27 +2435,35 @@ server <- function(input, output, session = session) {
 				z = res.pca$ind$coord[,3][posterior]
 			)
 
+#			trace2 <- list(
+#				mode = "markers", 
+#				name = "first optimization", 
+#				type = "scatter3d", 
+#				x = res.pca$ind$coord[,1][optimized],
+#				y = res.pca$ind$coord[,2][optimized],
+#				z = res.pca$ind$coord[,3][optimized]
+#			)
+#
+#			trace3 <- list(
+#				mode = "markers", 
+#				name = "second optimization", 
+#				type = "scatter3d", 
+#				x = res.pca$ind$coord[,1][optimized2],
+#				y = res.pca$ind$coord[,2][optimized2],
+#				z = res.pca$ind$coord[,3][optimized2]
+#			)
+#			
+#			trace4 <- list(
+#				mode = "markers", 
+#				name = "third optimization", 
+#				type = "scatter3d", 
+#				x = res.pca$ind$coord[,1][optimized3],
+#				y = res.pca$ind$coord[,2][optimized3],
+#				z = res.pca$ind$coord[,3][optimized3]
+#			)
 			trace2 <- list(
 				mode = "markers", 
-				name = "first optimization", 
-				type = "scatter3d", 
-				x = res.pca$ind$coord[,1][optimized],
-				y = res.pca$ind$coord[,2][optimized],
-				z = res.pca$ind$coord[,3][optimized]
-			)
-
-			trace3 <- list(
-				mode = "markers", 
-				name = "second optimization", 
-				type = "scatter3d", 
-				x = res.pca$ind$coord[,1][optimized2],
-				y = res.pca$ind$coord[,2][optimized2],
-				z = res.pca$ind$coord[,3][optimized2]
-			)
-			
-			trace4 <- list(
-				mode = "markers", 
-				name = "third optimization", 
+				name = "optimized posterior", 
 				type = "scatter3d", 
 				x = res.pca$ind$coord[,1][optimized3],
 				y = res.pca$ind$coord[,2][optimized3],
@@ -2447,9 +2481,10 @@ server <- function(input, output, session = session) {
 
 			p1 <- plot_ly(type = 'scatter', mode = 'markers', width = (0.75*as.numeric(input$dimension[1])), height = 0.5*as.numeric(input$dimension[2])) %>%
 				add_trace( mode=trace1$mode, name=trace1$name, type=trace1$type, x=trace1$x, y=trace1$y, z=trace1$z, marker = list(size = 10, color = viridis_pal(option='D')(5)[1]), alpha=0.8) %>%
-				add_trace( mode=trace2$mode, name=trace2$name, type=trace2$type, x=trace2$x, y=trace2$y, z=trace2$z, marker = list(size = 11, color = viridis_pal(option='D')(5)[2])) %>%
-				add_trace( mode=trace3$mode, name=trace3$name, type=trace3$type, x=trace3$x, y=trace3$y, z=trace3$z, marker = list(size = 11, color = viridis_pal(option='D')(5)[3])) %>%
-				add_trace( mode=trace4$mode, name=trace4$name, type=trace4$type, x=trace4$x, y=trace4$y, z=trace4$z, marker = list(size = 11, color = viridis_pal(option='D')(5)[4])) %>%
+#				add_trace( mode=trace2$mode, name=trace2$name, type=trace2$type, x=trace2$x, y=trace2$y, z=trace2$z, marker = list(size = 11, color = viridis_pal(option='D')(5)[2])) %>%
+#				add_trace( mode=trace3$mode, name=trace3$name, type=trace3$type, x=trace3$x, y=trace3$y, z=trace3$z, marker = list(size = 11, color = viridis_pal(option='D')(5)[3])) %>%
+#				add_trace( mode=trace4$mode, name=trace4$name, type=trace4$type, x=trace4$x, y=trace4$y, z=trace4$z, marker = list(size = 11, color = viridis_pal(option='D')(5)[4])) %>%
+				add_trace( mode=trace2$mode, name=trace2$name, type=trace2$type, x=trace2$x, y=trace2$y, z=trace2$z, marker = list(size = 11, color = viridis_pal(option='D')(5)[4])) %>%
 				layout( scene=layout$scene, title=layout$title, legend=l, xaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F), yaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F), legend=list(size=12) )
 			
 			return( p1 )
@@ -2471,21 +2506,23 @@ server <- function(input, output, session = session) {
 			rootName = strsplit(fileName$name, '.', fixed=T)[[1]][1]
 
 			x=read.table(paste(rootName, "/best_model/posterior_bestModel.txt", sep=''), h=T)
-			y=read.table(paste(rootName, "/best_model_3/posterior_bestModel.txt", sep=''), h=T)
-			y2=read.table(paste(rootName, "/best_model_5/posterior_bestModel.txt", sep=''), h=T)
+#			y=read.table(paste(rootName, "/best_model_3/posterior_bestModel.txt", sep=''), h=T)
+#			y2=read.table(paste(rootName, "/best_model_5/posterior_bestModel.txt", sep=''), h=T)
 			y3=read.table(paste(rootName, "/best_model_7/posterior_bestModel.txt", sep=''), h=T)
 			
 			# delete the untar results
 			system(paste('rm -rf ', rootName, sep=''))
 		
-			origin = c(rep("posterior", nrow(x)), rep("first optimization", nrow(y)), rep("second optimization", nrow(y2)), rep("third optimization", nrow(y3)))
+#			origin = c(rep("posterior", nrow(x)), rep("first optimization", nrow(y)), rep("second optimization", nrow(y2)), rep("third optimization", nrow(y3)))
+			origin = c(rep("posterior", nrow(x)), rep("optimized posterior", nrow(y3)))
 
 			posterior = which(origin == "posterior")
-			optimized1 = which(origin == "first optimization")
-			optimized2 = which(origin == "second optimization")
+#			optimized1 = which(origin == "first optimization")
+#			optimized2 = which(origin == "second optimization")
 			optimized3 = which(origin == "third optimization")
 
-			data = rbind(x, y, y2, y3)
+#			data = rbind(x, y, y2, y3)
+			data = rbind(x, y3)
 			data = cbind(data, origin)
 
 			res.pca <- PCA(data[, -ncol(data)], graph = FALSE, ncp=3)
@@ -2521,8 +2558,9 @@ server <- function(input, output, session = session) {
 			observed = which(coord_PCA_SS$origin == 'observed dataset')
 			prior = which(coord_PCA_SS$origin == 'prior')
 			posterior = which(coord_PCA_SS$origin == 'posterior')
-			optimized_posterior1 = which(coord_PCA_SS$origin == 'optimized posterior1')
-			optimized_posterior2 = which(coord_PCA_SS$origin == 'optimized posterior2')
+#			optimized_posterior1 = which(coord_PCA_SS$origin == 'optimized posterior1')
+#			optimized_posterior2 = which(coord_PCA_SS$origin == 'optimized posterior2')
+#			optimized_posterior3 = which(coord_PCA_SS$origin == 'optimized posterior3')
 			optimized_posterior3 = which(coord_PCA_SS$origin == 'optimized posterior3')
 
 			trace1 <- list(
@@ -2536,34 +2574,35 @@ server <- function(input, output, session = session) {
 
 			trace2 <- list(
 				mode = "markers", 
-				name = "estimated model", 
+				name = "posterior", 
 				type = "scatter3d", 
 				x = coord_PCA_SS[,1][posterior],
 				y = coord_PCA_SS[,2][posterior],
 				z = coord_PCA_SS[,3][posterior]
 			)
 			
-			trace3 <- list(
-				mode = "markers", 
-				name = "first parameter optimization", 
-				type = "scatter3d", 
-				x = coord_PCA_SS[,1][optimized_posterior1],
-				y = coord_PCA_SS[,2][optimized_posterior1],
-				z = coord_PCA_SS[,3][optimized_posterior1]
-			)
-			
-			trace4 <- list(
-				mode = "markers", 
-				name = "second parameter optimization", 
-				type = "scatter3d", 
-				x = coord_PCA_SS[,1][optimized_posterior2],
-				y = coord_PCA_SS[,2][optimized_posterior2],
-				z = coord_PCA_SS[,3][optimized_posterior2]
-			)
+#			trace3 <- list(
+#				mode = "markers", 
+#				name = "first parameter optimization", 
+#				type = "scatter3d", 
+#				x = coord_PCA_SS[,1][optimized_posterior1],
+#				y = coord_PCA_SS[,2][optimized_posterior1],
+#				z = coord_PCA_SS[,3][optimized_posterior1]
+#			)
+#			
+#			trace4 <- list(
+#				mode = "markers", 
+#				name = "second parameter optimization", 
+#				type = "scatter3d", 
+#				x = coord_PCA_SS[,1][optimized_posterior2],
+#				y = coord_PCA_SS[,2][optimized_posterior2],
+#				z = coord_PCA_SS[,3][optimized_posterior2]
+#			)
 
 			trace5 <- list(
 				mode = "markers", 
-				name = "third parameter optimization", 
+#				name = "third parameter optimization", 
+				name = "optimized posterior", 
 				type = "scatter3d", 
 				x = coord_PCA_SS[,1][optimized_posterior3],
 				y = coord_PCA_SS[,2][optimized_posterior3],
@@ -2594,8 +2633,8 @@ server <- function(input, output, session = session) {
 			p <- plot_ly(type = 'scatter', mode = 'markers', width = (0.75*as.numeric(input$dimension[1])), height = 0.65*as.numeric(input$dimension[2])) %>%
 				add_trace( mode=trace1$mode, name=trace1$name, type=trace1$type, x=trace1$x, y=trace1$y, z=trace1$z, marker = list(size = 6, color = rgb(1, 1, 1, 0), line = list(color='darkgray', width=0.1))) %>%
 				add_trace( mode=trace2$mode, name=trace2$name, type=trace2$type, x=trace2$x, y=trace2$y, z=trace2$z, marker = list(size = 8, color = viridis_pal(option='D')(5)[1])) %>%
-				add_trace( mode=trace3$mode, name=trace3$name, type=trace3$type, x=trace3$x, y=trace3$y, z=trace3$z, marker = list(size = 8, color = viridis_pal(option='D')(5)[2])) %>%
-				add_trace( mode=trace4$mode, name=trace4$name, type=trace4$type, x=trace4$x, y=trace4$y, z=trace4$z, marker = list(size = 8, color = viridis_pal(option='D')(5)[3])) %>%
+#				add_trace( mode=trace3$mode, name=trace3$name, type=trace3$type, x=trace3$x, y=trace3$y, z=trace3$z, marker = list(size = 8, color = viridis_pal(option='D')(5)[2])) %>%
+#				add_trace( mode=trace4$mode, name=trace4$name, type=trace4$type, x=trace4$x, y=trace4$y, z=trace4$z, marker = list(size = 8, color = viridis_pal(option='D')(5)[3])) %>%
 				add_trace( mode=trace5$mode, name=trace5$name, type=trace5$type, x=trace5$x, y=trace5$y, z=trace5$z, marker = list(size = 10, color = viridis_pal(option='D')(5)[4])) %>%
 				add_trace( mode=trace6$mode, name=trace6$name, type=trace6$type, x=trace6$x, y=trace6$y, z=trace6$z, marker = list(size = 10, color = viridis_pal(option='D')(5)[5])) %>%
 				layout( scene=layout$scene, title=layout$title, legend=l, xaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F), yaxis = list(showticklabels=F, zeroline=F, showline=F, showgrid=F))
