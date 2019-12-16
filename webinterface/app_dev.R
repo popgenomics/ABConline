@@ -118,6 +118,7 @@ plot3var = function (x, y, z, xlab = "", ylab = "", zlab = "", main = "", cex.la
 	if (watermark) {
 		watermark()
 	}
+	
 	par(las = 1)
 	image.scale(mat, horiz = F, col = gradient(nlevels), xlab = "", ylab = "", cex.lab = cex.lab, cex.axis = cex.lab, zlim = zlim)
 	par(las = 3)
